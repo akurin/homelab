@@ -96,7 +96,7 @@ loki:
 promtail:
   enabled: true
   config:
-    lokiAddress: "{{ .Values.lokiURL }}/loki/api/v1/push"
+    lokiAddress: http://hobby-cluster-loki:3100/loki/api/v1/push
 
 grafana:
   enabled: true
@@ -110,6 +110,6 @@ grafana:
             type: loki
             access: proxy
             orgId: 1
-            url: "{{ .Values.lokiURL }}"
+            url: http://hobby-cluster-loki:3100
             version: 1
             editable: false
