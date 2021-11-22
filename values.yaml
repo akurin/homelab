@@ -86,8 +86,6 @@ tolerations: []
 
 affinity: {}
 
-lokiURL: http://hobby-cluster-loki:3100
-
 loki:
   enabled: true
   loki:
