@@ -2,7 +2,7 @@ variable "hcloud_token" {
 }
 
 variable "location" {
-  default = "nbg1"
+  default = "hel1"
 }
 
 variable "instances" {

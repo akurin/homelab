@@ -1,11 +1,11 @@
-resource "hcloud_server" "web" {
+resource "hcloud_server" "node-1" {
   count       = var.instances
-  name        = "web-server-${count.index}"
+  name        = "node-${count.index}"
   image       = var.os_type
   server_type = var.server_type
   location    = var.location
   ssh_keys    = [hcloud_ssh_key.default.id]
   labels = {
-    type = "web"
+    type = "kuber"
   }
 }
