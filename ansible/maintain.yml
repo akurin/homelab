@@ -1,0 +1,10 @@
+---
+- hosts: all
+  become: yes
+  tasks:
+    - name: update all installed packages using APT module
+      apt:
+        name: "*"
+        state: latest
+        update_cache: yes
+        only_upgrade: yes

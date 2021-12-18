@@ -5,10 +5,6 @@ variable "location" {
   default = "hel1"
 }
 
-variable "instances" {
-  default = "1"
-}
-
 variable "server_type" {
   default = "cpx11"
 }

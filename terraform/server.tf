@@ -1,6 +1,5 @@
-resource "hcloud_server" "node-1" {
-  count       = var.instances
-  name        = "node-${count.index}"
+resource "hcloud_server" "node-0" {
+  name        = "node-0"
   image       = var.os_type
   server_type = var.server_type
   location    = var.location
