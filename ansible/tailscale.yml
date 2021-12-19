@@ -21,13 +21,12 @@
         state: latest
         update_cache: true
 
-    - name: Check if Tailscale is connected
+    - name: Check Tailscale status
       command: tailscale status
       changed_when: false
       register: tailscale_status
       failed_when:
         - tailscale_status.rc != 0
-        - "'Logged out.' not in tailscale_status.stdout"
 
     - name: Bring Tailscale Up
       command: tailscale up --advertise-exit-node --authkey={{ tailscale_auth_key }}
