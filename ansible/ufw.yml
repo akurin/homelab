@@ -1,0 +1,24 @@
+---
+- hosts: all
+  become: yes
+  tasks:
+    - name: Set logging
+      ufw:
+        logging: "on"
+
+    - name: Allow SSH in UFW
+      ufw:
+        rule: allow
+        port: ssh
+        proto: tcp
+
+    - name: Allow Tailscale
+      ufw:
+        rule: allow
+        port: "41641"
+        proto: udp
+
+    - name: Set firewall default policy
+      ufw:
+        state: enabled
+        policy: reject
