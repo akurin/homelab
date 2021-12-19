@@ -1,0 +1,25 @@
+---
+- hosts: all
+  become: yes
+  tasks:
+    - name: Hardening sshd
+      lineinfile:
+        dest: /etc/ssh/sshd_config
+        regexp: "^PasswordAuthentication "
+        line: PasswordAuthentication no
+        state: present
+        validate: "sshd -t -f %s"
+      notify:
+        - restart sshd
+
+    - name: Install fail2ban
+      apt:
+        name: fail2ban
+        state: latest
+        update_cache: true
+
+  handlers:
+    - name: restart sshd
+      service:
+        name: sshd
+        state: restarted
