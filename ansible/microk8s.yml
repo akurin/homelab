@@ -1,0 +1,23 @@
+---
+- hosts: all
+  become: yes
+  tasks:
+    - name: Install snap
+      apt:
+        name: snapd
+        state: latest
+        update_cache: true
+
+    - name: Install microk8s
+      snap:
+        name: microk8s
+        classic: yes
+
+    - name: Get microk8s status
+      shell: microk8s status --format short
+      changed_when: false
+      register: microk8s_status
+
+    - name: MicroK8S - Enable DNS
+      command: microk8s enable helm3
+      when: '"helm3: enabled" not in microk8s_status.stdout_lines'
