@@ -18,6 +18,17 @@
       changed_when: false
       register: microk8s_status
 
-    - name: MicroK8S - Enable DNS
+    - name: Enable DNS
       command: microk8s enable helm3
       when: '"helm3: enabled" not in microk8s_status.stdout_lines'
+
+    - name: Create kubectl config
+      become: yes
+      changed_when: true
+      shell: microk8s config > $HOME/.kube/config
+
+    - name: Fetch kubeconfig
+      fetch:
+        src: ~/.kube/config
+        dest: /tmp/microk8s-kubeconfig
+        flat: yes
