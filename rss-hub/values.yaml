@@ -1,14 +1,14 @@
-# Default values for rss-bridge.
+# Default values for rss-hub.
 # This is a YAML-formatted file.
 # Declare variables to be passed into your templates.
 
 replicaCount: 1
 
 image:
-  repository: rssbridge/rss-bridge
+  repository: diygod/rsshub
   pullPolicy: IfNotPresent
   # Overrides the image tag whose default is the chart appVersion.
-  tag: "stable"
+  tag: "latest"
 
 imagePullSecrets: []
 nameOverride: ""
@@ -47,16 +47,16 @@ ingress:
     cert-manager.io/cluster-issuer: letsencrypt-prod
     # kubernetes.io/tls-acme: "true"
   hosts:
-    - host: rss.morjoff.com
+    - host: rsshub.morjoff.com
       paths:
       - path: /
         backend:
-          serviceName: rss-bridge.local
+          serviceName: rss-hub.local
           servicePort: 80
   tls:
-   - secretName: letsencrypt-prod
+   - secretName: rss-hub-letsencrypt-prod
      hosts:
-       - rss.morjoff.com
+       - rsshub.morjoff.com
 
 resources: {}
   # We usually recommend not to specify default resources and to leave this as a conscious
