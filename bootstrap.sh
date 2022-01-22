@@ -7,3 +7,5 @@ set -euo pipefail
 ./install-tailscale.sh
 ./install-microk8s.sh
 ./merge-kubeconfig.sh
+./install-cert-manager.sh
+./install-rss-hub.sh
