@@ -18,9 +18,13 @@
       changed_when: false
       register: microk8s_status
 
-    - name: Enable DNS
-      command: microk8s enable helm3
-      when: '"helm3: enabled" not in microk8s_status.stdout_lines'
+    - name: Enable ingress
+      command: microk8s enable ingress
+      when: '"ingress: enabled" not in microk8s_status.stdout_lines'
+
+    - name: Enable CoreDNS
+      command: microk8s enable dns
+      when: '"dns: enabled" not in microk8s_status.stdout_lines'
 
     - name: Allow microk8s API server
       ufw:
