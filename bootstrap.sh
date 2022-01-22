@@ -6,3 +6,4 @@ set -euo pipefail
 ./ufw.sh
 ./install-tailscale.sh
 ./install-microk8s.sh
+./merge-kubeconfig.sh
