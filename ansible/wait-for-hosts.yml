@@ -1,0 +1,8 @@
+---
+- hosts: all
+  become: yes
+  gather_facts: false
+  tasks:
+    - name: Wait for ssh to come up
+      wait_for_connection:
+        timeout: 30

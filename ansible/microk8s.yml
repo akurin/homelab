@@ -36,7 +36,10 @@
 
     - name: Create kubectl config
       changed_when: true
-      shell: microk8s config -l | sed 's/127.0.0.1/{{ ansible_tailscale0.ipv4.address }}/g' > $HOME/.kube/config
+      shell: >
+        microk8s config -l
+        | sed 's/127.0.0.1/{{ ansible_tailscale0.ipv4.address }}/g'
+        > $HOME/.kube/config
 
     - name: Fetch kubeconfig
       fetch:

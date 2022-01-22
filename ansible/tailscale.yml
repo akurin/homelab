@@ -25,14 +25,7 @@
       command: tailscale status
       changed_when: false
       register: tailscale_status
-      failed_when:
-        - tailscale_status.rc != 0
-
-    - name: Bring Tailscale Up
-      command: tailscale up --advertise-exit-node --authkey={{ tailscale_auth_key }}
-      no_log: true
-      register: tailscale_start
-      when: "'Logged out.' in tailscale_status.stdout"
+      ignore_errors: yes
 
     - sysctl:
         name: net.ipv4.ip_forward
@@ -47,3 +40,8 @@
         sysctl_set: yes
         state: present
         reload: yes
+
+    - name: Bring Tailscale Up
+      command: tailscale up --advertise-exit-node --authkey={{ tailscale_auth_key }}
+      register: tailscale_start
+      when: "'Logged out.' in tailscale_status.stdout"
