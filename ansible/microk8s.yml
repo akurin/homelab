@@ -22,13 +22,20 @@
       command: microk8s enable helm3
       when: '"helm3: enabled" not in microk8s_status.stdout_lines'
 
+    - name: Allow microk8s API server
+      ufw:
+        rule: allow
+        interface: tailscale0
+        direction: in
+        port: "16443"
+        proto: tcp
+
     - name: Create kubectl config
-      become: yes
       changed_when: true
-      shell: microk8s config > $HOME/.kube/config
+      shell: microk8s config -l | sed 's/127.0.0.1/{{ ansible_tailscale0.ipv4.address }}/g' > $HOME/.kube/config
 
     - name: Fetch kubeconfig
       fetch:
         src: ~/.kube/config
-        dest: /tmp/microk8s-kubeconfig
+        dest: ~/.kube/microk8s-kubeconfig
         flat: yes
