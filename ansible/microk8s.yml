@@ -8,9 +8,17 @@
       changed_when: microk8s_status.rc != 0
       register: microk8s_status
 
+    - name: Populate service facts
+      service_facts:
+
     - name: Install k3s
       shell: curl -sfL https://get.k3s.io | sh -
-      when: microk8s_status is changed
+      when: "'k3s' not in services"
+
+    - name: Ensure k3s is in a running state
+      service:
+        name: k3s
+        state: started
 
     - name: Allow microk8s API server
       ufw:
