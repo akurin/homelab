@@ -14,9 +14,15 @@
         classic: yes
 
     - name: Get microk8s status
-      shell: microk8s status --format short
+      shell: microk8s status --wait-ready --format short
       changed_when: false
       register: microk8s_status
+
+    - name: Enable cilium
+      command: microk8s enable cilium
+      ignore_errors: yes
+      when: '"cilium: enabled" not in microk8s_status.stdout_lines'
+      register: cilium_enabled
 
     - name: Enable ingress
       command: microk8s enable ingress
@@ -25,6 +31,10 @@
     - name: Enable CoreDNS
       command: microk8s enable dns
       when: '"dns: enabled" not in microk8s_status.stdout_lines'
+
+    - name: Reboot to clean up mess in iptables rules
+      reboot:
+      when: cilium_enabled is changed
 
     - name: Allow microk8s API server
       ufw:
