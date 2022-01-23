@@ -6,10 +6,10 @@ set -euo pipefail
 ./ssh-hardening.sh
 ./ufw.sh
 ./install-tailscale.sh
-./install-microk8s.sh
+./install-k3s.sh
 
-chmod 600 ~/.kube/microk8s-kubeconfig
-export KUBECONFIG=~/.kube/microk8s-kubeconfig
+chmod 600 ~/.kube/k3s-kubeconfig
+export KUBECONFIG=~/.kube/k3s-kubeconfig
 
 ./install-cert-manager.sh
 ./install-rss-hub.sh

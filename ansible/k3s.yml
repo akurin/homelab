@@ -2,12 +2,6 @@
 - hosts: all
   become: yes
   tasks:
-    - name: Get microk8s status
-      shell: k3s kubectl get nodes
-      ignore_errors: true
-      changed_when: microk8s_status.rc != 0
-      register: microk8s_status
-
     - name: Populate service facts
       service_facts:
 
@@ -20,7 +14,7 @@
         name: k3s
         state: started
 
-    - name: Allow microk8s API server
+    - name: Allow k3s API server
       ufw:
         rule: allow
         interface: tailscale0
@@ -33,10 +27,10 @@
       shell: >
         cat /etc/rancher/k3s/k3s.yaml
         | sed 's/127.0.0.1/{{ ansible_tailscale0.ipv4.address }}/g'
-        > $HOME/.kube/config
+        > ~/kubeconfig
 
     - name: Fetch kubeconfig
       fetch:
-        src: ~/.kube/config
-        dest: ~/.kube/microk8s-kubeconfig
+        src: ~/kubeconfig
+        dest: ~/.kube/k3s-kubeconfig
         flat: yes
