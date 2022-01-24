@@ -49,7 +49,7 @@ ingress:
     cert-manager.io/cluster-issuer: letsencrypt-prod
     # kubernetes.io/tls-acme: "true"
   hosts:
-    - host: rsshub2.morjoff.com
+    - host: rsshub3.morjoff.com
       paths:
         - path: /
           backend:
@@ -58,7 +58,7 @@ ingress:
   tls:
     - secretName: rss-hub-letsencrypt-prod
       hosts:
-        - rsshub2.morjoff.com
+        - rsshub3.morjoff.com
 
 resources:
   {}
