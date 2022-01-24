@@ -1,10 +1,7 @@
-resource "hcloud_server" "node-0" {
-  name        = "node-0"
-  image       = var.os_type
-  server_type = var.server_type
-  location    = var.location
-  ssh_keys    = [hcloud_ssh_key.default.id]
-  labels = {
-    type = "kuber"
-  }
+resource "vultr_instance" "node-0" {
+  label       = "node-0"
+  os_id       = var.os_id
+  plan        = var.plan
+  region      = var.region
+  ssh_key_ids = [vultr_ssh_key.default.id]
 }

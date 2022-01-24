@@ -1,12 +1,11 @@
 terraform {
   required_providers {
-    hcloud = {
-      source  = "hetznercloud/hcloud"
-      version = "1.32.1"
+    vultr = {
+      source  = "vultr/vultr"
+      version = "2.9.0"
     }
   }
 }
 
-provider "hcloud" {
-  token = var.hcloud_token
+provider "vultr" {
 }
