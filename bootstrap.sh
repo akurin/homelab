@@ -11,5 +11,6 @@ set -euo pipefail
 chmod 600 ~/.kube/k3s-kubeconfig
 export KUBECONFIG=~/.kube/k3s-kubeconfig
 
+./route53.sh
 ./install-cert-manager.sh
 ./install-rss-hub.sh

@@ -1,0 +1,15 @@
+AWSTemplateFormatVersion: 2010-09-09
+Parameters:
+  IPAddress:
+    Type: String
+    AllowedPattern: .+
+Resources:
+  RssRecordSet:
+    Type: AWS::Route53::RecordSet
+    Properties:
+      Name: rsshub.morjoff.com.
+      Type: A
+      HostedZoneName: morjoff.com.
+      ResourceRecords:
+        - !Sub "${IPAddress}"
+      TTL: "60"
