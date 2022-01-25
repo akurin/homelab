@@ -2,6 +2,8 @@
 set -euo pipefail
 
 ./terraform-apply.sh
+ip_address=$(cd terraform/ && terraform output -raw node-0_ipv4_address)
+
 ./wait-for-hosts.sh
 ./ssh-hardening.sh
 ./ufw.sh
@@ -11,6 +13,6 @@ set -euo pipefail
 chmod 600 ~/.kube/k3s-kubeconfig
 export KUBECONFIG=~/.kube/k3s-kubeconfig
 
-./route53.sh
+./route53.sh "$ip_address"
 ./install-cert-manager.sh
 ./install-rss-hub.sh

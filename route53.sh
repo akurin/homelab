@@ -5,4 +5,4 @@ set -euo pipefail
     --stack-name rss-hub-domain \
     --template-file cf.yml \
     --profile personal \
-    --parameter-overrides IPAddress=1.1.1.1)
+    --parameter-overrides IPAddress="$1")
