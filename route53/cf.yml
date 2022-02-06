@@ -4,10 +4,19 @@ Parameters:
     Type: String
     AllowedPattern: .+
 Resources:
-  RssRecordSet:
+  RssHubRecordSet:
     Type: AWS::Route53::RecordSet
     Properties:
       Name: rsshub.morjoff.com.
+      Type: A
+      HostedZoneName: morjoff.com.
+      ResourceRecords:
+        - !Sub "${IPAddress}"
+      TTL: "60"
+  RssBridgeRecordSet:
+    Type: AWS::Route53::RecordSet
+    Properties:
+      Name: rss.morjoff.com.
       Type: A
       HostedZoneName: morjoff.com.
       ResourceRecords:

@@ -17,3 +17,4 @@ export KUBECONFIG=~/.kube/k3s-kubeconfig
 helm repo update
 ./install-cert-manager.sh
 ./install-rss-hub.sh
+./install-rss-bridge.sh
