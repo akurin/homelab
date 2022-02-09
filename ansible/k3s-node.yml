@@ -1,0 +1,8 @@
+---
+- name: Deploy k3s node
+  hosts: all
+  vars_prompt:
+    - name: tailscale_auth_key
+      prompt: Enter the Tailscale Auth key
+  roles:
+    - role: tailscale
