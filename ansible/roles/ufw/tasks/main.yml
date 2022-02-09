@@ -1,0 +1,15 @@
+---
+- name: Set logging
+  ufw:
+    logging: "on"
+
+- name: Allow SSH in UFW
+  ufw:
+    rule: allow
+    port: ssh
+    proto: tcp
+
+- name: Set firewall default policy
+  ufw:
+    state: enabled
+    policy: reject

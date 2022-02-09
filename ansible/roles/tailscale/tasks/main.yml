@@ -35,6 +35,12 @@
     state: present
     reload: yes
 
+- name: Allow Tailscale
+  ufw:
+    rule: allow
+    port: "41641"
+    proto: udp
+
 - name: Bring Tailscale Up
   command: tailscale up --advertise-exit-node --authkey={{ tailscale_auth_key }}
   register: tailscale_start

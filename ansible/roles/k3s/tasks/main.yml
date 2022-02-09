@@ -1,0 +1,33 @@
+---
+- name: Populate service facts
+  service_facts:
+
+- name: Install k3s
+  shell: curl -sfL https://get.k3s.io | sh -
+  when: "'k3s' not in services"
+
+- name: Ensure k3s is in a running state
+  service:
+    name: k3s
+    state: started
+
+- name: Allow k3s API server
+  ufw:
+    rule: allow
+    interface: tailscale0
+    direction: in
+    port: "6443"
+    proto: tcp
+
+- name: Create kubectl config
+  changed_when: true
+  shell: >
+    cat /etc/rancher/k3s/k3s.yaml
+    | sed 's/127.0.0.1/{{ ansible_tailscale0.ipv4.address }}/g'
+    > ~/kubeconfig
+
+- name: Fetch kubeconfig
+  fetch:
+    src: ~/kubeconfig
+    dest: ~/.kube/k3s-kubeconfig
+    flat: yes
