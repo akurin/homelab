@@ -1,0 +1,4 @@
+contour:
+  ingressClass:
+    name: internal-lb
+    default: false
