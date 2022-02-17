@@ -53,10 +53,10 @@ ingress:
         backend:
           serviceName: rss-bridge.local
           servicePort: 80
-  # tls:
-  #  - secretName: letsencrypt-prod
-  #    hosts:
-  #      - rss.morjoff.com
+  tls:
+   - secretName: letsencrypt-prod
+     hosts:
+       - rss.morjoff.com
 
 resources: {}
   # We usually recommend not to specify default resources and to leave this as a conscious
