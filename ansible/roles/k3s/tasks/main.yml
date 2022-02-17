@@ -3,7 +3,7 @@
   service_facts:
 
 - name: Install k3s
-  shell: curl -sfL https://get.k3s.io | sh -
+  shell: curl -sfL https://get.k3s.io | INSTALL_K3S_EXEC="--disable traefik --disable servicelb" sh -
   when: "'k3s' not in services"
 
 - name: Ensure k3s is in a running state
