@@ -14,3 +14,4 @@ helm upgrade \
     -f contour/internal.yaml \
     --set envoy.hostIPs.http=100.91.228.60 \
     --set envoy.hostIPs.https=100.91.228.60
+    --set contour.installCRDs=false
