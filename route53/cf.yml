@@ -22,3 +22,12 @@ Resources:
       ResourceRecords:
         - !Sub "${IPAddress}"
       TTL: "60"
+  HelloBridgeRecordSet:
+    Type: AWS::Route53::RecordSet
+    Properties:
+      Name: hello.morjoff.com.
+      Type: A
+      HostedZoneName: morjoff.com.
+      ResourceRecords:
+        - !Sub "${IPAddress}"
+      TTL: "60"
