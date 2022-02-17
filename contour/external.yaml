@@ -1,0 +1,4 @@
+contour:
+  ingressClass:
+    name: external-lb
+    default: true
