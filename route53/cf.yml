@@ -4,28 +4,10 @@ Parameters:
     Type: String
     AllowedPattern: .+
 Resources:
-  RssHubRecordSet:
+  WildcardRecordSet:
     Type: AWS::Route53::RecordSet
     Properties:
-      Name: rsshub.morjoff.com.
-      Type: A
-      HostedZoneName: morjoff.com.
-      ResourceRecords:
-        - !Sub "${IPAddress}"
-      TTL: "60"
-  RssBridgeRecordSet:
-    Type: AWS::Route53::RecordSet
-    Properties:
-      Name: rss.morjoff.com.
-      Type: A
-      HostedZoneName: morjoff.com.
-      ResourceRecords:
-        - !Sub "${IPAddress}"
-      TTL: "60"
-  HelloBridgeRecordSet:
-    Type: AWS::Route53::RecordSet
-    Properties:
-      Name: hello.morjoff.com.
+      Name: "*.morjoff.com."
       Type: A
       HostedZoneName: morjoff.com.
       ResourceRecords:
