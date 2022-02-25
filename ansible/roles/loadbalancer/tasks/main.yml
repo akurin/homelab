@@ -12,3 +12,15 @@
 
 - name: Restart haproxy
   service: name=haproxy state=restarted
+
+- name: Allow http
+  ufw:
+    rule: allow
+    port: "80"
+    proto: tcp
+
+- name: Allow http
+  ufw:
+    rule: allow
+    port: "443"
+    proto: tcp
