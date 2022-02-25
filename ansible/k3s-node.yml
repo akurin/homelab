@@ -19,4 +19,5 @@
     - role: ufw
     - role: tailscale
     - role: k3s
+    - role: loadbalancer
     - role: ssh_hardening
