@@ -1,7 +1,0 @@
-contour:
-  ingressClass:
-    name: external-lb
-    default: true
-  manageCRDs: false
-envoy:
-  useHostIP: true
