@@ -25,10 +25,12 @@ serviceAccount:
 
 podAnnotations: {}
 
-podSecurityContext: {}
+podSecurityContext:
+  {}
   # fsGroup: 2000
 
-securityContext: {}
+securityContext:
+  {}
   # capabilities:
   #   drop:
   #   - ALL
@@ -43,26 +45,22 @@ service:
 ingress:
   enabled: true
   annotations:
-    kubernetes.io/ingress.class: external-lb
-    # cert-manager.io/cluster-issuer: letsencrypt-prod
-    # traefik.ingress.kubernetes.io/whitelist-source-range: 13.37.13.17/32
-    # ingress.kubernetes.io/whitelist-x-forwarded-for: "false"
-    # kubernetes.io/ingress.class: nginx
-    # kubernetes.io/tls-acme: "true"
+    cert-manager.io/cluster-issuer: letsencrypt-prod
+    kubernetes.io/ingress.class: nginx
   hosts:
-    - 
-      # host: localhost
+    - host: hello.morjoff.com
       paths:
-      - path: /
-        backend:
-          serviceName: chart-example.local
-          servicePort: 80
-  # tls:
-  #  - secretName: letsencrypt-prod
-  #    hosts:
-  #      - hello.morjoff.com
+        - path: /
+          backend:
+            serviceName: hello-world.local
+            servicePort: 80
+  tls:
+    - secretName: letsencrypt-prod
+      hosts:
+        - hello.morjoff.com
 
-resources: {}
+resources:
+  {}
   # We usually recommend not to specify default resources and to leave this as a conscious
   # choice for the user. This also increases chances charts run on environments with little
   # resources, such as Minikube. If you do want to specify resources, uncomment the following
@@ -86,3 +84,6 @@ nodeSelector: {}
 tolerations: []
 
 affinity: {}
+
+certificate:
+  email: morjoff@gmail.com
