@@ -1,0 +1,11 @@
+controller:
+  kind: DaemonSet
+  config:
+    use-proxy-protocol: "true"
+  service:
+    nodePorts:
+      http: 30081
+      https: 30444
+  ingressClass: nginx-internal
+  ingressClassResource:
+    name: nginx-internal
