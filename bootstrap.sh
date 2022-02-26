@@ -13,5 +13,7 @@ export KUBECONFIG=~/.kube/k3s-kubeconfig
 
 ./install-nginx.sh
 ./install-cert-manager.sh
+./install-cluster-issuer.sh
+
 ./install-hello-world.sh
 ./install-shadowsocks.sh
