@@ -6,6 +6,12 @@
     - name: tailscale_auth_key
       prompt: Enter the Tailscale Auth key
 
+    - name: GCLOUD_STACK_ID
+      prompt: GCLOUD_STACK_ID
+
+    - name: GCLOUD_API_KEY
+      prompt: GCLOUD_API_KEY
+
   gather_facts: false
 
   pre_tasks:
@@ -16,6 +22,7 @@
       gather_facts:
 
   roles:
+    - role: grafana_agent
     - role: ufw
     - role: tailscale
     - role: k3s

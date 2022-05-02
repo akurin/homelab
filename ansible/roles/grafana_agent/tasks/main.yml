@@ -1,0 +1,13 @@
+---
+- name: Install the Grafana Agent
+  shell: >
+    ARCH=amd64 GCLOUD_STACK_ID="{{GCLOUD_STACK_ID}}" GCLOUD_API_KEY="{{GCLOUD_API_KEY}}" GCLOUD_API_URL="https://integrations-api-us-central.grafana.net" /bin/sh -c "$(curl -fsSL https://raw.githubusercontent.com/grafana/agent/release/production/grafanacloud-install.sh)"
+
+- name: Set hostname
+  replace:
+    path: /etc/grafana-agent.yaml
+    regexp: "\\s+instance: hostname$"
+    replace: "instance: {{ inventory_hostname }}"
+
+- name: Restart Grafana Agent
+  service: name=grafana-agent state=restarted
