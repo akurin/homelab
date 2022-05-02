@@ -1,6 +1,9 @@
 ---
-- name: Populate service facts
-  service_facts:
+- name: Check if the Grafana Agent is installed
+  command: dpkg-query -l grafana-agent
+  register: grafana_agent_check
+  changed_when: false
+  ignore_errors: true
 
 - name: Install the Grafana Agent
   shell: >
@@ -9,12 +12,12 @@
     GCLOUD_API_KEY="{{GCLOUD_API_KEY}}"
     GCLOUD_API_URL="https://integrations-api-us-central.grafana.net"
     /bin/sh -c "$(curl -fsSL https://raw.githubusercontent.com/grafana/agent/release/production/grafanacloud-install.sh)"
-  when: "'grafana-agent.service' not in services"
+  when: grafana_agent_check is failed
 
 - name: Set hostname
   replace:
     path: /etc/grafana-agent.yaml
-    regexp: "instance: hostname"
-    replace: "instance: {{ inventory_hostname }}"
+    regexp: "hostname"
+    replace: "{{ inventory_hostname }}"
   notify:
     - restart grafana-agent
