@@ -1,10 +1,10 @@
 name: open-telemetry-test
 on:
   push:
-    # paths:
-    #   - open-telemetry-test
+    paths:
+      - open-telemetry-test
 jobs:
-  build-and-push-morjoff-com-website-image:
+  build-and-push-open-telemetry-test-image:
     runs-on: ubuntu-latest
     permissions:
       packages: write
