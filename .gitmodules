@@ -1,0 +1,3 @@
+[submodule "morjoff-com-web-site/hugo/themes/hugo-coder"]
+	path = morjoff-com-web-site/hugo/themes/hugo-coder
+	url = git@github.com:luizdepra/hugo-coder.git
