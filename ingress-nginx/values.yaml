@@ -2,6 +2,19 @@ controller:
   kind: DaemonSet
   config:
     use-proxy-protocol: "true"
+    opentracing: "True"
+    opentracing-tracer: "/usr/local/lib/libjaegertracing_plugin.so"
+    opentracing-tracer-config: |
+      {
+        "service_name": "nginx-ingress",
+        "sampler": {
+          "type": "const",
+          "param": 1
+        },
+        "reporter": {
+          "localAgentHostPort": "grafana-agent-traces.default.svc.cluster.local:6831"
+        }
+      }
   service:
     nodePorts:
       http: 30080
