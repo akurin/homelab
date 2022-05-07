@@ -2,3 +2,5 @@ logs:
   user: 205789
 prometheus:
   user: 413638
+tempo:
+  user: 202301

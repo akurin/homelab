@@ -16,7 +16,7 @@ data:
         - url: https://prometheus-prod-10-prod-us-central-0.grafana.net/api/prom/push
           basic_auth:
             username: {{ .Values.prometheus.user }}
-            password: {{ .Values.prometheus.password }}
+            password: {{ .Values.password }}
         scrape_configs:
         - bearer_token_file: /var/run/secrets/kubernetes.io/serviceaccount/token
           job_name: integrations/kubernetes/cadvisor
@@ -84,7 +84,7 @@ data:
         - url: https://logs-prod3.grafana.net/api/prom/push
           basic_auth:
             username: {{ .Values.logs.user }}
-            password: {{ .Values.logs.password }}
+            password: {{ .Values.password }}
           external_labels:
             cluster: cloud
             job: integrations/kubernetes/eventhandler

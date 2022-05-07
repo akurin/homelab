@@ -16,13 +16,13 @@ data:
         - url: https://prometheus-prod-10-prod-us-central-0.grafana.net/api/prom/push
           basic_auth:
             username: {{ .Values.prometheus.user }}
-            password: {{ .Values.prometheus.password }}
+            password: {{ .Values.password }}
     integrations:
       prometheus_remote_write:
       - url: https://prometheus-prod-10-prod-us-central-0.grafana.net/api/prom/push
         basic_auth:
             username: {{ .Values.prometheus.user }}
-            password: {{ .Values.prometheus.password }}
+            password: {{ .Values.password }}
       
       
     logs:
@@ -32,7 +32,7 @@ data:
         - url: https://logs-prod3.grafana.net/api/prom/push
           basic_auth:
             username: {{ .Values.logs.user }}
-            password: {{ .Values.logs.password }}
+            password: {{ .Values.password }}
           external_labels:
             cluster: cloud
         positions:
