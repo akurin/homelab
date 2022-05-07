@@ -31,3 +31,4 @@ jobs:
           context: ./open-telemetry-test/
           tags: |
             ghcr.io/akurin/open-telemetry-test:latest
+          push: true
