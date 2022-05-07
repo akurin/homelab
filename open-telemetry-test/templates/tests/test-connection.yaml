@@ -3,7 +3,7 @@ kind: Pod
 metadata:
   name: "{{ include "open-telemetry-test.fullname" . }}-test-connection"
   labels:
-    {{- include "morjoff-com-web-site.labels" . | nindent 4 }}
+    {{- include "open-telemetry-test.labels" . | nindent 4 }}
   annotations:
     "helm.sh/hook": test
 spec:
@@ -11,5 +11,5 @@ spec:
     - name: wget
       image: busybox
       command: ['wget']
-      args: ['{{ include "morjoff-com-web-site.fullname" . }}:{{ .Values.service.port }}']
+      args: ['{{ include "open-telemetry-test.fullname" . }}:{{ .Values.service.port }}']
   restartPolicy: Never
