@@ -55,7 +55,7 @@ ingress:
             serviceName: hello-world.local
             servicePort: 80
   tls:
-    - secretName: letsencrypt-prod
+    - secretName: hello.morjoff.com
       hosts:
         - hello.morjoff.com
 

@@ -53,7 +53,7 @@ ingress:
             serviceName: morjoff-web-site.local
             servicePort: 80
   tls:
-    - secretName: letsencrypt-prod
+    - secretName: morjoff.com
       hosts:
         - morjoff.com
 
