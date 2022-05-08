@@ -96,7 +96,7 @@ func wrapHandler() {
 }
 
 // Implement an HTTP Handler func to be instrumented
-func httpHandler(w http.ResponseWriter, _ *http.Request) {
+func httpHandler(w http.ResponseWriter, req *http.Request) {
 	if reqHeadersBytes, err := json.Marshal(req.Header); err != nil {
 		log.Println("could not Marshal Req Headers")
 	} else {
