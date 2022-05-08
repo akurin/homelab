@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"go.opentelemetry.io/proto/otlp/trace/v1"
 	"log"
@@ -96,6 +97,10 @@ func wrapHandler() {
 
 // Implement an HTTP Handler func to be instrumented
 func httpHandler(w http.ResponseWriter, _ *http.Request) {
-	log.Printf("Headers: %v", w.Header())
+	if reqHeadersBytes, err := json.Marshal(req.Header); err != nil {
+		log.Println("could not Marshal Req Headers")
+	} else {
+		log.Println(string(reqHeadersBytes))
+	}
 	_, _ = fmt.Fprintf(w, "Hello, World")
 }
