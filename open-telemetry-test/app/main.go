@@ -6,6 +6,7 @@ import (
 	"go.opentelemetry.io/proto/otlp/trace/v1"
 	"log"
 	"net/http"
+	"os"
 
 	"go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp"
 	"go.opentelemetry.io/otel"
@@ -16,6 +17,8 @@ import (
 )
 
 func main() {
+	log.Println(os.Environ())
+
 	ctx := context.Background()
 
 	// Configure a new exporter using environment variables for sending data to Honeycomb over gRPC.
