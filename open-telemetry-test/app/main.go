@@ -4,12 +4,6 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	semconv "go.opentelemetry.io/otel/semconv/v1.10.0"
-	"go.opentelemetry.io/proto/otlp/trace/v1"
-	"log"
-	"net/http"
-	"os"
-
 	"go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp"
 	"go.opentelemetry.io/contrib/propagators/jaeger"
 	"go.opentelemetry.io/otel"
@@ -18,12 +12,13 @@ import (
 	"go.opentelemetry.io/otel/propagation"
 	"go.opentelemetry.io/otel/sdk/resource"
 	sdktrace "go.opentelemetry.io/otel/sdk/trace"
+	semconv "go.opentelemetry.io/otel/semconv/v1.10.0"
+	"go.opentelemetry.io/proto/otlp/trace/v1"
+	"log"
+	"net/http"
 )
 
 func main() {
-	log.Print("Environ")
-	log.Println(os.Environ())
-
 	ctx := context.Background()
 
 	// Configure a new exporter using environment variables for sending data to Honeycomb over gRPC.
@@ -45,7 +40,6 @@ func main() {
 	otel.SetTextMapPropagator(
 		propagation.NewCompositeTextMapPropagator(
 			propagation.TraceContext{},
-			propagation.Baggage{},
 			jaeger.Jaeger{},
 		),
 	)
