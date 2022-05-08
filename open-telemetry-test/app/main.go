@@ -11,7 +11,7 @@ import (
 	"go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/exporters/otlp/otlptrace"
-	"go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracehttp"
+	"go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracegrpc"
 	"go.opentelemetry.io/otel/propagation"
 	sdktrace "go.opentelemetry.io/otel/sdk/trace"
 )
@@ -78,7 +78,7 @@ func (l LoggingClient) UploadTraces(ctx context.Context, protoSpans []*v1.Resour
 }
 
 func newExporter(ctx context.Context) (*otlptrace.Exporter, error) {
-	client := otlptracehttp.NewClient()
+	client := otlptracegrpc.NewClient()
 	return otlptrace.New(ctx, &LoggingClient{client})
 }
 
