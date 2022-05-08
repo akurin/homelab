@@ -17,10 +17,10 @@ func main() {
 	log.Print("Starting server...")
 
 	http.HandleFunc("/", handler)
-	err := http.ListenAndServe(":8080", nil)
+	err := http.ListenAndServe(":80", nil)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	log.Print("Server started on port 8080")
+	log.Print("Server started on port 80")
 }

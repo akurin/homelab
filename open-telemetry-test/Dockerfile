@@ -6,5 +6,5 @@ RUN go build -o /sample-app
 FROM alpine:latest
 WORKDIR /
 COPY --from=build /sample-app /sample-app
-EXPOSE 8080
+EXPOSE 80
 ENTRYPOINT ["/sample-app"]
