@@ -96,5 +96,6 @@ func wrapHandler() {
 
 // Implement an HTTP Handler func to be instrumented
 func httpHandler(w http.ResponseWriter, _ *http.Request) {
+	log.Printf("Headers: %v", w.Header())
 	_, _ = fmt.Fprintf(w, "Hello, World")
 }
