@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"fmt"
+	"go.opentelemetry.io/proto/otlp/trace/v1"
 	"log"
 	"net/http"
 
@@ -53,9 +54,28 @@ func main() {
 	log.Print("Server started on port 80")
 }
 
+type LoggingClient struct {
+	inner otlptrace.Client
+}
+
+func (l LoggingClient) Start(ctx context.Context) error {
+	log.Print("Start")
+	return l.inner.Start(ctx)
+}
+
+func (l LoggingClient) Stop(ctx context.Context) error {
+	log.Print("Stop")
+	return l.inner.Stop(ctx)
+}
+
+func (l LoggingClient) UploadTraces(ctx context.Context, protoSpans []*v1.ResourceSpans) error {
+	log.Print("UploadTraces")
+	return l.inner.UploadTraces(ctx, protoSpans)
+}
+
 func newExporter(ctx context.Context) (*otlptrace.Exporter, error) {
 	client := otlptracehttp.NewClient()
-	return otlptrace.New(ctx, client)
+	return otlptrace.New(ctx, &LoggingClient{client})
 }
 
 func newTraceProvider(exp *otlptrace.Exporter) *sdktrace.TracerProvider {
