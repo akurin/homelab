@@ -3,7 +3,10 @@ package main
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
+	"github.com/sirupsen/logrus"
+	"github.com/uptrace/opentelemetry-go-extra/otellogrus"
 	"go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp"
 	"go.opentelemetry.io/contrib/propagators/jaeger"
 	"go.opentelemetry.io/otel"
@@ -19,6 +22,13 @@ import (
 )
 
 func main() {
+	logrus.AddHook(otellogrus.NewHook(otellogrus.WithLevels(
+		logrus.PanicLevel,
+		logrus.FatalLevel,
+		logrus.ErrorLevel,
+		logrus.WarnLevel,
+	)))
+
 	ctx := context.Background()
 
 	// Configure a new exporter using environment variables for sending data to Honeycomb over gRPC.
@@ -106,5 +116,8 @@ func httpHandler(w http.ResponseWriter, req *http.Request) {
 	} else {
 		log.Println(string(reqHeadersBytes))
 	}
-	_, _ = fmt.Fprintf(w, "Hello, World")
+
+	logrus.WithContext(req.Context()).Info(errors.New("hello world"))
+
+	_, _ = fmt.Fprint(w, "Hello, World")
 }
