@@ -18,3 +18,4 @@ export KUBECONFIG=~/.kube/k3s-kubeconfig
 ./install-hello-world.sh
 ./install-hello-world-internal.sh
 ./install-shadowsocks.sh
+./install-open-telemetry-test.sh
