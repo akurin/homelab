@@ -1,7 +1,10 @@
-name: Build morjoff-com-web-site
-on: [push]
+name: morjoff-com-web-site
+on:
+  push:
+    paths:
+      - morjoff-com-web-site
 jobs:
-  build-and-push-image:
+  build-and-push-morjoff-com-website-image:
     runs-on: ubuntu-latest
     permissions:
       packages: write
