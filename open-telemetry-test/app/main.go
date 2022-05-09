@@ -16,11 +16,10 @@ import (
 	"go.opentelemetry.io/otel/sdk/resource"
 	sdktrace "go.opentelemetry.io/otel/sdk/trace"
 	semconv "go.opentelemetry.io/otel/semconv/v1.10.0"
+	"go.opentelemetry.io/otel/trace"
 	"go.opentelemetry.io/proto/otlp/trace/v1"
 	"log"
 	"net/http"
-	"reflect"
-	"unsafe"
 )
 
 func main() {
@@ -122,36 +121,11 @@ func httpHandler(w http.ResponseWriter, req *http.Request) {
 		log.Println(string(reqHeadersBytes))
 	}
 
+	span := trace.SpanFromContext(req.Context())
+	logrus.Infof("Span: %v", span)
+	logrus.Infof("SpanContext: %v", span.SpanContext())
+
 	logrus.WithContext(req.Context()).Info(errors.New("hello world"))
 
 	_, _ = fmt.Fprint(w, "Hello, World")
-
-	printContextInternals(req.Context(), true)
-}
-
-func printContextInternals(ctx interface{}, inner bool) {
-	contextValues := reflect.ValueOf(ctx).Elem()
-	contextKeys := reflect.TypeOf(ctx).Elem()
-
-	if !inner {
-		fmt.Printf("\nFields for %s.%s\n", contextKeys.PkgPath(), contextKeys.Name())
-	}
-
-	if contextKeys.Kind() == reflect.Struct {
-		for i := 0; i < contextValues.NumField(); i++ {
-			reflectValue := contextValues.Field(i)
-			reflectValue = reflect.NewAt(reflectValue.Type(), unsafe.Pointer(reflectValue.UnsafeAddr())).Elem()
-
-			reflectField := contextKeys.Field(i)
-
-			if reflectField.Name == "Context" {
-				printContextInternals(reflectValue.Interface(), true)
-			} else {
-				fmt.Printf("field name: %+v\n", reflectField.Name)
-				fmt.Printf("value: %+v\n", reflectValue.Interface())
-			}
-		}
-	} else {
-		fmt.Printf("context is empty (int)\n")
-	}
 }
