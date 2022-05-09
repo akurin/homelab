@@ -72,6 +72,11 @@ data:
                 regex: kube-state-metrics
                 source_labels:
                   - __meta_kubernetes_pod_label_app_kubernetes_io_name
+        - job_name: integrations/kubernetes/nginx-ingress
+          scrape_interval: 15s
+          static_configs:
+            - targets:
+              - ingress-nginx-controller-metrics.kube-system.svc.cluster.local:10254
         
     integrations:
       eventhandler:
