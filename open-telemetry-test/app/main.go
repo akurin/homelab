@@ -23,10 +23,13 @@ import (
 
 func main() {
 	logrus.AddHook(otellogrus.NewHook(otellogrus.WithLevels(
-		logrus.PanicLevel,
-		logrus.FatalLevel,
-		logrus.ErrorLevel,
+		logrus.TraceLevel,
+		logrus.DebugLevel,
+		logrus.InfoLevel,
 		logrus.WarnLevel,
+		logrus.ErrorLevel,
+		logrus.FatalLevel,
+		logrus.PanicLevel,
 	)))
 
 	ctx := context.Background()
