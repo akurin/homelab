@@ -122,9 +122,8 @@ func httpHandler(w http.ResponseWriter, req *http.Request) {
 	}
 
 	spanContext := trace.SpanContextFromContext(req.Context())
-	logrus.Infof("TraceId: %v", spanContext.TraceID().String())
 
-	logrus.WithContext(req.Context()).Info(errors.New("hello world"))
+	logrus.WithContext(req.Context()).WithField("traceID", spanContext.TraceID().String()).Info(errors.New("hello world"))
 
 	_, _ = fmt.Fprint(w, "Hello, World")
 }
