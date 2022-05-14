@@ -19,6 +19,12 @@
     port: "6443"
     proto: tcp
 
+- name: Allow pods communicate
+  ufw:
+    rule: allow
+    interface: cni0
+    direction: in
+
 - name: Create kubectl config
   changed_when: true
   shell: >
