@@ -11,14 +11,6 @@
     name: k3s
     state: started
 
-- name: Allow k3s API server
-  ufw:
-    rule: allow
-    interface: tailscale0
-    direction: in
-    port: "6443"
-    proto: tcp
-
 - name: Create kubectl config
   changed_when: true
   shell: >
