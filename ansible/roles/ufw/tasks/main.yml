@@ -13,3 +13,9 @@
   ufw:
     state: enabled
     policy: reject
+
+- name: Allow forwarded traffic
+  ufw:
+    direction: routed
+    default: allow
+    route: yes
