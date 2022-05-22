@@ -3,7 +3,7 @@
   service_facts:
 
 - name: Install k3s
-  shell: curl -sfL https://get.k3s.io | INSTALL_K3S_EXEC="--disable traefik --disable servicelb --flannel-backend=none --disable-network-policy  --disable-cloud-controller" sh -
+  shell: curl -sfL https://get.k3s.io | INSTALL_K3S_EXEC="--disable-cloud-controller" sh -
   when: "'k3s' not in services"
 
 - name: Ensure k3s is in a running state
@@ -23,12 +23,3 @@
     src: ~/kubeconfig
     dest: ~/.kube/k3s-kubeconfig
     flat: yes
-
-- name: Install Cilium
-  raw: |
-    curl -L --remote-name-all https://github.com/cilium/cilium-cli/releases/latest/download/cilium-linux-amd64.tar.gz{,.sha256sum}
-    sha256sum --check cilium-linux-amd64.tar.gz.sha256sum
-    tar xzvfC cilium-linux-amd64.tar.gz /usr/local/bin
-    rm cilium-linux-amd64.tar.gz{,.sha256sum}
-    export KUBECONFIG=/etc/rancher/k3s/k3s.yaml
-    cilium install
