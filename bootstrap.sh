@@ -1,7 +1,8 @@
 #!/bin/bash
 set -euo pipefail
 
-./terraform-apply.sh
+./bootstrap-terraform.sh
+./provision-terraform-resources.sh
 
 ./install-k3s.sh
 
