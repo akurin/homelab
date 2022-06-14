@@ -1,0 +1,4 @@
+---
+- name: Install setup-ipsec-vpn (https://github.com/hwdsl2/setup-ipsec-vpn)
+  changed_when: true
+  shell: wget https://get.vpnsetup.net -O vpn.sh && sh vpn.sh
