@@ -1,6 +1,6 @@
 ---
 - name: Deploy k3s node
-  hosts: all
+  hosts: node_0
 
   vars_prompt:
     - name: tailscale_auth_key

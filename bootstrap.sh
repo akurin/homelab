@@ -20,3 +20,5 @@ export KUBECONFIG=~/.kube/k3s-kubeconfig
 ./install-hello-world-internal.sh
 ./install-shadowsocks.sh
 ./install-open-telemetry-test.sh
+
+./install-ikev2-vpn.sh
