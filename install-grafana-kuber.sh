@@ -9,5 +9,5 @@ echo Your Grafana.com API Key:
 read password
 
 helm upgrade \
-    --set password=$password \
-    --install grafana-kuber ./grafana-kuber
+	--set password=$password \
+	--install grafana-kuber ./grafana-kuber

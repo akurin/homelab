@@ -2,4 +2,4 @@
 set -euo pipefail
 
 helm upgrade \
-    --install cluster-issuer cluster-issuer
+	--install cluster-issuer cluster-issuer
