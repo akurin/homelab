@@ -1,4 +1,4 @@
-# Default values for leo-diary.
+# Default values for leo-journal.
 # This is a YAML-formatted file.
 # Declare variables to be passed into your templates.
 
@@ -10,7 +10,8 @@ image:
   # Overrides the image tag whose default is the chart appVersion.
   tag: "latest"
 
-imagePullSecrets: []
+imagePullSecrets:
+  - name: dockerconfigjson-github-com
 nameOverride: ""
 fullnameOverride: ""
 
@@ -38,19 +39,20 @@ securityContext: {}
 
 service:
   type: ClusterIP
-  port: 3000
+  port: 80
 
 ingress:
   enabled: true
   annotations:
     cert-manager.io/cluster-issuer: letsencrypt-prod
     kubernetes.io/ingress.class: traefik
+    traefik.ingress.kubernetes.io/redirect-entry-point: https
   hosts:
     - host: leo.morjoff.com
       paths:
         - path: /
           backend:
-            serviceName: leo-diary.local
+            serviceName: leo-journal.local
             servicePort: 80
   tls:
     - secretName: leo.morjoff.com
@@ -81,3 +83,5 @@ nodeSelector: {}
 tolerations: []
 
 affinity: {}
+
+dbPath: /data/leo.db

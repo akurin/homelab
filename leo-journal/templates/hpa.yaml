@@ -2,14 +2,14 @@
 apiVersion: autoscaling/v2beta1
 kind: HorizontalPodAutoscaler
 metadata:
-  name: {{ include "leo-diary.fullname" . }}
+  name: {{ include "leo-journal.fullname" . }}
   labels:
-    {{- include "leo-diary.labels" . | nindent 4 }}
+    {{- include "leo-journal.labels" . | nindent 4 }}
 spec:
   scaleTargetRef:
     apiVersion: apps/v1
     kind: Deployment
-    name: {{ include "leo-diary.fullname" . }}
+    name: {{ include "leo-journal.fullname" . }}
   minReplicas: {{ .Values.autoscaling.minReplicas }}
   maxReplicas: {{ .Values.autoscaling.maxReplicas }}
   metrics:
