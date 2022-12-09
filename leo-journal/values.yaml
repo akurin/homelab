@@ -5,10 +5,10 @@
 replicaCount: 1
 
 image:
-  repository: ghcr.io/akurin/leo-diary
-  pullPolicy: Always
+  repository: ghcr.io/akurin/leo-journal
+  pullPolicy: IfNotPresent
   # Overrides the image tag whose default is the chart appVersion.
-  tag: "latest"
+  tag: "b7a2e6d99f26cf1f72acedfbafa5451c48e9a790"
 
 imagePullSecrets:
   - name: dockerconfigjson-github-com
