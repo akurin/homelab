@@ -1,18 +1,21 @@
 ---
-- name: Check if the Grafana Agent is installed
-  command: dpkg-query -l grafana-agent
-  register: grafana_agent_check
-  changed_when: false
-  ignore_errors: true
+- name: Check mandatory variables are defined
+  assert:
+    that:
+      - GCLOUD_STACK_ID is defined
+      - GCLOUD_API_KEY is defined
 
-- name: Install the Grafana Agent
+- name: Populate service facts
+  service_facts:
+
+- name: Install the Grafana agent
   shell: >
     ARCH=amd64
-    GCLOUD_STACK_ID="{{GCLOUD_STACK_ID}}"
-    GCLOUD_API_KEY="{{GCLOUD_API_KEY}}"
+    GCLOUD_STACK_ID={{ GCLOUD_STACK_ID | quote }}
+    GCLOUD_API_KEY={{ GCLOUD_API_KEY | quote }}
     GCLOUD_API_URL="https://integrations-api-us-central.grafana.net"
     /bin/sh -c "$(curl -fsSL https://raw.githubusercontent.com/grafana/agent/release/production/grafanacloud-install.sh)"
-  when: grafana_agent_check is failed
+  when: "'grafana-agent' not in services"
 
 - name: Set hostname
   replace:

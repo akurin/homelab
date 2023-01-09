@@ -1,0 +1,9 @@
+---
+- name: Wait for all hosts to come up
+  hosts: all
+  gather_facts: false
+
+  pre_tasks:
+    - name: Wait for ssh to come up
+      wait_for_connection:
+        timeout: 300

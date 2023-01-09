@@ -1,9 +1,19 @@
 ---
+- name: Check mandatory variables are defined
+  assert:
+    that:
+      - tier is defined
+      - k3s_token is defined
+
 - name: Populate service facts
   service_facts:
 
+- name: Disable UFW
+  ufw:
+    state: disabled
+
 - name: Install k3s
-  shell: curl -sfL https://get.k3s.io | INSTALL_K3S_EXEC="--disable-cloud-controller" sh - server
+  shell: curl -sfL https://get.k3s.io | INSTALL_K3S_EXEC="server --token {{ k3s_token | quote }} --advertise-address {{ ansible_tailscale0.ipv4.address }} --flannel-iface tailscale0 --disable-cloud-controller" sh -
   when: "'k3s' not in services"
 
 - name: Ensure k3s is in a running state
@@ -21,5 +31,5 @@
 - name: Fetch kubeconfig
   fetch:
     src: ~/kubeconfig
-    dest: ~/.kube/k3s-kubeconfig
+    dest: ~/.kube/{{ tier }}-k3s-kubeconfig
     flat: yes

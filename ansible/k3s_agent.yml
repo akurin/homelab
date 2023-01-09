@@ -1,6 +1,6 @@
 ---
 - name: Deploy k3s node
-  hosts: node_0
+  hosts: k3s_agent
 
   vars_prompt:
     - name: tailscale_auth_key
@@ -12,18 +12,8 @@
     - name: GCLOUD_API_KEY
       prompt: GCLOUD_API_KEY
 
-  gather_facts: false
-
-  pre_tasks:
-    - name: Wait for ssh to come up
-      wait_for_connection:
-        timeout: 30
-    - name: Gather facts
-      gather_facts:
-
   roles:
     - role: grafana_agent
-    - role: ufw
     - role: tailscale
-    - role: k3s
+    - role: k3s_agent
     - role: ssh_hardening

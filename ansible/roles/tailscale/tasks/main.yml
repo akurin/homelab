@@ -1,4 +1,9 @@
 ---
+- name: Check mandatory variables are defined
+  assert:
+    that:
+      - tailscale_auth_key is defined
+
 - name: Add Tailscale's package signing key
   apt_key:
     url: https://pkgs.tailscale.com/stable/ubuntu/focal.gpg
@@ -35,13 +40,11 @@
     state: present
     reload: yes
 
-- name: Allow Tailscale
-  ufw:
-    rule: allow
-    port: "41641"
-    proto: udp
-
 - name: Bring Tailscale Up
-  command: tailscale up --advertise-exit-node --authkey={{ tailscale_auth_key }}
+  command: tailscale up --advertise-exit-node --authkey={{ tailscale_auth_key|quote }}
   register: tailscale_start
   when: "'Logged out.' in tailscale_status.stdout"
+
+- name: Update facts to include Tailscale's IP
+  setup:
+    gather_subset: network

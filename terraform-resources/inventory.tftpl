@@ -1,5 +1,14 @@
-hetzner:
+k3s_server:
   hosts:
-    node_0:
-      ansible_host: ${node-0_ipv4_address}
+%{ for server_instance in server_instances ~}
+    ${server_instance.hostname}:
+      ansible_host: ${server_instance.main_ip}
       ansible_user: root
+%{ endfor ~}
+k3s_agent:
+  hosts:
+%{ for agent_instance in agent_instances ~}
+    ${agent_instance.hostname}:
+      ansible_host: ${agent_instance.main_ip}
+      ansible_user: root
+%{ endfor ~}

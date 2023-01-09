@@ -1,6 +1,9 @@
 resource "local_file" "inventory" {
-  filename = "../ansible/inventory/hosts.yml"
+  filename = "../ansible/inventory/${terraform.workspace}_hosts.yml"
   content = templatefile("inventory.tftpl", {
-    node-0_ipv4_address = vultr_instance.node-0.main_ip
+    server_instances = vultr_instance.k3s_server[*]
+    agent_instances  = vultr_instance.k3s_agent[*]
   })
+  file_permission      = "0644"
+  directory_permission = "0755"
 }
