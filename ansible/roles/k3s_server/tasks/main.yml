@@ -1,35 +1,46 @@
 ---
 - name: Check mandatory variables are defined
-  assert:
+  ansible.builtin.assert:
     that:
       - tier is defined
       - k3s_token is defined
 
 - name: Populate service facts
-  service_facts:
+  ansible.builtin.service_facts:
+
 - name: Disable UFW
-  ufw:
+  community.general.ufw:
     state: disabled
 
 - name: Install k3s
-  shell: curl -sfL https://get.k3s.io | INSTALL_K3S_EXEC="server --token {{ k3s_token | quote }} --advertise-address {{ ansible_tailscale0.ipv4.address }} --flannel-iface
-    tailscale0 --disable-cloud-controller" sh -
+  args:
+    executable: /usr/bin/bash
+  ansible.builtin.shell: >
+    set -o pipefail &&
+    curl -sfL https://get.k3s.io | INSTALL_K3S_EXEC="server
+      --token {{ k3s_token | quote }}
+      --advertise-address {{ ansible_tailscale0.ipv4.address }}
+      --flannel-iface tailscale0
+      --disable-cloud-controller" sh -
   when: "'k3s' not in services"
 
 - name: Ensure k3s is in a running state
-  service:
+  ansible.builtin.service:
     name: k3s
     state: started
 
 - name: Create kubectl config
   changed_when: true
-  shell: >
+  args:
+    executable: /usr/bin/bash
+  ansible.builtin.shell: >
+    set -o pipefail &&
     cat /etc/rancher/k3s/k3s.yaml
     | sed 's/127.0.0.1/{{ ansible_tailscale0.ipv4.address }}/g'
     > ~/kubeconfig
 
 - name: Fetch kubeconfig
-  fetch:
+  ansible.builtin.fetch:
     src: ~/kubeconfig
     dest: ~/.kube/{{ tier }}-k3s-kubeconfig
     flat: true

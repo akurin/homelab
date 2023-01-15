@@ -1,22 +1,29 @@
 ---
 - name: Check mandatory variables are defined
-  assert:
+  ansible.builtin.assert:
     that:
       - tier is defined
       - k3s_token is defined
 
 - name: Populate service facts
-  service_facts:
+  ansible.builtin.service_facts:
+
 - name: Disable UFW
-  ufw:
+  community.general.ufw:
     state: disabled
 
 - name: Install k3s
-  shell: curl -sfL https://get.k3s.io | INSTALL_K3S_EXEC="agent --server https://{{ tier }}-k3s-server-0:6443 --flannel-iface tailscale0 --token {{ k3s_token | quote
-    }}" sh -
+  args:
+    executable: /usr/bin/bash
+  ansible.builtin.shell: >
+    set -o pipefail &&
+    curl -sfL https://get.k3s.io | INSTALL_K3S_EXEC="agent
+      --server https://{{ tier }}-k3s-server-0:6443
+      --flannel-iface tailscale0
+      --token {{ k3s_token | quote }}" sh -
   when: "'k3s-agent' not in services"
 
 - name: Ensure k3s is in a running state
-  service:
+  ansible.builtin.service:
     name: k3s-agent
     state: started

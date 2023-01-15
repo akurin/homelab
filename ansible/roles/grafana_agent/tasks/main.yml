@@ -1,14 +1,15 @@
 ---
 - name: Check mandatory variables are defined
-  assert:
+  ansible.builtin.assert:
     that:
       - GCLOUD_STACK_ID is defined
       - GCLOUD_API_KEY is defined
 
 - name: Populate service facts
-  service_facts:
+  ansible.builtin.service_facts:
+
 - name: Install the Grafana agent
-  shell: >
+  ansible.builtin.shell: >
     ARCH=amd64
     GCLOUD_STACK_ID={{ GCLOUD_STACK_ID | quote }}
     GCLOUD_API_KEY={{ GCLOUD_API_KEY | quote }}
@@ -17,9 +18,9 @@
   when: "'grafana-agent' not in services"
 
 - name: Set hostname
-  replace:
+  ansible.builtin.replace:
     path: /etc/grafana-agent.yaml
     regexp: hostname
     replace: "{{ inventory_hostname }}"
   notify:
-    - restart grafana-agent
+    - Restart grafana-agent

@@ -1,39 +1,40 @@
 ---
 - name: Check mandatory variables are defined
-  assert:
+  ansible.builtin.assert:
     that:
       - tailscale_auth_key is defined
 
 - name: Add Tailscale's package signing key
-  apt_key:
+  ansible.builtin.apt_key:
     url: https://pkgs.tailscale.com/stable/ubuntu/focal.gpg
     state: present
 
 - name: Add Tailscale's repository
-  apt_repository:
+  ansible.builtin.apt_repository:
     repo: deb https://pkgs.tailscale.com/stable/ubuntu focal main
     state: present
 
 - name: Install Tailscale
-  apt:
+  ansible.builtin.apt:
     name: tailscale
-    state: latest
     update_cache: true
 
 - name: Check Tailscale status
-  command: tailscale status
+  ansible.builtin.command: tailscale status
   changed_when: false
   register: tailscale_status
   ignore_errors: true
 
-- sysctl:
+- name: IPv4 forwarding
+  ansible.posix.sysctl:
     name: net.ipv4.ip_forward
     value: "1"
     sysctl_set: true
     state: present
     reload: true
 
-- sysctl:
+- name: IPv6 forwarding
+  ansible.posix.sysctl:
     name: net.ipv6.conf.all.forwarding
     value: "1"
     sysctl_set: true
@@ -41,10 +42,10 @@
     reload: true
 
 - name: Bring Tailscale Up
-  command: tailscale up --advertise-exit-node --authkey={{ tailscale_auth_key|quote }}
+  ansible.builtin.command: tailscale up --advertise-exit-node --authkey={{ tailscale_auth_key | quote }}
   register: tailscale_start
   when: "'Logged out.' in tailscale_status.stdout"
 
 - name: Update facts to include Tailscale's IP
-  setup:
+  ansible.builtin.setup:
     gather_subset: network
