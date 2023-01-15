@@ -1,5 +1,5 @@
 variable "region" {
-    default = "lhr"
+  default = "lhr"
 }
 
 variable "plan" {

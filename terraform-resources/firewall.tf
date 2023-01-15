@@ -38,3 +38,11 @@ resource "vultr_firewall_rule" "allow_ssh" {
   port              = "22"
 }
 
+resource "vultr_firewall_rule" "allow_smtp" {
+  firewall_group_id = vultr_firewall_group.k3s_node.id
+  protocol          = "tcp"
+  ip_type           = "v4"
+  subnet            = "0.0.0.0"
+  subnet_size       = 0
+  port              = "25"
+}
