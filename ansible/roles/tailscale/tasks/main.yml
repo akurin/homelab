@@ -24,21 +24,21 @@
   command: tailscale status
   changed_when: false
   register: tailscale_status
-  ignore_errors: yes
+  ignore_errors: true
 
 - sysctl:
     name: net.ipv4.ip_forward
     value: "1"
-    sysctl_set: yes
+    sysctl_set: true
     state: present
-    reload: yes
+    reload: true
 
 - sysctl:
     name: net.ipv6.conf.all.forwarding
     value: "1"
-    sysctl_set: yes
+    sysctl_set: true
     state: present
-    reload: yes
+    reload: true
 
 - name: Bring Tailscale Up
   command: tailscale up --advertise-exit-node --authkey={{ tailscale_auth_key|quote }}

@@ -7,7 +7,6 @@
 
 - name: Populate service facts
   service_facts:
-
 - name: Install the Grafana agent
   shell: >
     ARCH=amd64
@@ -20,7 +19,7 @@
 - name: Set hostname
   replace:
     path: /etc/grafana-agent.yaml
-    regexp: "hostname"
+    regexp: hostname
     replace: "{{ inventory_hostname }}"
   notify:
     - restart grafana-agent

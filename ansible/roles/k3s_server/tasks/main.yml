@@ -7,13 +7,13 @@
 
 - name: Populate service facts
   service_facts:
-
 - name: Disable UFW
   ufw:
     state: disabled
 
 - name: Install k3s
-  shell: curl -sfL https://get.k3s.io | INSTALL_K3S_EXEC="server --token {{ k3s_token | quote }} --advertise-address {{ ansible_tailscale0.ipv4.address }} --flannel-iface tailscale0 --disable-cloud-controller" sh -
+  shell: curl -sfL https://get.k3s.io | INSTALL_K3S_EXEC="server --token {{ k3s_token | quote }} --advertise-address {{ ansible_tailscale0.ipv4.address }} --flannel-iface
+    tailscale0 --disable-cloud-controller" sh -
   when: "'k3s' not in services"
 
 - name: Ensure k3s is in a running state
@@ -32,4 +32,4 @@
   fetch:
     src: ~/kubeconfig
     dest: ~/.kube/{{ tier }}-k3s-kubeconfig
-    flat: yes
+    flat: true
