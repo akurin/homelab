@@ -25,17 +25,10 @@
     dest: /etc/grafana-agent.yaml
     owner: root
     group: grafana-agent
-    mode: '0640'
+    mode: "0640"
 
-- name: Make sure Grafana agent is running
+- name: Restart Grafana agent
   ansible.builtin.systemd:
-    state: started
+    state: restarted
+    enabled: yes
     name: grafana-agent
-
-#- name: Set hostname
-#  ansible.builtin.replace:
-#    path: /etc/grafana-agent.yaml
-#    regexp: hostname
-#    replace: "{{ inventory_hostname }}"
-#  notify:
-#    - Restart grafana-agent
