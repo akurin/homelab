@@ -5,22 +5,37 @@
       - GCLOUD_STACK_ID is defined
       - GCLOUD_API_KEY is defined
 
-- name: Populate service facts
-  ansible.builtin.service_facts:
+- name: Import Grafana GPG key
+  ansible.builtin.apt_key:
+    url: https://apt.grafana.com/gpg.key
 
-- name: Install the Grafana agent
-  ansible.builtin.shell: >
-    ARCH=amd64
-    GCLOUD_STACK_ID={{ GCLOUD_STACK_ID | quote }}
-    GCLOUD_API_KEY={{ GCLOUD_API_KEY | quote }}
-    GCLOUD_API_URL="https://integrations-api-us-central.grafana.net"
-    /bin/sh -c "$(curl -fsSL https://raw.githubusercontent.com/grafana/agent/release/production/grafanacloud-install.sh)"
-  when: "'grafana-agent' not in services"
+- name: Add Grafana repository
+  ansible.builtin.apt_repository:
+    repo: deb https://apt.grafana.com stable main
+    state: present
 
-- name: Set hostname
-  ansible.builtin.replace:
-    path: /etc/grafana-agent.yaml
-    regexp: hostname
-    replace: "{{ inventory_hostname }}"
-  notify:
-    - Restart grafana-agent
+- name: Install Grafana agent
+  ansible.builtin.apt:
+    name: grafana-agent
+    update_cache: true
+
+- name: Create grafana config
+  ansible.builtin.template:
+    src: grafana-agent.yaml
+    dest: /etc/grafana-agent.yaml
+    owner: root
+    group: grafana-agent
+    mode: '0640'
+
+- name: Make sure Grafana agent is running
+  ansible.builtin.systemd:
+    state: started
+    name: grafana-agent
+
+#- name: Set hostname
+#  ansible.builtin.replace:
+#    path: /etc/grafana-agent.yaml
+#    regexp: hostname
+#    replace: "{{ inventory_hostname }}"
+#  notify:
+#    - Restart grafana-agent
