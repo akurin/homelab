@@ -6,5 +6,5 @@ password=$(pass github/password)
 
 helm upgrade --install dockerconfigjson ./dockerconfigjson \
 	--set imageCredentials.registry=ghcr.io \
-  --set imageCredentials.username="$username" \
-  --set imageCredentials.password="$password"
+	--set imageCredentials.username="$username" \
+	--set imageCredentials.password="$password"
