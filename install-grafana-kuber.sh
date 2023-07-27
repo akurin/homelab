@@ -5,7 +5,7 @@ helm repo add prometheus-community https://prometheus-community.github.io/helm-c
 helm repo update
 helm upgrade --install ksm prometheus-community/kube-state-metrics --set image.tag=v2.4.2
 
-password="$(pass grafana/AGENT_API_KEY)"
+password="$(pass grafana/apikey)"
 
 helm upgrade \
 	--set password="$password" \
