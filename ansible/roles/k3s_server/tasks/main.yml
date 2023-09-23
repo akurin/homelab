@@ -18,6 +18,7 @@
   ansible.builtin.shell: >
     set -o pipefail &&
     curl -sfL https://get.k3s.io | INSTALL_K3S_EXEC="server
+      --debug
       --token {{ k3s_token | quote }}
       --advertise-address {{ ansible_tailscale0.ipv4.address }}
       --flannel-iface tailscale0
