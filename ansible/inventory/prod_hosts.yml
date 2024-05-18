@@ -8,3 +8,8 @@ k3s_agent:
     prod-k3s-agent-0:
       ansible_host: 192.248.146.54
       ansible_user: root
+vpn:
+  hosts:
+    vpn-0:
+      ansible_host: 185.36.143.151
+      ansible_user: root
