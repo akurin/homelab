@@ -3,7 +3,7 @@ variable "region" {
 }
 
 variable "agent_plan" {
-  default = "vc2-1c-1gb"
+  default = "vc2-1c-2gb"
 }
 
 variable "server_plan" {
