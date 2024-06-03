@@ -1,0 +1,23 @@
+---
+- name: Turn off swap
+  command: swapoff -a
+  ignore_errors: yes
+
+- name: Remove swapfile entry from /etc/fstab
+  lineinfile:
+    path: /etc/fstab
+    state: absent
+    regexp: '.*swap.*'
+
+- name: Remove the swapfile
+  file:
+    path: /swapfile
+    state: absent
+
+- name: Verify swap is off
+  command: swapon --summary
+  register: swap_status
+  changed_when: swap_status.stdout != ""
+
+- debug:
+    var: swap_status.stdout

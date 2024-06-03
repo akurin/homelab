@@ -8,6 +8,15 @@
 - name: Populate service facts
   ansible.builtin.service_facts:
 
+- name: Disable swap
+  shell: swapoff -a
+
+- name: Сomment out swap entries in /etc/fstab
+  replace:
+    path: /etc/fstab
+    regexp: '^(\s*)([^#\n]+\s+)(\w+\s+)swap(\s+.*)$'
+    replace: '#\1\2\3swap\4'
+
 - name: Disable UFW
   community.general.ufw:
     state: disabled

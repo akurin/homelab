@@ -13,6 +13,7 @@
       prompt: GCLOUD_API_KEY
 
   roles:
+    - role: no_swap
     - role: grafana_agent
     - role: tailscale
     - role: k3s_server
