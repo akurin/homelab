@@ -25,7 +25,7 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Build image and push to GitHub Container Registry
-        uses: docker/build-push-action@v5
+        uses: docker/build-push-action@v6
         with:
           # relative path to the place where source code with Dockerfile is located
           context: ./open-telemetry-test/
