@@ -2,8 +2,11 @@
 - name: Check mandatory variables are defined
   ansible.builtin.assert:
     that:
-      - GCLOUD_STACK_ID is defined
-      - GCLOUD_API_KEY is defined
+      - GCLOUD_HOSTED_METRICS_URL is defined
+      - GCLOUD_HOSTED_METRICS_ID is defined
+      - GCLOUD_RW_API_KEY is defined
+      - GCLOUD_HOSTED_LOGS_URL is defined
+      - GCLOUD_HOSTED_LOGS_ID is defined
 
 - name: Import Grafana GPG key
   ansible.builtin.apt_key:
@@ -14,21 +17,21 @@
     repo: deb https://apt.grafana.com stable main
     state: present
 
-- name: Install Grafana agent
+- name: Install Grafana Alloy
   ansible.builtin.apt:
-    name: grafana-agent
+    name: alloy
     update_cache: true
 
 - name: Create grafana config
   ansible.builtin.template:
-    src: grafana-agent.yaml
-    dest: /etc/grafana-agent.yaml
-    owner: root
-    group: grafana-agent
+    src: config.alloy
+    dest: /etc/alloy/config.alloy
+    owner: alloy
+    group: alloy
     mode: "0640"
 
-- name: Restart Grafana agent
+- name: Restart Grafana Alloy
   ansible.builtin.systemd:
     state: restarted
     enabled: yes
-    name: grafana-agent
+    name: alloy
