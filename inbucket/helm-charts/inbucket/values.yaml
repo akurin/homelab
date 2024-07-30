@@ -1,6 +1,6 @@
 image:
   repository: inbucket/inbucket
-  tag: sha-543c2af
+  tag: sha-504a79a
   pullPolicy: Always
 
 service:
