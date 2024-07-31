@@ -2,8 +2,8 @@
 - name: Check mandatory variables are defined
   ansible.builtin.assert:
     that:
-      - tier is defined
-      - k3s_token is defined
+      - TIER is defined
+      - K3S_TOKEN is defined
 
 - name: Populate service facts
   ansible.builtin.service_facts:
@@ -19,10 +19,10 @@
     set -o pipefail &&
     curl -sfL https://get.k3s.io | INSTALL_K3S_EXEC="agent
       --debug
-      --server https://{{ tier }}-k3s-server-0:6443
+      --server https://{{ TIER }}-k3s-server-0:6443
       --flannel-iface tailscale0
       --node-ip {{ ansible_tailscale0.ipv4.address }}
-      --token {{ k3s_token | quote }}" sh -
+      --token {{ K3S_TOKEN | quote }}" sh -
   when: "'k3s-agent' not in services"
 
 - name: Ensure k3s is in a running state

@@ -2,11 +2,20 @@
 - name: Check mandatory variables are defined
   ansible.builtin.assert:
     that:
-      - tier is defined
-      - k3s_token is defined
+      - TIER is defined
+      - K3S_TOKEN is defined
 
 - name: Populate service facts
   ansible.builtin.service_facts:
+
+- name: Disable swap
+  shell: swapoff -a
+
+- name: Comment out swap entries in /etc/fstab
+  replace:
+    path: /etc/fstab
+    regexp: '^(\s*)([^#\n]+\s+)(\w+\s+)swap(\s+.*)$'
+    replace: '#\1\2\3swap\4'
 
 - name: Disable UFW
   community.general.ufw:
@@ -19,7 +28,7 @@
     set -o pipefail &&
     curl -sfL https://get.k3s.io | INSTALL_K3S_EXEC="server
       --debug
-      --token {{ k3s_token | quote }}
+      --token {{ K3S_TOKEN | quote }}
       --advertise-address {{ ansible_tailscale0.ipv4.address }}
       --flannel-iface tailscale0
       --node-ip {{ ansible_tailscale0.ipv4.address }}
@@ -44,5 +53,5 @@
 - name: Fetch kubeconfig
   ansible.builtin.fetch:
     src: ~/kubeconfig
-    dest: ~/.kube/{{ tier }}-k3s-kubeconfig
+    dest: ~/.kube/{{ TIER }}-k3s-kubeconfig
     flat: true

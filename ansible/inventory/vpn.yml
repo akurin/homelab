@@ -1,0 +1,9 @@
+vpn:
+  hosts:
+    vpn-nl:
+      ansible_host: 185.36.143.151
+      ansible_user: root
+    vpn-ge:
+      ansible_host: 185.143.179.53
+      ansible_user: root
+

@@ -1,6 +1,54 @@
+cluster:
+  name: default
+externalServices:
+  prometheus:
+    host: https://prometheus-prod-10-prod-us-central-0.grafana.net
+    basicAuth:
+      username: "413638"
+  loki:
+    host: https://logs-prod3.grafana.net
+    basicAuth:
+      username: "205789"
+  tempo:
+    host: https://tempo-us-central1.grafana.net:443
+    basicAuth:
+      username: "202301"
+metrics:
+  enabled: true
+  cost:
+    enabled: true
+  node-exporter:
+    enabled: true
 logs:
-  user: 205789
-prometheus:
-  user: 413638
-tempo:
-  user: 202301
+  enabled: true
+  pod_logs:
+    enabled: true
+  cluster_events:
+    enabled: true
+traces:
+  enabled: true
+receivers:
+  grpc:
+    enabled: true
+  http:
+    enabled: true
+  zipkin:
+    enabled: true
+opencost:
+  enabled: true
+  opencost:
+    exporter:
+      defaultClusterId: default
+    prometheus:
+      external:
+        url: https://prometheus-prod-10-prod-us-central-0.grafana.net/api/prom
+kube-state-metrics:
+  enabled: true
+prometheus-node-exporter:
+  enabled: true
+prometheus-operator-crds:
+  enabled: true
+alloy: {}
+alloy-events: {}
+alloy-logs: {}
+

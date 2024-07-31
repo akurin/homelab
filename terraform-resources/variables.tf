@@ -2,8 +2,12 @@ variable "region" {
   default = "lhr"
 }
 
-variable "plan" {
-  default = "vc2-1c-1gb"
+variable "agent_plan" {
+  default = "vc2-1c-2gb"
+}
+
+variable "server_plan" {
+  default = "vc2-1c-2gb"
 }
 
 variable "os_id" {

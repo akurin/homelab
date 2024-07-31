@@ -2,18 +2,9 @@
 - name: Deploy k3s node
   hosts: k3s_agent
 
-  vars_prompt:
-    - name: tailscale_auth_key
-      prompt: Enter the Tailscale Auth key
-
-    - name: GCLOUD_STACK_ID
-      prompt: GCLOUD_STACK_ID
-
-    - name: GCLOUD_API_KEY
-      prompt: GCLOUD_API_KEY
-
   roles:
-    - role: grafana_agent
+    - role: no_swap
+    - role: grafana_alloy
     - role: tailscale
     - role: k3s_agent
     - role: ssh_hardening

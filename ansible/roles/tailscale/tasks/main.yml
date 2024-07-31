@@ -43,8 +43,14 @@
 
 - name: Bring Tailscale Up
   ansible.builtin.command: tailscale up --advertise-exit-node --authkey={{ tailscale_auth_key | quote }}
-  register: tailscale_start
   when: "'Logged out.' in tailscale_status.stdout"
+  register: tailscale_up_result
+  ignore_errors: true
+
+- name: Display tailscale up result
+  debug:
+    var: tailscale_up_result
+  when: tailscale_up_result is defined
 
 - name: Update facts to include Tailscale's IP
   ansible.builtin.setup:
