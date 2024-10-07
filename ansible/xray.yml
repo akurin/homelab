@@ -1,0 +1,8 @@
+---
+- name: Set up VPN instance
+  hosts: vpn
+
+  roles:
+    # - role: grafana_alloy
+    - role: xray
+    # - role: ssh_hardening

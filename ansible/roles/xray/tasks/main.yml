@@ -1,0 +1,55 @@
+---
+- name: Fail if required variables are not defined
+  ansible.builtin.fail:
+    msg: "The required variable {{ item }} is not defined."
+  loop:
+    - { name: 'uuid', value: '{{ uuid }}' }
+    - { name: 'private_key', value: '{{ private_key }}' }
+    - { name: 'public_key', value: '{{ public_key }}' }
+    - { name: 'short_id', value: '{{ short_id }}' }
+  when: item.value is not defined or item.value == ""
+
+- name: Install Xray
+  ansible.builtin.shell: bash -c "$(curl -L https://github.com/XTLS/Xray-install/raw/main/install-release.sh)" @ install
+  args:
+    executable: /bin/bash
+
+- name: Save Xray config
+  ansible.builtin.template:
+    src: server_config.json.j2
+    dest: /usr/local/etc/xray/config.json
+    mode: '0644'
+
+- name: Restart Xray service
+  ansible.builtin.systemd:
+    name: xray
+    state: restarted
+    enabled: yes
+
+- name: Ensure UFW is installed
+  ansible.builtin.apt:
+    name: ufw
+    state: present
+    update_cache: yes
+
+- name: Allow ports 443 and 23 through UFW
+  ansible.builtin.ufw:
+    rule: allow
+    port: "{{ item }}"
+    proto: tcp
+  loop:
+    - '443'
+    - '23'
+
+- name: Ensure UFW is enabled
+  ansible.builtin.ufw:
+    state: enabled
+
+- name: Create local Xray configuration on local machine
+  template:
+    src: client_config.json.j2
+    dest: "./{{ inventory_hostname }}.json"
+    mode: '0644'
+  delegate_to: localhost
+  vars:
+    server_public_ip: "{{ ansible_host }}"

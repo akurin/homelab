@@ -1,0 +1,30 @@
+{
+    "bean": {
+        "_v": 0,
+        "addr": "{{ server_public_ip }}",
+        "flow": "xtls-rprx-vision",
+        "name": "{{ inventory_hostname }}",
+        "pass": "{{ uuid }}",
+        "port": 443,
+        "stream": {
+            "alpn": "h2",
+            "ed_len": 0,
+            "insecure": false,
+            "mux_s": 0,
+            "net": "tcp",
+            "pac_enc": "xudp",
+            "pbk": "{{ public_key }}",
+            "sec": "tls",
+            "sid": "{{ short_id }}",
+            "sni": "www.microsoft.com"
+        }
+    },
+    "gid": 0,
+    "id": 0,
+    "traffic": {
+        "dl": 1062067544,
+        "ul": 11832833
+    },
+    "type": "vless",
+    "yc": 53
+}
