@@ -1,0 +1,74 @@
+---
+- name: Assert that shadowsocks_password is provided
+  assert:
+    that:
+      - shadowsocks_password is defined
+    fail_msg: "The variable 'shadowsocks_password' must be provided. It is required for Shadowsocks configuration."
+
+- name: Set sysctl configurations for Shadowsocks
+  copy:
+    dest: /etc/sysctl.d/00-shadowsocks.conf
+    content: |
+      fs.file-max = 51200
+      net.core.rmem_max = 67108864
+      net.core.wmem_max = 67108864
+      net.core.netdev_max_backlog = 250000
+      net.core.somaxconn = 4096
+      net.ipv4.tcp_syncookies = 1
+      net.ipv4.tcp_tw_reuse = 1
+      net.ipv4.tcp_tw_recycle = 0
+      net.ipv4.tcp_fin_timeout = 30
+      net.ipv4.tcp_keepalive_time = 1200
+      net.ipv4.ip_local_port_range = 10000 65000
+      net.ipv4.tcp_max_syn_backlog = 8192
+      net.ipv4.tcp_max_tw_buckets = 5000
+      net.ipv4.tcp_fastopen = 3
+      net.ipv4.tcp_mem = 25600 51200 102400
+      net.ipv4.tcp_rmem = 4096 87380 67108864
+      net.ipv4.tcp_wmem = 4096 65536 67108864
+      net.ipv4.tcp_mtu_probing = 1
+      net.ipv4.tcp_congestion_control = hybla
+
+- name: Apply sysctl settings
+  command: sysctl --system
+
+- name: Allow ports in UFW
+  ufw:
+    rule: allow
+    port: "{{ item }}"
+    proto: tcp
+  loop:
+    - 11443
+    - 12443
+
+- name: Install Shadowsocks-Rust
+  snap:
+    name: shadowsocks-rust
+    state: present
+
+- name: Ensure Shadowsocks configuration directory exists
+  file:
+    path: /var/snap/shadowsocks-rust/common/etc/shadowsocks-rust
+    state: directory
+    mode: '0755'
+
+- name: Create Shadowsocks server configuration
+  template:
+    src: server_config.json.j2
+    dest: /var/snap/shadowsocks-rust/common/etc/shadowsocks-rust/config.json
+    mode: '0644'
+
+- name: Create local Shadowsocks configuration on local machine
+  template:
+    src: client_config.json.j2
+    dest: "./{{ inventory_hostname }}.json"
+    mode: '0644'
+  delegate_to: localhost
+  vars:
+    server_public_ip: "{{ ansible_host }}"
+
+- name: Enable and start Shadowsocks-Rust service
+  systemd:
+    name: snap.shadowsocks-rust.ssserver-daemon.service
+    enabled: true
+    state: started
