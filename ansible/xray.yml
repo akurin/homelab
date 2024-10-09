@@ -3,6 +3,6 @@
   hosts: vpn
 
   roles:
-    # - role: grafana_alloy
+    - role: grafana_alloy
     - role: xray
-    # - role: ssh_hardening
+    - role: ssh_hardening

@@ -4,5 +4,5 @@
 
   roles:
     - role: grafana_alloy
-    - role: tailscale
+    - role: netbird
     - role: ssh_hardening

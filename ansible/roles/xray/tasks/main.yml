@@ -20,35 +20,46 @@
     dest: /usr/local/etc/xray/config.json
     mode: '0644'
 
-- name: Restart Xray service
+- name: Restart Xray service asynchronously
   ansible.builtin.systemd:
     name: xray
     state: restarted
-    enabled: yes
+  async: 30
+  poll: 0
+  ignore_errors: true
 
-- name: Ensure UFW is installed
-  ansible.builtin.apt:
-    name: ufw
-    state: present
-    update_cache: yes
+- name: Wait for SSH to become available again
+  ansible.builtin.wait_for_connection:
+    timeout: 60
+    delay: 10
 
-- name: Allow ports 443 and 23 through UFW
+- name: Allow ports 22, 23, 443 UFW
   ansible.builtin.ufw:
     rule: allow
     port: "{{ item }}"
     proto: tcp
   loop:
-    - '443'
+    - '22'
     - '23'
+    - '443'
 
 - name: Ensure UFW is enabled
   ansible.builtin.ufw:
     state: enabled
 
-- name: Create local Xray configuration on local machine
+- name: Create NekoRay profile
   template:
-    src: client_config.json.j2
-    dest: "./{{ inventory_hostname }}.json"
+    src: nekoray_profile.json.j2
+    dest: "~/vpn/{{ inventory_hostname }}_nekoray_profile.json"
+    mode: '0644'
+  delegate_to: localhost
+  vars:
+    server_public_ip: "{{ ansible_host }}"
+
+- name: Create sing-box config
+  template:
+    src: sing_box_client.conf.j2
+    dest: "~/vpn/{{ inventory_hostname }}_sing_box_client.json"
     mode: '0644'
   delegate_to: localhost
   vars:
