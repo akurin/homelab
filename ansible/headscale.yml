@@ -1,0 +1,8 @@
+---
+- name: Deploy headscale server
+  hosts: headscale
+
+  roles:
+    - role: grafana_alloy
+    - role: headscale
+    - role: ssh_hardening

@@ -1,0 +1,5 @@
+---
+- name: Restart headscale
+  systemd:
+    name: headscale
+    state: restarted

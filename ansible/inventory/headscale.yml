@@ -1,0 +1,5 @@
+headscale:
+  hosts:
+    test:
+      ansible_host: 95.179.189.249
+      ansible_user: root
