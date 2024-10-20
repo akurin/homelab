@@ -1,6 +1,6 @@
-resource "local_file" "vpn_inventory" {
-  filename = "../ansible/inventory/${terraform.workspace}_vpn_vultr_hosts.yml"
-  content  = templatefile("vpn_inventory.tftpl", {
+resource "local_file" "inventory" {
+  filename = "../ansible/inventory/vpn_vultr_hosts.yml"
+  content  = templatefile("inventory.tftpl", {
     instances = { for k, v in vultr_instance.vpn : k => {
       hostname = v.hostname,
       main_ip  = v.main_ip
