@@ -47,7 +47,6 @@
   ansible.builtin.shell: >
     set -o pipefail &&
     cat /etc/rancher/k3s/k3s.yaml
-    | sed 's/127.0.0.1/{{ ansible_tailscale0.ipv4.address }}/g'
     > ~/kubeconfig
 
 - name: Fetch kubeconfig

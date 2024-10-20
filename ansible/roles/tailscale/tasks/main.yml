@@ -42,7 +42,7 @@
     reload: true
 
 - name: Bring Tailscale Up
-  ansible.builtin.command: tailscale up --advertise-exit-node --authkey={{ tailscale_auth_key | quote }}
+  ansible.builtin.command: tailscale up --login-server={{ server_url }} --advertise-exit-node --authkey={{ tailscale_auth_key | quote }}
   when: "'Logged out.' in tailscale_status.stdout"
   register: tailscale_up_result
   ignore_errors: true
