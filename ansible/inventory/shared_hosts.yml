@@ -1,0 +1,5 @@
+headscale:
+  hosts:
+    headscale:
+      ansible_host: 192.248.174.161
+      ansible_user: root

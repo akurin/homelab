@@ -1,5 +1,5 @@
 ---
-- name: Deploy headscale server
+- name: Deploy headscale
   hosts: headscale
 
   roles:
