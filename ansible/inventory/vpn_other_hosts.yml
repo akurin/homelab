@@ -1,5 +1,5 @@
 vpn:
   hosts:
-    xray-georgia:
+    vpn-georgia:
       ansible_host: 185.143.179.150
       ansible_user: root
