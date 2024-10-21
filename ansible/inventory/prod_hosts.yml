@@ -1,10 +1,10 @@
 k3s_server:
   hosts:
     prod-k3s-server-0:
-      ansible_host: 192.248.148.195
+      ansible_host: 95.179.235.174
       ansible_user: root
 k3s_agent:
   hosts:
     prod-k3s-agent-0:
-      ansible_host: 45.76.129.9
+      ansible_host: 95.179.203.253
       ansible_user: root

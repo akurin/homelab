@@ -14,8 +14,9 @@ TerraformStateLockDynamoDBTableName=$(aws cloudformation describe-stacks \
 	--profile personal)
 
 (
-	cd terraform-resources &&
+	cd k3s-terraform-resources &&
 		terraform init \
+			--upgrade \
 			-backend-config="bucket=$TerraformStateS3BucketName" \
 			-backend-config="dynamodb_table=$TerraformStateLockDynamoDBTableName"
 )

@@ -54,3 +54,10 @@
 - name: Display DuckDNS update result
   debug:
     var: duckdns_update_result
+
+- name: Ensure DuckDNS update returned OK
+  assert:
+    that:
+      - duckdns_update_result.stdout == 'OK'
+    fail_msg: "DuckDNS update failed, response was not 'OK'."
+    success_msg: "DuckDNS update was successful."
