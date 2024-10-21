@@ -51,7 +51,7 @@
   template:
     src: nekoray_profile.json.j2
     dest: "~/vpn/{{ inventory_hostname }}_nekoray_profile.json"
-    mode: '0644'
+    mode: '0600'
   delegate_to: localhost
   vars:
     server_public_ip: "{{ ansible_host }}"
@@ -60,7 +60,16 @@
   template:
     src: sing_box_client.conf.j2
     dest: "~/vpn/{{ inventory_hostname }}_sing_box_client.json"
-    mode: '0644'
+    mode: '0600'
+  delegate_to: localhost
+  vars:
+    server_public_ip: "{{ ansible_host }}"
+
+- name: Create vless URI
+  template:
+    src: vless_uri.j2
+    dest: "~/vpn/{{ inventory_hostname }}_vless_uri.txt"
+    mode: '0600'
   delegate_to: localhost
   vars:
     server_public_ip: "{{ ansible_host }}"
