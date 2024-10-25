@@ -4,10 +4,7 @@ metadata:
   name: {{ include "inbucket.name" . }}-authenticated-emails
   namespace: {{ .Release.Namespace }}
   labels:
-    app.kubernetes.io/name: {{ include "inbucket.name" . }}
-    app.kubernetes.io/instance: {{ .Release.Name }}
-    app.kubernetes.io/managed-by: {{ .Release.Service }}
-    helm.sh/chart: {{ include "inbucket.chart" . }}
+    {{- include "inbucket.labels" . | nindent 4 }}
 data:
   authenticated-emails-file: |
     {{- range .Values.authenticatedEmails }}
