@@ -13,7 +13,6 @@ metadata:
     app.kubernetes.io/managed-by: {{ .Release.Service }}
     helm.sh/chart: {{ include "inbucket.chart" . }}
   annotations:
-      traefik.ingress.kubernetes.io/router.middlewares: {{ .Release.Namespace }}-{{ .Release.Name }}-auth-middleware@kubernetescrd
     {{- range $key, $value := .Values.ingress.annotations }}
       {{ $key }}: {{ $value | quote }}
     {{- end }}
@@ -43,10 +42,10 @@ spec:
             service:
               name: {{ $fullName }}
               port:
-                name: http
+                name: proxy
             {{- else }}
             serviceName: {{ $fullName }}
-            servicePort: http
+            servicePort: proxy
             {{- end }}
         {{- end }}
   {{- end }}

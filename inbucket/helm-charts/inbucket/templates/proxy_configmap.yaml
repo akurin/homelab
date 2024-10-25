@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "inbucket.name" . }}-authenticated-emails
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app.kubernetes.io/name: {{ include "inbucket.name" . }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+    helm.sh/chart: {{ include "inbucket.chart" . }}
+data:
+  authenticated-emails-file: |
+    {{- range .Values.authenticatedEmails }}
+    {{ . }}
+    {{- end }}

@@ -15,10 +15,10 @@ metadata:
 spec:
   type: ClusterIP
   ports:
-    - name: http
-      port: {{ .Values.service.port.http }}
+    - name: proxy
+      port: 4180
       protocol: TCP
-      targetPort: http
+      targetPort: proxy
   selector:
     app.kubernetes.io/name: {{ include "inbucket.name" . }}
     app.kubernetes.io/instance: {{ .Release.Name }}
