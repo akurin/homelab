@@ -1,7 +1,7 @@
 image:
   repository: inbucket/inbucket
   tag: 3.0.4
-  pullPolicy: Always
+  pullPolicy: IfNotPresent
 
 service:
   port:
