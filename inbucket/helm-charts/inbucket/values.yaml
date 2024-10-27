@@ -1,6 +1,6 @@
 image:
   repository: inbucket/inbucket
-  tag: sha-504a79a
+  tag: 3.0.4
   pullPolicy: Always
 
 service:
@@ -55,7 +55,7 @@ ingress:
     - host: inbucket.morjoff.com
       paths:
         - path: /
-          pathType: ImplementationSpecific
+          pathType: Prefix
           backend:
             serviceName: inbucket.local
             servicePort: 80
