@@ -55,6 +55,7 @@ ingress:
     - host: inbucket.morjoff.com
       paths:
         - path: /
+          pathType: ImplementationSpecific
           backend:
             serviceName: inbucket.local
             servicePort: 80
