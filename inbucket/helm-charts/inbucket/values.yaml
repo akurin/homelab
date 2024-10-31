@@ -46,7 +46,6 @@ extraEnv:
   INBUCKET_STORAGE_MAILBOXMSGCAP: "500"
 
 ingress:
-  enabled: true
   annotations:
     cert-manager.io/cluster-issuer: letsencrypt-prod
     traefik.ingress.kubernetes.io/router.middlewares: default-inbucket-redirect@kubernetescrd

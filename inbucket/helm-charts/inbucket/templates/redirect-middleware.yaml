@@ -1,9 +1,7 @@
----
 apiVersion: traefik.containo.us/v1alpha1
 kind: Middleware
 metadata:
   name: {{ include "inbucket.name" . }}-redirect
-  namespace: {{ .Release.Namespace }}
   labels:
     {{- include "inbucket.labels" . | nindent 4 }}
 spec:
