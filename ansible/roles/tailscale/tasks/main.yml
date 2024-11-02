@@ -19,11 +19,10 @@
     name: tailscale
     update_cache: true
 
-- name: Check Tailscale status
-  ansible.builtin.command: tailscale status
+- name: Check Tailscale online status
+  ansible.builtin.command: tailscale status --json
   changed_when: false
   register: tailscale_status
-  ignore_errors: true
 
 - name: IPv4 forwarding
   ansible.posix.sysctl:
@@ -42,8 +41,8 @@
     reload: true
 
 - name: Bring Tailscale Up
-  ansible.builtin.command: tailscale up --login-server={{ server_url }} --advertise-exit-node --authkey={{ tailscale_auth_key | quote }}
-  when: "'Logged out.' in tailscale_status.stdout"
+  ansible.builtin.command: "tailscale up --login-server={{ server_url }} --advertise-exit-node --authkey={{ tailscale_auth_key | quote }}"
+  when: (tailscale_status.stdout | from_json).Self.Online == false
   register: tailscale_up_result
   ignore_errors: true
 
