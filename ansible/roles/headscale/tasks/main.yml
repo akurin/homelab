@@ -45,19 +45,3 @@
 - name: Display headscale service status
   debug:
     var: headscale_status
-
-- name: Update DuckDNS
-  command: >
-    curl -s "https://www.duckdns.org/update?domains={{ duckdns_domain }}&token={{ duckdns_token }}&ip={{ ansible_default_ipv4.address }}"
-  register: duckdns_update_result
-
-- name: Display DuckDNS update result
-  debug:
-    var: duckdns_update_result
-
-- name: Ensure DuckDNS update returned OK
-  assert:
-    that:
-      - duckdns_update_result.stdout == 'OK'
-    fail_msg: "DuckDNS update failed, response was not 'OK'."
-    success_msg: "DuckDNS update was successful."
