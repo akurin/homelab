@@ -20,7 +20,7 @@ resource "vultr_dns_record" "headscale" {
 
 resource "vultr_dns_record" "mx" {
   domain = vultr_dns_domain.my_domain.domain
-  name   = "@"
+  name   = ""
   type   = "MX"
   data   = vultr_dns_domain.my_domain.domain
   ttl    = 300
