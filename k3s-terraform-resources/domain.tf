@@ -1,5 +1,7 @@
-resource "vultr_dns_domain" "my_domain" {
-  count  = terraform.workspace == "prod" ? 1 : 0
+resource "vultr_dns_record" "wildcard" {
   domain = "morjoff.com"
-  ip     = vultr_instance.k3s_server[0].main_ip
+  name   = "morjoff.com"
+  type   = "A"
+  data   = vultr_instance.k3s_server[0].main_ip
+  ttl    = 300
 }
