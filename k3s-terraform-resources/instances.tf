@@ -5,7 +5,7 @@ resource "vultr_instance" "k3s_server" {
   os_id             = var.os_id
   plan              = var.server_plan
   region            = var.region
-  ssh_key_ids       = [vultr_ssh_key.default.id]
+  ssh_key_ids       = [var.ssh_key_id]
   firewall_group_id = vultr_firewall_group.k3s_node.id
 }
 
@@ -16,7 +16,7 @@ resource "vultr_instance" "k3s_agent" {
   os_id             = var.os_id
   plan              = var.agent_plan
   region            = var.region
-  ssh_key_ids       = [vultr_ssh_key.default.id]
+  ssh_key_ids       = [var.ssh_key_id]
   firewall_group_id = vultr_firewall_group.k3s_node.id
 }
 

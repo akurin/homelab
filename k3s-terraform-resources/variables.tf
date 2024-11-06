@@ -1,3 +1,7 @@
+variable "ssh_key_id" {
+  type = string
+}
+
 variable "region" {
   default = "lhr"
 }
