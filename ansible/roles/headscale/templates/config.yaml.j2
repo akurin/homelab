@@ -10,13 +10,13 @@
 #
 # https://myheadscale.example.com:443
 #
-server_url: {{ server_url }}
+server_url: {{ headscale_server_url }}
 
 # Address to listen to / bind to on the server
 #
 # For production:
 # listen_addr: 0.0.0.0:8080
-listen_addr: {{ listen_addr }}
+listen_addr: {{ headscale_listen_addr }}
 
 # Address to listen to /metrics, you may want
 # to keep this endpoint private to your internal
@@ -200,7 +200,7 @@ acme_url: https://acme-v02.api.letsencrypt.org/directory
 acme_email: ""
 
 # Domain name to request a TLS certificate for:
-tls_letsencrypt_hostname: {{ tls_letsencrypt_hostname }}
+tls_letsencrypt_hostname: {{ headscale_tls_letsencrypt_hostname }}
 
 # Path to store certificates and metadata needed by
 # letsencrypt
@@ -268,7 +268,7 @@ dns:
   # `base_domain` must be a FQDN, without the trailing dot.
   # The FQDN of the hosts will be
   # `hostname.base_domain` (e.g., _myhost.example.com_).
-  base_domain: {{ base_domain }}
+  base_domain: {{ headscale_base_domain }}
 
   # List of DNS servers to expose to clients.
   nameservers:

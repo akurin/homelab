@@ -1,6 +1,6 @@
 ---
 - name: Allow ports 22, 23, 443 UFW
-  ansible.builtin.ufw:
+  community.general.ufw:
     rule: allow
     port: "{{ item }}"
     proto: tcp
@@ -10,38 +10,30 @@
     - '443'
 
 - name: Ensure UFW is enabled
-  ansible.builtin.ufw:
+  community.general.ufw:
     state: enabled
 
 - name: Download headscale package
-  get_url:
+  ansible.builtin.get_url:
     url: "{{ headscale_url }}"
     dest: "/tmp/headscale_{{ headscale_version }}_linux_{{ headscale_arch }}.deb"
     checksum: "sha256:{{ headscale_checksum }}"
+    mode: '0644'
 
 - name: Install headscale package
-  apt:
+  ansible.builtin.apt:
     deb: "/tmp/headscale_{{ headscale_version }}_linux_{{ headscale_arch }}.deb"
 
 - name: Configure headscale
-  template:
+  ansible.builtin.template:
     src: "config.yaml.j2"
-    dest: "{{ config_file_path }}"
+    dest: "{{ headscale_config_file_path }}"
     owner: root
     group: root
     mode: '0644'
 
 - name: Enable and start headscale service
-  systemd:
+  ansible.builtin.systemd:
     name: headscale
-    enabled: yes
+    enabled: true
     state: started
-
-- name: Verify headscale service is running
-  command: systemctl status headscale
-  register: headscale_status
-  ignore_errors: yes
-
-- name: Display headscale service status
-  debug:
-    var: headscale_status

@@ -51,4 +51,3 @@ prometheus-operator-crds:
 alloy: {}
 alloy-events: {}
 alloy-logs: {}
-

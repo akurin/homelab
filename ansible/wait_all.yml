@@ -5,5 +5,5 @@
 
   pre_tasks:
     - name: Wait for ssh to come up
-      wait_for_connection:
+      ansible.builtin.wait_for_connection:
         timeout: 300

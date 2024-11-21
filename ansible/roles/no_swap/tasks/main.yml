@@ -1,23 +1,15 @@
 ---
 - name: Turn off swap
-  command: swapoff -a
-  ignore_errors: yes
+  ansible.builtin.command: swapoff -a
+  changed_when: true
 
 - name: Remove swapfile entry from /etc/fstab
-  lineinfile:
+  ansible.builtin.lineinfile:
     path: /etc/fstab
     state: absent
     regexp: '.*swap.*'
 
 - name: Remove the swapfile
-  file:
+  ansible.builtin.file:
     path: /swapfile
     state: absent
-
-- name: Verify swap is off
-  command: swapon --summary
-  register: swap_status
-  changed_when: swap_status.stdout != ""
-
-- debug:
-    var: swap_status.stdout
