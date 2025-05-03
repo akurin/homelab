@@ -1,9 +1,7 @@
-headscale_version: "0.23.0"
+headscale_version: "0.25.1"
 headscale_arch: "amd64"
-headscale_checksum: "3a610d3941de367a57b63b277054e02dee90084d3a6f6112a57709ec5cdd7b75"
-headscale_url: >-
-  https://github.com/juanfont/headscale/releases/download/v{{ headscale_version }}/
-  headscale_{{ headscale_version }}_linux_{{ headscale_arch }}.deb
+headscale_checksum: "eae66279f985a131338856193e88d0731391375961e3e75b27d1762380c594b3"
+headscale_url: https://github.com/juanfont/headscale/releases/download/v{{ headscale_version }}/headscale_{{ headscale_version }}_linux_{{ headscale_arch }}.deb
 headscale_config_file_path: "/etc/headscale/config.yaml"
 headscale_server_url: https://headscale.morjoff.com
 headscale_tls_letsencrypt_hostname: headscale.morjoff.com
