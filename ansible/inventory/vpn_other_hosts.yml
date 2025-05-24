@@ -1,5 +1,5 @@
-#vpn:
-#  hosts:
-#    vpn-georgia:
-#      ansible_host: TODO
-#      ansible_user: root
+vpn:
+  hosts:
+    vpn-nl:
+      ansible_host: 45.85.117.151
+      ansible_user: root
