@@ -7,6 +7,9 @@
       - GCLOUD_RW_API_KEY is defined
       - GCLOUD_HOSTED_LOGS_URL is defined
       - GCLOUD_HOSTED_LOGS_ID is defined
+      - GCLOUD_FM_URL is defined
+      - GCLOUD_FM_POLL_FREQUENCY is defined
+      - GCLOUD_FM_HOSTED_ID is defined
 
 - name: Import Grafana GPG key
   ansible.builtin.apt_key:
@@ -22,13 +25,17 @@
     name: alloy
     update_cache: true
 
-- name: Create grafana config
+# The template file is created as follows:
+# curl -sSL https://storage.googleapis.com/cloud-onboarding/alloy/config/config-fm.alloy | sed 's/\({[A-Z_]\+}\)/{\1}/g' > ansible/roles/grafana_alloy/templates/config.alloy
+- name: Create Alloy config
   ansible.builtin.template:
     src: config.alloy
     dest: /etc/alloy/config.alloy
     owner: alloy
     group: alloy
     mode: "0640"
+  vars:
+    GCLOUD_FM_COLLECTOR_ID: "{{ inventory_hostname }}"
 
 - name: Restart Grafana Alloy
   ansible.builtin.systemd:
