@@ -1,0 +1,8 @@
+apiVersion: v2
+name: coredns-warn-fix
+description: A Helm chart to fix CoreDNS import warnings by creating placeholder ConfigMaps
+type: application
+version: 1.0.0
+appVersion: "1.0.0"
+sources:
+  - https://github.com/coredns/coredns/issues/3600
