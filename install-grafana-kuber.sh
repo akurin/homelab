@@ -4,11 +4,17 @@ set -euo pipefail
 helm repo add grafana https://grafana.github.io/helm-charts
 helm repo update
 
-access_policy_token="$(pass grafana/access_policy_token)"
+#helm upgrade --install --atomic alloy-operator grafana/alloy-operator
 
-helm --debug upgrade \
+access_policy_token="$(pass grafana/alloy_token)"
+
+helm upgrade --install --atomic \
 	--values grafana-kuber/values.yaml \
-	--set externalServices.prometheus.basicAuth.password="$access_policy_token" \
-	--set externalServices.loki.basicAuth.password="$access_policy_token" \
-	--set externalServices.tempo.basicAuth.password="$access_policy_token" \
-	--install --atomic grafana-k8s-monitoring grafana/k8s-monitoring
+	--set destinations[0].auth.password="$access_policy_token" \
+	--set destinations[1].auth.password="$access_policy_token" \
+	--set destinations[2].auth.password="$access_policy_token" \
+	--set alloy-metrics.remoteConfig.auth.password="$access_policy_token" \
+	--set alloy-singleton.remoteConfig.auth.password="$access_policy_token" \
+	--set alloy-logs.remoteConfig.auth.password="$access_policy_token" \
+	--set alloy-receiver.remoteConfig.auth.password="$access_policy_token" \
+	grafana-k8s-monitoring grafana/k8s-monitoring
