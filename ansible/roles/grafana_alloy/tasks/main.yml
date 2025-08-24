@@ -36,9 +36,21 @@
     mode: "0640"
   vars:
     GCLOUD_FM_COLLECTOR_ID: "{{ inventory_hostname }}"
+  notify: Restart Grafana Alloy
 
-- name: Restart Grafana Alloy
-  ansible.builtin.systemd:
-    state: restarted
-    enabled: true
-    name: alloy
+- name: Ensure drop-in directory exists
+  ansible.builtin.file:
+    path: /etc/systemd/system/alloy.service.d
+    state: directory
+    mode: "0755"
+
+- name: Write env.conf for alloy service
+  ansible.builtin.copy:
+    dest: /etc/systemd/system/alloy.service.d/env.conf
+    mode: "0644"
+    content: |
+      [Service]
+      Environment="GCLOUD_RW_API_KEY={{ GCLOUD_RW_API_KEY }}"
+  notify:
+    - Daemon reload
+    - Restart Grafana Alloy
