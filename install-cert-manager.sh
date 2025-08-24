@@ -7,5 +7,5 @@ helm upgrade --install --atomic \
 	cert-manager jetstack/cert-manager \
 	--namespace cert-manager \
 	--create-namespace \
-	--version v1.17.2 \
+	--version v1.18.2 \
 	--set crds.enabled=true
