@@ -4,8 +4,6 @@ set -euo pipefail
 helm repo add grafana https://grafana.github.io/helm-charts
 helm repo update
 
-#helm upgrade --install --atomic alloy-operator grafana/alloy-operator
-
 access_policy_token="$(pass grafana/alloy_token)"
 
 helm upgrade --install --atomic \
