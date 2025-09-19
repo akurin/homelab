@@ -7,4 +7,5 @@ resource "vultr_instance" "vpn" {
   plan        = var.server_plan
   region      = each.key
   ssh_key_ids = [vultr_ssh_key.default.id]
+  enable_ipv6 = true
 }

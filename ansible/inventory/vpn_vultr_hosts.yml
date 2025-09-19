@@ -1,5 +1,5 @@
 vpn:
   hosts:
     vpn-lhr:
-      ansible_host: 78.141.230.45
+      ansible_host: 45.76.136.212
       ansible_user: root
