@@ -1,12 +1,11 @@
 ---
-- name: Allow ports 22, 23, 443 UFW
+- name: Allow ports 22, 443 UFW
   community.general.ufw:
     rule: allow
     port: "{{ item }}"
     proto: tcp
   loop:
     - '22'
-    - '80'
     - '443'
 
 - name: Ensure UFW is enabled
