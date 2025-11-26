@@ -10,6 +10,11 @@ GCLOUD_FM_URL="$(pass grafana/GCLOUD_FM_URL)"
 GCLOUD_FM_POLL_FREQUENCY="$(pass grafana/GCLOUD_FM_POLL_FREQUENCY)"
 GCLOUD_FM_HOSTED_ID="$(pass grafana/GCLOUD_FM_HOSTED_ID)"
 
+HEADSCALE_OIDC_ISSUER="$(pass headscale/oidc_issuer)"
+HEADSCALE_OIDC_CLIENT_ID="$(pass headscale/oidc_client_id)"
+HEADSCALE_OIDC_CLIENT_SECRET="$(pass headscale/oidc_client_secret)"
+HEADSCALE_OIDC_ALLOWED_USER="$(pass headscale/oidc_allowed_user)"
+
 (
 	cd ansible && ansible-playbook \
 		headscale.yml \
@@ -21,5 +26,9 @@ GCLOUD_FM_HOSTED_ID="$(pass grafana/GCLOUD_FM_HOSTED_ID)"
 		-e GCLOUD_HOSTED_LOGS_ID="$GCLOUD_HOSTED_LOGS_ID" \
 		-e GCLOUD_FM_URL="$GCLOUD_FM_URL" \
 		-e GCLOUD_FM_POLL_FREQUENCY="$GCLOUD_FM_POLL_FREQUENCY" \
-		-e GCLOUD_FM_HOSTED_ID="$GCLOUD_FM_HOSTED_ID"
+		-e GCLOUD_FM_HOSTED_ID="$GCLOUD_FM_HOSTED_ID" \
+		-e headscale_oidc_issuer="$HEADSCALE_OIDC_ISSUER" \
+		-e headscale_oidc_client_id="$HEADSCALE_OIDC_CLIENT_ID" \
+		-e headscale_oidc_client_secret="$HEADSCALE_OIDC_CLIENT_SECRET" \
+		-e headscale_oidc_allowed_user="$HEADSCALE_OIDC_ALLOWED_USER"
 )

@@ -324,11 +324,16 @@ unix_socket_permission: "0770"
 # it is still being tested and might have some bugs, please
 # help us test it.
 # OpenID Connect
-# oidc:
+oidc:
 #   only_start_if_oidc_is_available: true
-#   issuer: "https://your-oidc.issuer.com/path"
-#   client_id: "your-oidc-client-id"
-#   client_secret: "your-oidc-client-secret"
+  issuer: "{{ headscale_oidc_issuer }}"
+  client_id: "{{ headscale_oidc_client_id }}"
+  client_secret: "{{ headscale_oidc_client_secret }}"
+  scope: ["openid", "profile", "email"]
+  pkce:
+    enabled: true
+    method: S256
+
 #   # Alternatively, set `client_secret_path` to read the secret from the file.
 #   # It resolves environment variables, making integration to systemd's
 #   # `LoadCredential` straightforward:
@@ -361,8 +366,8 @@ unix_socket_permission: "0770"
 #   # Note: Groups from keycloak have a leading '/'
 #   allowed_groups:
 #     - /headscale
-#   allowed_users:
-#     - alice@example.com
+  allowed_users:
+    - {{ headscale_oidc_allowed_user }}
 #
 #   # Optional: PKCE (Proof Key for Code Exchange) configuration
 #   # PKCE adds an additional layer of security to the OAuth 2.0 authorization code flow
