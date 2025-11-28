@@ -1,13 +1,43 @@
 ---
 - name: Hardening sshd
-  ansible.builtin.lineinfile:
-    dest: /etc/ssh/sshd_config
-    regexp: "^PasswordAuthentication "
-    line: PasswordAuthentication no
-    state: present
-    validate: sshd -t -f %s
-  notify:
-    - Restart sshd
+  block:
+    - name: Disable password authentication in main sshd_config
+      ansible.builtin.lineinfile:
+        dest: /etc/ssh/sshd_config
+        regexp: '^\s*PasswordAuthentication\s+'
+        line: 'PasswordAuthentication no'
+        state: present
+        validate: 'sshd -t -f %s'
+      notify:
+        - Restart sshd
+
+    - name: Find sshd override config files
+      ansible.builtin.find:
+        paths: /etc/ssh/sshd_config.d
+        patterns: "*.conf"
+        file_type: file
+      register: sshd_override_files
+
+    - name: Disable password authentication in sshd override configs (if any)
+      ansible.builtin.lineinfile:
+        path: "{{ item.path }}"
+        regexp: '^\s*PasswordAuthentication\s+'
+        line: 'PasswordAuthentication no'
+        state: present
+      loop: "{{ sshd_override_files.files }}"
+      when: sshd_override_files.files | length > 0
+      notify:
+        - Restart sshd
+
+    - name: Check effective sshd configuration for PasswordAuthentication
+      ansible.builtin.command: sshd -T
+      register: sshd_effective_config
+      changed_when: false
+
+    - name: Fail if PasswordAuthentication is still enabled
+      ansible.builtin.fail:
+        msg: "SSH hardening failed: PasswordAuthentication is still enabled in the effective sshd configuration."
+      when: "'passwordauthentication yes' in sshd_effective_config.stdout"
 
 - name: Install fail2ban
   ansible.builtin.apt:
