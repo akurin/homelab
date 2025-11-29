@@ -1,0 +1,18 @@
+---
+- name: Update FreeDNS IP for the subdomain
+  ansible.builtin.uri:
+    # FreeDNS API format with HTTP Basic Auth: https://freedns.afraid.org/nic/update?hostname=subdomain.domain.com
+    url: "https://freedns.afraid.org/nic/update?hostname={{ domain }}"
+    method: GET
+    url_username: "{{ freedns_username }}"
+    url_password: "{{ freedns_password }}"
+    status_code: 200
+    return_content: yes
+  register: freedns_response
+  failed_when: >
+    'ERROR' in freedns_response.content and 
+    'has not changed' not in freedns_response.content
+
+- name: Show FreeDNS update result
+  ansible.builtin.debug:
+    msg: "FreeDNS response: {{ freedns_response.content }}"

@@ -8,14 +8,12 @@
   },
   "inbounds": [
     {
-      "port": 443,
+      "port": 8443,
       "protocol": "vless",
-      "tag": "vless_tls",
       "settings": {
         "clients": [
           {
             "id": "{{ uuid }}",
-            "email": "user1@myserver",
             "flow": "xtls-rprx-vision"
           }
         ],
@@ -64,6 +62,27 @@
           "http",
           "tls"
         ]
+      }
+    },
+    {
+      "port": {{ xray_xhttp_port_internal }},
+      "listen": "127.0.0.1",
+      "protocol": "vless",
+      "settings": {
+        "clients": [
+          {
+            "id": "{{ uuid }}"
+          }
+        ],
+        "decryption": "none"
+      },
+      "streamSettings": {
+        "network": "xhttp",
+        "security": "none",
+        "xhttpSettings": {
+          "mode": "auto",
+          "path": "{{ secret_path }}"
+        }
       }
     }
   ],

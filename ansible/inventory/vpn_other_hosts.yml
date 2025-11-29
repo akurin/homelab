@@ -3,9 +3,12 @@ vpn:
     vpn-nl:
       ansible_host: 45.85.117.151
       ansible_user: root
+      domain: brisklizard.mooo.com
     hk-nl-01:
       ansible_host: 151.245.216.240
       ansible_user: root
+      domain: clumsypanda.mooo.com
     sg-nl-01:
       ansible_host: 45.149.154.132
       ansible_user: root
+      domain: meanderingtortoise.mooo.com

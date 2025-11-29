@@ -33,29 +33,28 @@
     timeout: 60
     delay: 10
 
-- name: Allow ports 22, 443 UFW
+- name: Allow ports 22, 80, 443, 8443 via TCP
   community.general.ufw:
     rule: allow
     port: "{{ item }}"
     proto: tcp
   loop:
     - '22'
+    - '80'
     - '443'
+    - '8443'
+
+- name: Allow port 443 via UDP
+  community.general.ufw:
+    rule: allow
+    port: "443"
+    proto: udp
 
 - name: Ensure UFW is enabled
   community.general.ufw:
     state: enabled
 
-- name: Create NekoRay profile
-  ansible.builtin.template:
-    src: nekoray_profile.json.j2
-    dest: "~/vpn/{{ inventory_hostname }}_nekoray_profile.json"
-    mode: '0600'
-  delegate_to: localhost
-  vars:
-    server_public_ip: "{{ ansible_host }}"
-
-- name: Create sing-box config
+- name: Create sing-box client config
   ansible.builtin.template:
     src: sing_box_client.conf.j2
     dest: "~/vpn/{{ inventory_hostname }}_sing_box_client.json"
@@ -64,10 +63,26 @@
   vars:
     server_public_ip: "{{ ansible_host }}"
 
-- name: Create vless URI
+- name: Create xray xhttp client config
   ansible.builtin.template:
-    src: vless_uri.j2
-    dest: "~/vpn/{{ inventory_hostname }}_vless_uri.txt"
+    src: xray_xhttp_client_config.j2
+    dest: "~/vpn/{{ inventory_hostname }}_xray_xhttp_client_config.json"
+    mode: '0600'
+  delegate_to: localhost
+
+- name: Create vless reality URI
+  ansible.builtin.template:
+    src: vless_reality_uri.j2
+    dest: "~/vpn/{{ inventory_hostname }}_vless_reality_uri.txt"
+    mode: '0600'
+  delegate_to: localhost
+  vars:
+    server_public_ip: "{{ ansible_host }}"
+
+- name: Create vless xhttp URI
+  ansible.builtin.template:
+    src: vless_xhttp_uri.j2
+    dest: "~/vpn/{{ inventory_hostname }}_vless_xhttp_uri.txt"
     mode: '0600'
   delegate_to: localhost
   vars:

@@ -1,8 +1,12 @@
 ---
-- name: Set up VPN instance
+- name: Deploy VLESS + XHTTP + Caddy Proxy
   hosts: vpn
+  vars:
+    xray_xhttp_port_internal: 10000
 
   roles:
     - role: grafana_alloy
+    - role: freedns
     - role: xray
+    - role: caddy_proxy
     - role: ssh_hardening

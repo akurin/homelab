@@ -26,5 +26,8 @@ GCLOUD_FM_HOSTED_ID="$(pass grafana/GCLOUD_FM_HOSTED_ID)"
 		-e uuid="$(pass vless/uuid)" \
 		-e private_key="$(pass vless/private_key)" \
 		-e public_key="$(pass vless/public_key)" \
-		-e short_id="$(pass vless/short_id)"
+		-e short_id="$(pass vless/short_id)" \
+		-e secret_path="$(pass vless/secret_path)" \
+		-e freedns_username="$(pass freedns.afraid.org/username)" \
+		-e freedns_password="$(pass freedns.afraid.org/password)"
 )

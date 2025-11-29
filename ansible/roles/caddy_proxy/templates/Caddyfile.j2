@@ -1,0 +1,25 @@
+{{ domain }} {
+
+    # Caddy automatically handles Let's Encrypt certificates (TLS)
+
+    # 1. Proxy Logic: Check for the secret XHTTP path
+    @vless_proxy {
+        path /{{ secret_path }}/*
+    }
+
+    # If it's the secret path, reverse proxy to the local Xray instance
+    reverse_proxy @vless_proxy 127.0.0.1:{{ xray_xhttp_port_internal }} {
+        header_up Host {http.request.host}
+        header_up X-Forwarded-Proto https
+    }
+
+    # 2. Fallback Website: All other traffic (for camouflage)
+    # Serves content from the fallback directory
+    root * /var/www/html/{{ domain }}
+    file_server
+
+    # Optional: If you prefer to redirect probes to a real site instead of serving files
+    # handle {
+    #     redir https://www.bing.com permanent
+    # }
+}
