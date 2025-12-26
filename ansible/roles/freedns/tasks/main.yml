@@ -1,8 +1,7 @@
 ---
 - name: Update FreeDNS IP for the subdomain
   ansible.builtin.uri:
-    # FreeDNS API format with HTTP Basic Auth: https://freedns.afraid.org/nic/update?hostname=subdomain.domain.com
-    url: "https://freedns.afraid.org/nic/update?hostname={{ domain }}"
+    url: "https://freedns.afraid.org/nic/update?hostname={{ domain }}&myip={{ ansible_host }}"
     method: GET
     url_username: "{{ freedns_username }}"
     url_password: "{{ freedns_password }}"
