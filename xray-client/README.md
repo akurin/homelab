@@ -40,14 +40,14 @@ This creates a dedicated user that:
 Grant the Xray binary necessary network capabilities:
 
 ```bash
-sudo setcap 'cap_net_admin,cap_net_raw,cap_net_bind_service+ep' /opt/Xray-linux-64/xray
+sudo setcap 'cap_net_admin,cap_net_bind_service+ep' /opt/Xray-linux-64/xray
 ```
 
 **What this does:**
 
 - `cap_net_admin` - Allows network administration operations (routing, firewall rules)
-- `cap_net_raw` - Allows raw socket operations (needed for TProxy)
-- `cap_net_bind_service` - Allows binding to privileged ports (<1024)
+- `cap_net_bind_service` - Required for socket binding operations (even though we don't use privileged ports, Xray needs
+  this to avoid "socket bind: permission denied" errors)
 - `+ep` - Effective and permitted flags make these capabilities active
 
 This allows Xray to perform network operations without running as root.
