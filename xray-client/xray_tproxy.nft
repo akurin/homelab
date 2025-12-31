@@ -1,0 +1,76 @@
+define TPROXY_MARK = 0x1
+define XRAY_USER = "xray"
+define XRAY_TPROXY_PORT = 12345
+
+# Protocols to proxy 
+define TPROXY_L4PROTO = { tcp, udp }
+
+# Bypass addresses 
+define BYPASS_IPV4 = {
+    0.0.0.0/8, 10.0.0.0/8, 127.0.0.0/8, 169.254.0.0/16,
+    172.16.0.0/12, 192.168.0.0/16, 224.0.0.0/3
+}
+define BYPASS_IPV6 = { ::/128 }
+
+########################
+# PREROUTING (foreign)
+########################
+table inet xray_tproxy {
+  chain prerouting {
+    type filter hook prerouting priority mangle; policy accept;
+
+    # Bypass traffic already handled by TProxy 
+    meta l4proto $TPROXY_L4PROTO socket transparent 1 counter mark set $TPROXY_MARK
+    socket transparent 0 socket wildcard 0 counter return
+
+    # ----- IMPORTANT -----
+    # DO NOT TPROXY DNS to 127.0.0.0/8
+    ip daddr 127.0.0.0/8 meta l4proto { tcp, udp } th dport 53 counter return
+
+    # Intercept DNS BEFORE bypass logic (everything else)
+    meta l4proto { tcp, udp } th dport 53 counter \
+      tproxy to :$XRAY_TPROXY_PORT meta mark set $TPROXY_MARK accept
+
+    # Bypass private and special IP addresses
+    ip daddr $BYPASS_IPV4 counter return
+    ip6 daddr $BYPASS_IPV6 counter return
+
+    # Only proxy public IPv6 addresses
+    ip6 daddr != 2000::/3 counter return
+
+    # Redirect remaining traffic to the TProxy port
+    meta l4proto $TPROXY_L4PROTO counter \
+      tproxy to :$XRAY_TPROXY_PORT meta mark set $TPROXY_MARK accept
+  }
+}
+
+########################
+# OUTPUT (local)
+########################
+table inet xray_tproxy_local {
+  chain output {
+    type route hook output priority mangle; policy accept;
+
+    # Prevent loop
+    meta skuid $XRAY_USER counter return
+
+    # ----- IMPORTANT -----
+    # DO NOT TPROXY DNS to 127.0.0.0/8
+    ip daddr 127.0.0.0/8 meta l4proto { tcp, udp } th dport 53 counter return
+
+    # Intercept DNS BEFORE bypass logic
+    meta l4proto { tcp, udp } th dport 53 counter \
+      meta mark set $TPROXY_MARK accept
+
+    # Bypass private and special IP addresses
+    ip daddr $BYPASS_IPV4 counter return
+    ip6 daddr $BYPASS_IPV6 counter return
+
+    # Only proxy public IPv6 addresses
+    ip6 daddr != 2000::/3 counter return
+
+    # Redirect OUTPUT traffic to PREROUTING
+    meta l4proto $TPROXY_L4PROTO counter meta mark set $TPROXY_MARK
+  }
+}
+
