@@ -121,7 +121,7 @@ sudo -u xray xray -c ~/vpn/xray_xhttp_client_config.json
 Or with custom binary path:
 
 ```bash
-sudo -u xray /opt/Xray-linux-64/xray -c ~/vpn/xray_xhttp_client_config.json
+cat ~/vpn/xray_xhttp_client_config.json | sudo -u xray xray
 ```
 
 ### Stopping the Proxy
