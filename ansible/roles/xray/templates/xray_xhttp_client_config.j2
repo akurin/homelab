@@ -79,10 +79,6 @@
       "tag": "proxy"
     },
     {
-      "protocol": "freedom",
-      "tag": "direct"
-    },
-    {
       "protocol": "dns",
       "tag": "dns-out"
     },
@@ -108,6 +104,13 @@
         "type": "field",
         "port": 53,
         "outboundTag": "dns-out"
+      },
+      {
+        "type": "field",
+        "protocol": [
+          "bittorrent"
+        ],
+        "outboundTag": "direct"
       },
       {
         "type": "field",
