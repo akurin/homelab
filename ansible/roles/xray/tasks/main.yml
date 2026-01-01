@@ -60,8 +60,13 @@
     dest: "~/vpn/{{ inventory_hostname }}_sing_box_client.json"
     mode: '0600'
   delegate_to: localhost
-  vars:
-    server_public_ip: "{{ ansible_host }}"
+
+- name: Create xray reality xtls rprx vision client config
+  ansible.builtin.template:
+    src: xray_reality_xtls_rprx_vision_client_config.j2
+    dest: "~/vpn/{{ inventory_hostname }}_xray_reality_xtls_rprx_vision_client_config.json"
+    mode: '0600'
+  delegate_to: localhost
 
 - name: Create xray xhttp client config
   ansible.builtin.template:
@@ -76,8 +81,6 @@
     dest: "~/vpn/{{ inventory_hostname }}_vless_reality_uri.txt"
     mode: '0600'
   delegate_to: localhost
-  vars:
-    server_public_ip: "{{ ansible_host }}"
 
 - name: Create vless xhttp URI
   ansible.builtin.template:
@@ -85,5 +88,3 @@
     dest: "~/vpn/{{ inventory_hostname }}_vless_xhttp_uri.txt"
     mode: '0600'
   delegate_to: localhost
-  vars:
-    server_public_ip: "{{ ansible_host }}"
