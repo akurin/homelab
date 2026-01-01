@@ -1,7 +1,7 @@
 #!/bin/bash
 set -euo pipefail
 
-tailscale_auth_key=$(pass headscale/preauthkey)
+tailscale_auth_key=$(pass headscale/preauthkey_k3s)
 GCLOUD_RW_API_KEY="$(pass grafana/alloy_token)"
 GCLOUD_HOSTED_METRICS_URL="$(pass grafana/GCLOUD_HOSTED_METRICS_URL)"
 GCLOUD_HOSTED_METRICS_ID="$(pass grafana/GCLOUD_HOSTED_METRICS_ID)"
