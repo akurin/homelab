@@ -42,7 +42,7 @@
     - '22'
     - '80'
     - '443'
-    - '8443'
+    # - '8443'
 
 - name: Allow port 443 via UDP
   community.general.ufw:
