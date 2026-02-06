@@ -2,11 +2,7 @@
 - name: Check mandatory variables are defined
   ansible.builtin.assert:
     that:
-      - GCLOUD_HOSTED_METRICS_URL is defined
-      - GCLOUD_HOSTED_METRICS_ID is defined
       - GCLOUD_RW_API_KEY is defined
-      - GCLOUD_HOSTED_LOGS_URL is defined
-      - GCLOUD_HOSTED_LOGS_ID is defined
       - GCLOUD_FM_URL is defined
       - GCLOUD_FM_POLL_FREQUENCY is defined
       - GCLOUD_FM_HOSTED_ID is defined
