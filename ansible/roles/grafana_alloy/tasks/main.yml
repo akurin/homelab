@@ -19,17 +19,11 @@
     state: present
     update_cache: true
 
-- name: Install Grafana GPG key from file
-  ansible.builtin.copy:
-    src: grafana_gpg.key
-    dest: "{{ grafana_repo_signed_by }}.asc"
-    mode: "0644"
-
-- name: Convert Grafana key to binary keyring
-  ansible.builtin.command: >-
-    gpg --dearmor -o {{ grafana_repo_signed_by }} {{ grafana_repo_signed_by }}.asc
-  args:
-    creates: "{{ grafana_repo_signed_by }}"
+- name: Install Grafana GPG key to keyring
+  ansible.builtin.apt_key:
+    data: "{{ lookup('file', role_path + '/files/grafana_gpg.key') }}"
+    keyring: "{{ grafana_repo_signed_by }}"
+    state: present
 
 - name: Add Grafana repository (mirror-aware)
   ansible.builtin.apt_repository:
