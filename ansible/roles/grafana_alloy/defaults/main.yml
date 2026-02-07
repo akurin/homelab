@@ -1,10 +1,14 @@
 ---
-# Toggle to use the Yandex mirror when direct Grafana repos are blocked
-# (e.g., for Russian-hosted machines). Override in inventory/group_vars/host_vars.
-grafana_repo_use_yandex_mirror: false
+# Named mirror map; override or extend per environment
+grafana_repo_mirrors:
+  official: https://apt.grafana.com
+  yandex: https://mirror.yandex.ru/mirrors/packages.grafana.com/oss/deb
 
-# Base URL for the Grafana apt repository (mirrors allowed via the toggle above)
-grafana_repo_base_url: "{{ 'https://mirror.yandex.ru/mirrors/packages.grafana.com/oss/deb' if grafana_repo_use_yandex_mirror else 'https://apt.grafana.com' }}"
+# Select which mirror to use (key from grafana_repo_mirrors)
+grafana_repo_mirror: official
+
+# Base URL derived from selected mirror; falls back to official if key missing
+grafana_repo_base_url: "{{ grafana_repo_mirrors[grafana_repo_mirror] | default(grafana_repo_mirrors['official']) }}"
 
 grafana_repo_distribution: stable
 grafana_repo_components: main

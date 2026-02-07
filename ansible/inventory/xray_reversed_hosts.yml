@@ -4,7 +4,7 @@ xray_portal:
       ansible_host: 176.113.82.170
       ansible_user: root
       domain: clumsypanda.mooo.com
-      grafana_repo_use_yandex_mirror: true
+      grafana_repo_mirror: yandex
 
 xray_bridge:
   hosts:
