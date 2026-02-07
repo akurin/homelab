@@ -17,6 +17,9 @@
         <p>This is a simple web server running on this domain.</p>
         {% if caddy_test_file_enable %}
         <p>Download speed test file: <a href="/{{ caddy_test_file_name }}">{{ caddy_test_file_name }}</a> (size: {{ caddy_test_file_size }})</p>
+        <pre style="background:#f0f0f0;padding:12px;border-radius:6px;overflow:auto;">curl -o /dev/null \
+  -w "Download speed: %{speed_download} bytes/sec\n" \
+  https://{{ domain }}/{{ caddy_test_file_name }}</pre>
         {% endif %}
         <p>Thank you for visiting!</p>
     </div>
