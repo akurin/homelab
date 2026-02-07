@@ -1,0 +1,13 @@
+xray_portal:
+  hosts:
+    ruvds_clumsy_panda:
+      ansible_host: 176.113.82.170
+      ansible_user: root
+      domain: clumsypanda.mooo.com
+
+xray_bridge:
+  hosts:
+    xray-reversed-bridge:
+      ansible_host: 45.76.43.212
+      ansible_user: root
+      portal_domain: clumsypanda.mooo.com

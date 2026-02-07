@@ -1,0 +1,8 @@
+---
+- name: Deploy Xray bridge
+  hosts: xray_bridge
+
+  roles:
+    - role: grafana_alloy
+    - role: xray_bridge
+    - role: ssh_hardening

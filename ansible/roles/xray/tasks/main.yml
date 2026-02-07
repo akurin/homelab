@@ -33,7 +33,12 @@
     timeout: 60
     delay: 10
 
-- name: Allow ports 22, 80, 443, 8443 via TCP
+- name: Ensure UFW package is installed
+  ansible.builtin.package:
+    name: ufw
+    state: present
+
+- name: Allow ports 22, 80, 443 via TCP
   community.general.ufw:
     rule: allow
     port: "{{ item }}"
@@ -42,7 +47,6 @@
     - '22'
     - '80'
     - '443'
-    # - '8443'
 
 - name: Allow port 443 via UDP
   community.general.ufw:

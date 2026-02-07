@@ -56,7 +56,7 @@ This allows Xray to perform network operations without running as root.
 
 Ensure you have the following files in your working directory (e.g., `~/xray-client/`):
 
-- `xray_tproxy.sh` - Script to enable/disable TProxy routing
+- `xray-tproxy` - Script to enable/disable TProxy routing
 - `xray_tproxy.nft` - nftables rules for packet interception
 
 ## Configuration
@@ -103,7 +103,7 @@ The TProxy setup uses:
 
 ```bash
 cd ~/xray-client
-sudo ./xray_tproxy.sh on
+sudo ./xray-tproxy on
 ```
 
 This will:
@@ -113,12 +113,6 @@ This will:
 - Load nftables rules for packet interception
 
 **Step 2:** Start Xray client (as xray user):
-
-```bash
-sudo -u xray xray -c ~/vpn/xray_xhttp_client_config.json
-```
-
-Or with custom binary path:
 
 ```bash
 cat ~/vpn/xray_xhttp_client_config.json | sudo -u xray xray
@@ -138,7 +132,7 @@ sudo pkill -u xray xray
 
 ```bash
 cd ~/xray-client
-sudo ./xray_tproxy.sh off
+sudo ./xray_tproxy off
 ```
 
 This will:

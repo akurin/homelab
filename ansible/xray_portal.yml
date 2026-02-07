@@ -1,0 +1,13 @@
+---
+- name: Deploy Xray portal
+  hosts: xray_portal
+  vars:
+    xray_xhttp_port_internal: 10000
+
+  roles:
+#    - role: grafana_alloy
+#      (disabled; not supported from Russia)
+    - role: freedns
+    - role: xray_portal
+    - role: caddy_proxy
+    - role: ssh_hardening

@@ -1,0 +1,36 @@
+#!/bin/bash
+set -euo pipefail
+
+(
+	cd ansible && ansible-playbook \
+		xray_portal.yml \
+		--inventory-file "./inventory/xray_reversed_hosts.yml" \
+		-e GCLOUD_RW_API_KEY="$(pass grafana/alloy_token)" \
+		-e GCLOUD_FM_URL="$(pass grafana/GCLOUD_FM_URL)" \
+		-e GCLOUD_FM_POLL_FREQUENCY="$(pass grafana/GCLOUD_FM_POLL_FREQUENCY)" \
+		-e GCLOUD_FM_HOSTED_ID="$(pass grafana/GCLOUD_FM_HOSTED_ID)" \
+		-e uuid="$(pass vless/uuid)" \
+		-e private_key="$(pass vless/private_key)" \
+		-e public_key="$(pass vless/public_key)" \
+		-e short_id="$(pass vless/short_id)" \
+		-e secret_path="$(pass vless/secret_path)" \
+		-e freedns_username="$(pass freedns.afraid.org/username)" \
+		-e freedns_password="$(pass freedns.afraid.org/password)"
+)
+
+(
+	cd ansible && ansible-playbook \
+		xray_bridge.yml \
+		--inventory-file "./inventory/xray_reversed_hosts.yml" \
+		-e GCLOUD_RW_API_KEY="$(pass grafana/alloy_token)" \
+		-e GCLOUD_FM_URL="$(pass grafana/GCLOUD_FM_URL)" \
+		-e GCLOUD_FM_POLL_FREQUENCY="$(pass grafana/GCLOUD_FM_POLL_FREQUENCY)" \
+		-e GCLOUD_FM_HOSTED_ID="$(pass grafana/GCLOUD_FM_HOSTED_ID)" \
+		-e uuid="$(pass vless/uuid)" \
+		-e private_key="$(pass vless/private_key)" \
+		-e public_key="$(pass vless/public_key)" \
+		-e short_id="$(pass vless/short_id)" \
+		-e secret_path="$(pass vless/secret_path)" \
+		-e freedns_username="$(pass freedns.afraid.org/username)" \
+		-e freedns_password="$(pass freedns.afraid.org/password)"
+)
