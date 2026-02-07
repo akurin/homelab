@@ -1,0 +1,6 @@
+---
+# Controls creation of a large test file served by Caddy (for download speed tests)
+caddy_test_file_enable: true
+caddy_test_file_size: 1G
+caddy_test_file_name: test-1g.bin
+caddy_test_file_path: "/var/www/html/{{ domain }}/{{ caddy_test_file_name }}"

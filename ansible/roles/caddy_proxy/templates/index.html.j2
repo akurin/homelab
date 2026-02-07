@@ -15,6 +15,9 @@
     <div class="container">
         <h1>Welcome to {{ domain }}</h1>
         <p>This is a simple web server running on this domain.</p>
+        {% if caddy_test_file_enable %}
+        <p>Download speed test file: <a href="/{{ caddy_test_file_name }}">{{ caddy_test_file_name }}</a> (size: {{ caddy_test_file_size }})</p>
+        {% endif %}
         <p>Thank you for visiting!</p>
     </div>
 </body>

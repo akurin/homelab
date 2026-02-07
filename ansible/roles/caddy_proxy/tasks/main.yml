@@ -58,6 +58,15 @@
     group: www-data
     mode: '0644'
 
+- name: Create download test file (sparse)
+  ansible.builtin.command: >-
+    fallocate -l {{ caddy_test_file_size }} {{ caddy_test_file_path }}
+  args:
+    creates: "/var/www/html/{{ domain }}/{{ caddy_test_file_name }}"
+  when: caddy_test_file_enable | bool
+  register: caddy_test_file_created
+  changed_when: caddy_test_file_created.rc == 0
+
 - name: Deploy Caddyfile (from template)
   ansible.builtin.template:
     src: Caddyfile.j2
