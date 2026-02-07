@@ -5,8 +5,7 @@
     xray_xhttp_port_internal: 10000
 
   roles:
-#    - role: grafana_alloy
-#      (disabled; not supported from Russia)
+    - role: grafana_alloy
     - role: freedns
     - role: xray_portal
     - role: caddy_proxy

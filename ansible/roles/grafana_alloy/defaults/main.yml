@@ -1,0 +1,11 @@
+---
+# Toggle to use the Yandex mirror when direct Grafana repos are blocked
+# (e.g., for Russian-hosted machines). Override in inventory/group_vars/host_vars.
+grafana_repo_use_yandex_mirror: false
+
+# Base URL for the Grafana apt repository (mirrors allowed via the toggle above)
+grafana_repo_base_url: "{{ 'https://mirror.yandex.ru/mirrors/packages.grafana.com/oss/deb' if grafana_repo_use_yandex_mirror else 'https://apt.grafana.com' }}"
+
+grafana_repo_distribution: stable
+grafana_repo_components: main
+grafana_repo_signed_by: /etc/apt/keyrings/grafana.gpg
