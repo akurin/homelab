@@ -1,14 +1,14 @@
 xray_portal:
   hosts:
-    ruvds_clumsy_panda:
-      ansible_host: 176.113.82.170
+    firstvds_portal:
+      ansible_host: 188.120.246.74
       ansible_user: root
       domain: clumsypanda.mooo.com
       grafana_repo_mirror: yandex
 
 xray_bridge:
   hosts:
-    xray-reversed-bridge:
+    vultr_bridge:
       ansible_host: 45.76.43.212
       ansible_user: root
       portal_domain: clumsypanda.mooo.com
