@@ -20,7 +20,7 @@
         "domain": [
           "full:reverse-proxy.xray.internal"
         ],
-        "outboundTag": "outgoing"
+        "outboundTag": "{{ xray_bridge_outbound_tag }}"
       },
       {
         "type": "field",
@@ -32,6 +32,35 @@
     ]
   },
   "outbounds": [
+    {
+      "protocol": "vless",
+      "settings": {
+        "vnext": [
+          {
+            "address": "{{ portal_domain }}",
+            "port": 8443,
+            "users": [
+              {
+                "id": "{{ uuid }}",
+                "encryption": "none",
+                "flow": "xtls-rprx-vision"
+              }
+            ]
+          }
+        ]
+      },
+      "streamSettings": {
+        "network": "tcp",
+        "security": "reality",
+        "realitySettings": {
+          "fingerprint": "chrome",
+          "serverName": "{{ xray_portal_reality_server_name }}",
+          "publicKey": "{{ public_key }}",
+          "shortId": "{{ short_id }}"
+        }
+      },
+      "tag": "outgoing_xtls_rprx_vision"
+    },
     {
       "protocol": "vless",
       "settings": {
@@ -52,7 +81,7 @@
         "network": "xhttp",
         "xhttpSettings": {
           "path": "{{ secret_path }}",
-          "mode": "packet-up"
+          "mode": "stream-one"
         },
         "security": "tls",
         "tlsSettings": {
@@ -61,7 +90,7 @@
           ]
         }
       },
-      "tag": "outgoing"
+      "tag": "outgoing_xhttp"
     },
     {
       "protocol": "freedom",
