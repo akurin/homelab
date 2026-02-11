@@ -5,4 +5,4 @@ fallback_dns: "8.8.8.8#dns.google 9.9.9.9#dns.quad9.net"
 
 # Security Settings
 dot_mode: "yes"  # Can be "yes" (opportunistic) or "strict" (required)
-dnssec_mode: "allow-downgrade"
+dnssec_mode: "no"
