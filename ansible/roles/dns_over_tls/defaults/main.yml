@@ -1,0 +1,8 @@
+---
+# DNS providers (Defaulting to Cloudflare)
+dns_servers: "1.1.1.1#cloudflare-dns.com 1.0.0.1#cloudflare-dns.com"
+fallback_dns: "8.8.8.8#dns.google 9.9.9.9#dns.quad9.net"
+
+# Security Settings
+dot_mode: "yes"  # Can be "yes" (opportunistic) or "strict" (required)
+dnssec_mode: "allow-downgrade"

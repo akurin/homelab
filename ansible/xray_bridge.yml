@@ -3,6 +3,7 @@
   hosts: xray_bridge
 
   roles:
+    - role: dns_over_tls
     - role: grafana_alloy
     - role: xray_bridge
     - role: ssh_hardening

@@ -1,0 +1,15 @@
+# This file is managed by Ansible. Manual changes will be overwritten.
+[Resolve]
+Domains=~.
+{% if dns_servers is string %}
+DNS={{ dns_servers | trim }}
+{% else %}
+DNS={{ (dns_servers | default([], true)) | join(' ') }}
+{% endif %}
+{% if fallback_dns is string %}
+FallbackDNS={{ fallback_dns | trim }}
+{% else %}
+FallbackDNS={{ (fallback_dns | default([], true)) | join(' ') }}
+{% endif %}
+DNSOverTLS={{ dot_mode }}
+DNSSEC={{ dnssec_mode }}

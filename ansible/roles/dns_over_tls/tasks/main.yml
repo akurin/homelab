@@ -1,0 +1,18 @@
+---
+- name: Configure systemd-resolved for DNS over TLS
+  become: true
+  block:
+    - name: Create /etc/systemd/resolved.conf.d directory
+      ansible.builtin.file:
+        path: /etc/systemd/resolved.conf.d
+        state: directory
+        mode: '0755'
+
+    - name: Deploy DNS over TLS configuration
+      ansible.builtin.template:
+        src: dot-config.conf.j2
+        dest: /etc/systemd/resolved.conf.d/dot-config.conf
+        mode: '0644'
+        owner: root
+        group: root
+      notify: Restart systemd-resolved
