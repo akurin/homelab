@@ -1,0 +1,5 @@
+---
+ufw_allowed_tcp:
+  - 22
+ufw_default_incoming: deny
+ufw_default_outgoing: allow
