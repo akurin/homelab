@@ -1,0 +1,73 @@
+{
+  "log": {
+    "loglevel": "info"
+  },
+  "inbounds": [
+    {
+      "port": {{ xray_xhttp_port_internal }},
+      "listen": "127.0.0.1",
+      "protocol": "vless",
+      "settings": {
+        "clients": [
+          {
+            "id": "{{ uuid }}"
+          }
+        ],
+        "decryption": "none"
+      },
+      "streamSettings": {
+        "network": "xhttp",
+        "security": "none",
+        "xhttpSettings": {
+          "mode": "auto",
+          "path": "{{ secret_path }}"
+        }
+      },
+      "tag": "incoming_xhttp"
+    }
+  ],
+  "outbounds": [
+    {% if next_address is defined and next_address %}
+    {
+      "protocol": "vless",
+      "settings": {
+        "vnext": [
+          {
+            "address": "{{ next_address }}",
+            "port": 443,
+            "users": [
+              {
+                "id": "{{ uuid }}",
+                "encryption": "none"
+              }
+            ]
+          }
+        ]
+      },
+      "streamSettings": {
+        "network": "xhttp",
+        "xhttpSettings": {
+          "path": "{{ secret_path }}",
+          "mode": "stream-up"
+        },
+        "security": "tls",
+        "tlsSettings": {
+          "alpn": [
+            "h3"
+          ]
+        }
+      },
+      "tag": "next_proxy"
+    }
+    {% else %}
+    {
+      "protocol": "freedom",
+      "tag": "direct"
+    }
+    {% endif %},
+    {
+      "protocol": "blackhole",
+      "tag": "block"
+    }
+  ]
+}

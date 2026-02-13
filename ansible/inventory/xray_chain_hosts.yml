@@ -1,0 +1,13 @@
+xray_chain:
+  hosts:
+    firstvds_relay:
+      ansible_host: 188.120.246.74
+      ansible_user: root
+      domain: clumsypanda.mooo.com
+      next_address: quietotter.mooo.com
+      grafana_repo_mirror: yandex
+
+    vultr_exit:
+      ansible_host: 45.76.43.212
+      ansible_user: root
+      domain: quietotter.mooo.com

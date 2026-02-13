@@ -1,0 +1,9 @@
+---
+- name: Deploy Xray chain
+  hosts: xray_chain
+  roles:
+    - role: grafana_alloy
+    - role: freedns
+    - role: xray_chain
+    - role: caddy_proxy
+    - role: ssh_hardening
