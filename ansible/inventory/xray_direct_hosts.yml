@@ -1,10 +1,15 @@
-vpn:
+xray_direct:
   hosts:
     vpn-nl:
       ansible_host: 45.85.117.151
       ansible_user: root
       domain: brisklizard.mooo.com
+      grafana_alloy_collector_attrs:
+        reverse_proxy: caddy
+
     sg-nl-01:
       ansible_host: 45.149.154.132
       ansible_user: root
       domain: meanderingtortoise.mooo.com
+      grafana_alloy_collector_attrs:
+        reverse_proxy: caddy

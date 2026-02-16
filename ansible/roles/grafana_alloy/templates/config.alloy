@@ -7,4 +7,10 @@ remotecfg {
 		username = "{{GCLOUD_FM_HOSTED_ID}}"
 		password = "{{GCLOUD_RW_API_KEY}}"
 	}
+
+	attributes = {
+		{% for k, v in grafana_alloy_collector_attrs | default({}) | dictsort %}
+		{{ k }} = "{{ v }}"
+		{% endfor %}
+	}
 }

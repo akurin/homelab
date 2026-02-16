@@ -1,3 +1,12 @@
+{
+	admin localhost:2019
+
+	# Enable Prometheus/OpenMetrics instrumentation
+	servers {
+		metrics
+	}
+}
+
 {{ domain }} {
 
     # Caddy automatically handles Let's Encrypt certificates (TLS)

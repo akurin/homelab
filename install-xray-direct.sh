@@ -3,9 +3,8 @@ set -euo pipefail
 
 (
 	cd ansible && ansible-playbook \
-		xray.yml \
-		--inventory-file "./inventory/vpn_vultr_hosts.yml" \
-		--inventory-file "./inventory/vpn_other_hosts.yml" \
+		xray_direct.yml \
+		--inventory-file "./inventory/xray_direct_hosts.yml" \
 		-e GCLOUD_RW_API_KEY="$(pass grafana/alloy_token)" \
 		-e GCLOUD_FM_URL="$(pass grafana/GCLOUD_FM_URL)" \
 		-e GCLOUD_FM_POLL_FREQUENCY="$(pass grafana/GCLOUD_FM_POLL_FREQUENCY)" \

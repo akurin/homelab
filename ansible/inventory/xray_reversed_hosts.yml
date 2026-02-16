@@ -6,6 +6,8 @@ xray_portal:
       domain: clumsypanda.mooo.com
       grafana_repo_mirror: yandex
       xray_portal_reality_server_name: slickjump.ru
+      grafana_alloy_collector_attrs:
+        roles: "xray,caddy"
 
 xray_bridge:
   hosts:
@@ -15,3 +17,5 @@ xray_bridge:
       portal_domain: clumsypanda.mooo.com
       xray_bridge_outbound_tag: outgoing_xhttp
       xray_portal_reality_server_name: slickjump.ru
+      grafana_alloy_collector_attrs:
+        roles: "xray,caddy"

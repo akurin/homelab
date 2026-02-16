@@ -1,6 +1,6 @@
 ---
 - name: Deploy VLESS + XHTTP + Caddy Proxy
-  hosts: vpn
+  hosts: xray_direct
   vars:
     xray_xhttp_port_internal: 10000
 
