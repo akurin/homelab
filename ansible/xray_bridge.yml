@@ -3,6 +3,9 @@
   hosts: xray_bridge
 
   roles:
+    - role: ufw_base
+      ufw_allowed_tcp:
+        - 22
     - role: dns_over_tls
     - role: grafana_alloy
     - role: xray_bridge

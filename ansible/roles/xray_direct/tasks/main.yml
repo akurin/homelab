@@ -28,36 +28,6 @@
   async: 30
   poll: 0
 
-- name: Wait for SSH to become available again
-  ansible.builtin.wait_for_connection:
-    timeout: 60
-    delay: 10
-
-- name: Ensure UFW package is installed
-  ansible.builtin.package:
-    name: ufw
-    state: present
-
-- name: Allow ports 22, 80, 443 via TCP
-  community.general.ufw:
-    rule: allow
-    port: "{{ item }}"
-    proto: tcp
-  loop:
-    - '22'
-    - '80'
-    - '443'
-
-- name: Allow port 443 via UDP
-  community.general.ufw:
-    rule: allow
-    port: "443"
-    proto: udp
-
-- name: Ensure UFW is enabled
-  community.general.ufw:
-    state: enabled
-
 - name: Create sing-box client config
   ansible.builtin.template:
     src: sing_box_client.conf.j2

@@ -1,21 +1,21 @@
 xray_portal:
   hosts:
-    firstvds_portal:
-      ansible_host: 188.120.246.74
+    ruvds_msk_01:
+      ansible_host: 176.113.82.170
       ansible_user: root
-      domain: clumsypanda.mooo.com
+      domain: scarletfalcon.mooo.com
       grafana_repo_mirror: yandex
       xray_portal_reality_server_name: slickjump.ru
       grafana_alloy_collector_attrs:
-        roles: "xray,caddy"
+        reverse_proxy: caddy
 
 xray_bridge:
   hosts:
-    vultr_bridge:
-      ansible_host: 45.76.43.212
+    sg_nl_01:
+      ansible_host: 45.149.154.132
       ansible_user: root
-      portal_domain: clumsypanda.mooo.com
+      portal_domain: yagate.morjoff.com
       xray_bridge_outbound_tag: outgoing_xhttp
       xray_portal_reality_server_name: slickjump.ru
       grafana_alloy_collector_attrs:
-        roles: "xray,caddy"
+        reverse_proxy: caddy

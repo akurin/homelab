@@ -48,12 +48,12 @@
         "network": "xhttp",
         "xhttpSettings": {
           "path": "{{ secret_path }}",
-          "mode": "stream-up"
+          "mode": "packet-up"
         },
         "security": "tls",
         "tlsSettings": {
           "alpn": [
-            "h3"
+            "h2"
           ]
         }
       },

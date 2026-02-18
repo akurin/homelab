@@ -5,8 +5,16 @@
     xray_xhttp_port_internal: 10000
 
   roles:
+    - role: ufw_base
+      ufw_allowed_tcp:
+        - 22
+        - 80
+        - 443
+        - 8443
+      ufw_allowed_udp:
+        - 443
     - role: grafana_alloy
     - role: freedns
-    - role: xray
+    - role: xray_direct
     - role: caddy_proxy
     - role: ssh_hardening

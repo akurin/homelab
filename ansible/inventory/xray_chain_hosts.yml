@@ -9,8 +9,8 @@ xray_chain:
       grafana_alloy_collector_attrs:
         reverse_proxy: caddy
 
-    vultr_exit:
-      ansible_host: 45.76.43.212
+    webdock_exit:
+      ansible_host: 92.113.145.63
       ansible_user: root
       domain: quietotter.mooo.com
       grafana_alloy_collector_attrs:
