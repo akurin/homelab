@@ -2,6 +2,61 @@
   "log": {
     "loglevel": "info"
   },
+
+  {% if xray_role == 'portal' %}
+  "reverse": {
+    "portals": [
+      {
+        "tag": "portal",
+        "domain": "reverse-proxy.xray.internal"
+      }
+    ]
+  },
+  "routing": {
+    "rules": [
+      {
+        "type": "field",
+        "inboundTag": [
+          "incoming_xhttp"
+        ],
+        "outboundTag": "portal"
+      }
+    ]
+  },
+  {% endif %}
+
+  {% if xray_role == 'bridge' %}
+  "reverse": {
+    "bridges": [
+      {
+        "tag": "bridge",
+        "domain": "reverse-proxy.xray.internal"
+      }
+    ]
+  },
+  "routing": {
+    "rules": [
+      {
+        "type": "field",
+        "inboundTag": [
+          "bridge"
+        ],
+        "domain": [
+          "full:reverse-proxy.xray.internal"
+        ],
+        "outboundTag": "next_proxy"
+      },
+      {
+        "type": "field",
+        "inboundTag": [
+          "bridge"
+        ],
+        "outboundTag": "direct"
+      }
+    ]
+  },
+  {% endif %}
+
   "inbounds": [
     {
       "port": {{ xray_xhttp_port_internal }},
@@ -58,13 +113,12 @@
         }
       },
       "tag": "next_proxy"
-    }
-    {% else %}
+    },
+    {% endif %}
     {
       "protocol": "freedom",
       "tag": "direct"
-    }
-    {% endif %},
+    },
     {
       "protocol": "blackhole",
       "tag": "block"

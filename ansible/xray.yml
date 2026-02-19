@@ -1,9 +1,6 @@
 ---
-- name: Deploy Xray portal
-  hosts: xray_portal
-  vars:
-    xray_xhttp_port_internal: 10000
-
+- name: Deploy Xray chain
+  hosts: xray
   roles:
     - role: ufw_base
       ufw_allowed_tcp:
@@ -15,6 +12,6 @@
         - 443
     - role: grafana_alloy
     - role: freedns
-    - role: xray_portal
+    - role: xray
     - role: caddy_proxy
     - role: ssh_hardening

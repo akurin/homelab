@@ -1,0 +1,45 @@
+xray:
+  hosts:
+    ru_firstvds:
+      ansible_host: 188.120.246.74
+      ansible_user: root
+      domain: clumsypanda.mooo.com
+      next_address: quietotter.mooo.com
+      grafana_repo_mirror: yandex
+      grafana_alloy_collector_attrs:
+        reverse_proxy: caddy
+      xray_role: relay
+
+    dk_webdock:
+      ansible_host: 92.113.145.63
+      ansible_user: root
+      domain: quietotter.mooo.com
+      grafana_alloy_collector_attrs:
+        reverse_proxy: caddy
+      xray_role: exit
+
+    nl_llhost:
+      ansible_host: 45.85.117.151
+      ansible_user: root
+      domain: brisklizard.mooo.com
+      grafana_alloy_collector_attrs:
+        reverse_proxy: caddy
+      xray_role: exit
+
+    ru_ruvds:
+      ansible_host: 176.113.82.170
+      ansible_user: root
+      domain: scarletfalcon.mooo.com
+      grafana_repo_mirror: yandex
+      grafana_alloy_collector_attrs:
+        reverse_proxy: caddy
+      xray_role: portal
+
+    nl_sg:
+      ansible_host: 45.149.154.132
+      ansible_user: root
+      domain: meanderingtortoise.mooo.com
+      next_address: scarletfalcon.mooo.com
+      grafana_alloy_collector_attrs:
+        reverse_proxy: caddy
+      xray_role: bridge
