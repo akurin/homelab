@@ -35,11 +35,11 @@ xray:
         reverse_proxy: caddy
       xray_role: portal
 
-    nl_sg:
-      ansible_host: 45.149.154.132
-      ansible_user: root
-      domain: meanderingtortoise.mooo.com
-      next_address: scarletfalcon.mooo.com
-      grafana_alloy_collector_attrs:
-        reverse_proxy: caddy
-      xray_role: bridge
+#    nl_sg:
+#      ansible_host: 45.149.154.132
+#      ansible_user: root
+#      domain: meanderingtortoise.mooo.com
+#      next_address: scarletfalcon.mooo.com
+#      grafana_alloy_collector_attrs:
+#        reverse_proxy: caddy
+#      xray_role: bridge

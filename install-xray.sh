@@ -9,7 +9,7 @@ set -euo pipefail
 		-e GCLOUD_FM_URL="$(pass grafana/GCLOUD_FM_URL)" \
 		-e GCLOUD_FM_POLL_FREQUENCY="$(pass grafana/GCLOUD_FM_POLL_FREQUENCY)" \
 		-e GCLOUD_FM_HOSTED_ID="$(pass grafana/GCLOUD_FM_HOSTED_ID)" \
-		-e uuid="$(pass vless/uuid)" \
+		-e xray_users_yaml_b64="$(pass vless/uuids | base64)" \
 		-e secret_path="$(pass vless/secret_path)" \
 		-e freedns_username="$(pass freedns.afraid.org/username)" \
 		-e freedns_password="$(pass freedns.afraid.org/password)"

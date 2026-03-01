@@ -56,7 +56,8 @@
             "port": 443,
             "users": [
               {
-                "id": "{{ uuid }}",
+                "id": "{{ user_id }}",
+                "email": "{{ user_name }}@{{ inventory_hostname }}",
                 "encryption": "none"
               }
             ]

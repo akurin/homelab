@@ -64,11 +64,14 @@
       "protocol": "vless",
       "settings": {
         "clients": [
+{% for user in xray_users %}
           {
-            "id": "{{ uuid }}"
-          }
-        ],
-        "decryption": "none"
+            "id": "{{ user.id }}",
+            "email": "{{ user.name }}@{{ inventory_hostname }}"
+          }{% if not loop.last %},{% endif %}
+{% endfor %}
+       ],
+       "decryption": "none"
       },
       "streamSettings": {
         "network": "xhttp",
@@ -92,7 +95,7 @@
             "port": 443,
             "users": [
               {
-                "id": "{{ uuid }}",
+                "id": "{{ xray_client_user.id }}",
                 "encryption": "none"
               }
             ]

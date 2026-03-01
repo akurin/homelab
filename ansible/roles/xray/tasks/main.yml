@@ -1,4 +1,18 @@
 ---
+- name: Parse users YAML
+  ansible.builtin.set_fact:
+    xray_users: "{{ xray_users_yaml_b64 | b64decode | from_yaml }}"
+
+- name: Select xray_client user
+  ansible.builtin.set_fact:
+    xray_client_user: >-
+      {{
+        xray_users
+        | selectattr('name', 'equalto', 'xray_client')
+        | list
+        | first
+      }}
+
 - name: Install Xray
   ansible.builtin.shell: bash -c "$(curl -L https://github.com/XTLS/Xray-install/raw/main/install-release.sh)" @ install
   args:
@@ -18,16 +32,38 @@
   async: 30
   poll: 0
 
-- name: Render xray client config locally (JSON)
-  ansible.builtin.copy:
-    dest: "~/vpn/{{ inventory_hostname }}_config.json"
-    mode: '0600'
-    content: "{{ lookup('template', 'client_config.j2') | from_json | to_nice_json }}"
+- name: Ensure per-user directories exist on localhost
+  ansible.builtin.file:
+    path: "{{ lookup('env', 'HOME') }}/vpn/{{ item.name }}"
+    state: directory
+    mode: "0700"
   delegate_to: localhost
+  loop: "{{ xray_users }}"
+  loop_control:
+    label: "{{ item.name }}"
 
-- name: Render xray client config locally (URI)
+- name: Render xray client config (JSON) locally per user
+  ansible.builtin.template:
+    src: client_config.j2
+    dest: "{{ lookup('env', 'HOME') }}/vpn/{{ item.name }}/{{ inventory_hostname }}_config.json"
+    mode: "0600"
+  delegate_to: localhost
+  vars:
+    user_id: "{{ item.id }}"
+    user_name: "{{ item.name }}"
+  loop: "{{ xray_users }}"
+  loop_control:
+    label: "{{ item.name }}"
+
+- name: Render xray client config (URI) locally per user
   ansible.builtin.template:
     src: client_uri.j2
-    dest: "~/vpn/{{ inventory_hostname }}_uri.txt"
-    mode: '0600'
+    dest: "{{ lookup('env', 'HOME') }}/vpn/{{ item.name }}/{{ inventory_hostname }}_uri.txts"
+    mode: "0600"
   delegate_to: localhost
+  vars:
+    user_id: "{{ item.id }}"
+    user_name: "{{ item.name }}"
+  loop: "{{ xray_users }}"
+  loop_control:
+    label: "{{ item.name }}"
