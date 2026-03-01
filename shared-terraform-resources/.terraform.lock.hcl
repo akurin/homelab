@@ -4,6 +4,7 @@
 provider "registry.terraform.io/hashicorp/local" {
   version = "2.5.2"
   hashes = [
+    "h1:IyFbOIO6mhikFNL/2h1iZJ6kyN3U00jgkpCLUCThAfE=",
     "h1:JlMZD6nYqJ8sSrFfEAH0Vk/SL8WLZRmFaMUF9PJK5wM=",
     "zh:136299545178ce281c56f36965bf91c35407c11897f7082b3b983d86cb79b511",
     "zh:3b4486858aa9cb8163378722b642c57c529b6c64bfbfc9461d940a84cd66ebea",
@@ -24,6 +25,7 @@ provider "registry.terraform.io/vultr/vultr" {
   version     = "2.21.0"
   constraints = "2.21.0"
   hashes = [
+    "h1:+ExuN7qWJYRydmEOGRP5nX9HxX0TAlFUM4Vop1UAJs0=",
     "h1:tSboTajjXQ9WQ8hOwf/ZLGQ/+TwUzno4vaiNz1VMus4=",
     "zh:09c7eeceeacd6d2f2c9406ad969a7d145bb21ea68ebcf7fe6426a764c2b15fcd",
     "zh:41505f11b630154167bd68720937992c3829a0e7b6766eebc57a1636462533c6",
