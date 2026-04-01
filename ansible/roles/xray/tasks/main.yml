@@ -58,7 +58,7 @@
 - name: Render xray client config (URI) locally per user
   ansible.builtin.template:
     src: client_uri.j2
-    dest: "{{ lookup('env', 'HOME') }}/vpn/{{ item.name }}/{{ inventory_hostname }}_uri.txts"
+    dest: "{{ lookup('env', 'HOME') }}/vpn/{{ item.name }}/{{ inventory_hostname }}_uri.txt"
     mode: "0600"
   delegate_to: localhost
   vars:
