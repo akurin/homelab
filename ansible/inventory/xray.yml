@@ -26,14 +26,14 @@ xray:
         reverse_proxy: caddy
       xray_role: exit
 
-    ru_ruvds:
-      ansible_host: 176.113.82.170
-      ansible_user: root
-      domain: scarletfalcon.mooo.com
-      grafana_repo_mirror: yandex
-      grafana_alloy_collector_attrs:
-        reverse_proxy: caddy
-      xray_role: portal
+#    ru_ruvds:
+#      ansible_host: 176.113.82.170
+#      ansible_user: root
+#      domain: scarletfalcon.mooo.com
+#      grafana_repo_mirror: yandex
+#      grafana_alloy_collector_attrs:
+#        reverse_proxy: caddy
+#      xray_role: portal
 
 #    nl_sg:
 #      ansible_host: 45.149.154.132
