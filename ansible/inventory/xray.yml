@@ -25,6 +25,7 @@ xray:
       grafana_alloy_collector_attrs:
         reverse_proxy: caddy
       xray_role: exit
+      warp_outbound_enabled: true
 
 #    ru_ruvds:
 #      ansible_host: 176.113.82.170

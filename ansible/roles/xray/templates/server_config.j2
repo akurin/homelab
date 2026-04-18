@@ -118,6 +118,26 @@
       "tag": "next_proxy"
     },
     {% endif %}
+    {% if warp_outbound_enabled is defined and warp_outbound_enabled %}
+    {
+      "protocol": "wireguard",
+      "settings": {
+        "secretKey": "{{ warp_secret_key }}",
+        "peers": [
+          {
+            "publicKey": "{{ warp_public_key }}",
+            "endpoint": "engage.cloudflareclient.com:2408"
+          }
+        ],
+        "reserved": [
+          0,
+          0,
+          0
+        ]
+      },
+      "tag": "warp"
+    },
+    {% endif %}
     {
       "protocol": "freedom",
       "tag": "direct"
