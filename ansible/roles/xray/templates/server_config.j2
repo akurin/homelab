@@ -123,9 +123,17 @@
       "protocol": "wireguard",
       "settings": {
         "secretKey": "{{ warp_secret_key }}",
+        "address": [
+          "172.16.0.2/32",
+          "2606:4700:110:8526:d40f:a90b:77ec:25f1/128"
+        ],
         "peers": [
           {
             "publicKey": "{{ warp_public_key }}",
+            "allowedIPs": [
+              "0.0.0.0/0",
+              "::/0"
+            ],
             "endpoint": "engage.cloudflareclient.com:2408"
           }
         ],
@@ -133,7 +141,8 @@
           0,
           0,
           0
-        ]
+        ],
+        "mtu": 1280
       },
       "tag": "warp"
     },
