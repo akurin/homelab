@@ -124,8 +124,8 @@
       "settings": {
         "secretKey": "{{ warp_secret_key }}",
         "address": [
-          "172.16.0.2/32",
-          "2606:4700:110:8526:d40f:a90b:77ec:25f1/128"
+          "{{ warp_ipv4 }}",
+          "{{ warp_ipv6 }}"
         ],
         "peers": [
           {
@@ -136,11 +136,6 @@
             ],
             "endpoint": "engage.cloudflareclient.com:2408"
           }
-        ],
-        "reserved": [
-          0,
-          0,
-          0
         ],
         "mtu": 1280
       },

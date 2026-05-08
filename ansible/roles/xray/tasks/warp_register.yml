@@ -1,0 +1,36 @@
+---
+- name: Check if WARP credentials already exist
+  ansible.builtin.stat:
+    path: /usr/local/etc/xray/warp.json
+  register: warp_creds_file
+
+- name: Ensure python3-cryptography is installed
+  ansible.builtin.apt:
+    name: python3-cryptography
+    state: present
+  when: not warp_creds_file.stat.exists
+
+- name: Copy WARP registration script
+  ansible.builtin.copy:
+    src: warp_register.py
+    dest: /tmp/warp_register.py
+    mode: '0700'
+  when: not warp_creds_file.stat.exists
+
+- name: Register WARP device and save credentials
+  ansible.builtin.shell:
+    cmd: python3 /tmp/warp_register.py > /tmp/warp.json.tmp && mv /tmp/warp.json.tmp /usr/local/etc/xray/warp.json
+    executable: /bin/bash
+  when: not warp_creds_file.stat.exists
+
+- name: Load WARP credentials
+  ansible.builtin.slurp:
+    src: /usr/local/etc/xray/warp.json
+  register: warp_creds_raw
+
+- name: Set WARP credential facts
+  ansible.builtin.set_fact:
+    warp_secret_key: "{{ (warp_creds_raw.content | b64decode | from_json).private_key }}"
+    warp_public_key: "{{ (warp_creds_raw.content | b64decode | from_json).public_key }}"
+    warp_ipv4: "{{ (warp_creds_raw.content | b64decode | from_json).v4 }}"
+    warp_ipv6: "{{ (warp_creds_raw.content | b64decode | from_json).v6 }}"
