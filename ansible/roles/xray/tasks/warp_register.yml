@@ -32,5 +32,7 @@
   ansible.builtin.set_fact:
     warp_secret_key: "{{ (warp_creds_raw.content | b64decode | from_json).private_key }}"
     warp_public_key: "{{ (warp_creds_raw.content | b64decode | from_json).public_key }}"
-    warp_ipv4: "{{ (warp_creds_raw.content | b64decode | from_json).v4 }}"
-    warp_ipv6: "{{ (warp_creds_raw.content | b64decode | from_json).v6 }}"
+    warp_ipv4: "{{ (warp_creds_raw.content | b64decode | from_json).v4 }}/32"
+    warp_ipv6: "{{ (warp_creds_raw.content | b64decode | from_json).v6 }}/128"
+    warp_reserved: "{{ (warp_creds_raw.content | b64decode | from_json).reserved_dec }}"
+    warp_endpoint: "{{ (warp_creds_raw.content | b64decode | from_json).endpoint.v4 }}"

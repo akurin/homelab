@@ -2,6 +2,14 @@
   "log": {
     "loglevel": "info"
   },
+  "dns": {
+    "servers": [
+      {
+        "address": "https://1.1.1.1/dns-query",
+        "skipFallback": false
+      }
+    ]
+  },
 
   {% if xray_role == 'portal' %}
   "reverse": {
@@ -12,20 +20,7 @@
       }
     ]
   },
-  "routing": {
-    "rules": [
-      {
-        "type": "field",
-        "inboundTag": [
-          "incoming_xhttp"
-        ],
-        "outboundTag": "portal"
-      }
-    ]
-  },
-  {% endif %}
-
-  {% if xray_role == 'bridge' %}
+  {% elif xray_role == 'bridge' %}
   "reverse": {
     "bridges": [
       {
@@ -34,8 +29,28 @@
       }
     ]
   },
+  {% endif %}
+
   "routing": {
     "rules": [
+      {
+        "type": "field",
+        "ip": [
+          "1.1.1.1"
+        ],
+        "outboundTag": "direct"
+      }
+      {% if xray_role == 'portal' %}
+      ,
+      {
+        "type": "field",
+        "inboundTag": [
+          "incoming_xhttp"
+        ],
+        "outboundTag": "portal"
+      }
+      {% elif xray_role == 'bridge' %}
+      ,
       {
         "type": "field",
         "inboundTag": [
@@ -53,9 +68,9 @@
         ],
         "outboundTag": "direct"
       }
+      {% endif %}
     ]
   },
-  {% endif %}
 
   "inbounds": [
     {
@@ -70,8 +85,8 @@
             "email": "{{ user.name }}@{{ inventory_hostname }}"
           }{% if not loop.last %},{% endif %}
 {% endfor %}
-       ],
-       "decryption": "none"
+        ],
+        "decryption": "none"
       },
       "streamSettings": {
         "network": "xhttp",
@@ -84,6 +99,7 @@
       "tag": "incoming_xhttp"
     }
   ],
+
   "outbounds": [
     {% if next_address is defined and next_address %}
     {
@@ -123,6 +139,7 @@
       "protocol": "wireguard",
       "settings": {
         "secretKey": "{{ warp_secret_key }}",
+        "domainStrategy": "ForceIPv4v6",
         "address": [
           "{{ warp_ipv4 }}",
           "{{ warp_ipv6 }}"
@@ -134,10 +151,12 @@
               "0.0.0.0/0",
               "::/0"
             ],
-            "endpoint": "engage.cloudflareclient.com:2408"
+            "endpoint": "{{ warp_endpoint }}:2408"
           }
         ],
-        "mtu": 1280
+        "reserved": {{ warp_reserved | to_json }},
+        "mtu": 1280,
+        "noKernelTun": false
       },
       "tag": "warp"
     },
