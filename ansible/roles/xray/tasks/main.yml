@@ -55,6 +55,23 @@
   vars:
     user_id: "{{ item.id }}"
     user_name: "{{ item.name }}"
+    xray_server_address: "{{ domain }}"
+  loop: "{{ xray_users }}"
+  loop_control:
+    label: "{{ item.name }}"
+
+- name: Render xray client config (JSON) via CDN locally per user
+  ansible.builtin.template:
+    src: client_config.j2
+    dest: "{{ lookup('env', 'HOME') }}/vpn/{{ item.name }}/{{ inventory_hostname }}_cdn_config.json"
+    mode: "0600"
+  delegate_to: localhost
+  when: cdn_domain is defined
+  vars:
+    user_id: "{{ item.id }}"
+    user_name: "{{ item.name }}"
+    xray_server_address: "{{ server_ip | default(cdn_domain) }}"
+    xray_tls_server_name: "{{ cdn_domain if server_ip is defined else omit }}"
   loop: "{{ xray_users }}"
   loop_control:
     label: "{{ item.name }}"

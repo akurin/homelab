@@ -94,6 +94,9 @@
         "xhttpSettings": {
           "mode": "auto",
           "path": "{{ secret_path }}"
+          {% for key, value in xray_xhttp_extra_settings.items() %}
+          , {{ key | to_json }}: {{ value | to_json }}
+          {% endfor %}
         }
       },
       "tag": "incoming_xhttp"
@@ -123,6 +126,9 @@
         "xhttpSettings": {
           "path": "{{ secret_path }}",
           "mode": "packet-up"
+          {% for key, value in xray_xhttp_extra_settings.items() %}
+          , {{ key | to_json }}: {{ value | to_json }}
+          {% endfor %}
         },
         "security": "tls",
         "tlsSettings": {
