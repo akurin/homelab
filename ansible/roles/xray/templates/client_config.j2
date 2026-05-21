@@ -5,11 +5,6 @@
   },
   "dns": {
     "servers": [
-      {
-        "address": "77.88.8.8",
-        "domains": ["{{ xray_client_domain | default(domain) }}"],
-        "skipFallback": true
-      },
       "https://1.1.1.1/dns-query"
     ]
   },
@@ -107,7 +102,7 @@
       },
       {
         "type": "field",
-        "ip": "77.88.8.8",
+        "ip": ["77.88.8.8"],
         "outboundTag": "direct"
       },
       {
