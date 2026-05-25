@@ -1,23 +1,36 @@
 xray:
+  vars:
+    ansible_user: root
+    grafana_alloy_collector_attrs:
+      reverse_proxy: caddy
+
   hosts:
     ru_firstvds:
       ansible_host: 188.120.246.74
-      ansible_user: root
       domain: clumsypanda.mooo.com
+      cdn_domain: 3v6ocwf108.cdn.twcstorage.ru
+      server_ip: 91.231.236.240
       next_address: quietotter.mooo.com
+      xray_xhttp_extra_settings: &xray_xhttp_extra_settings
+        uplinkHTTPMethod: GET
+        xPaddingObfsMode: true
+        xPaddingPlacement: header
+        xPaddingHeader: b3
+        xPaddingMethod: tokenish
+      next_address_xray_xhttp_extra_settings: *xray_xhttp_extra_settings
       grafana_repo_mirror: yandex
-      grafana_alloy_collector_attrs:
-        reverse_proxy: caddy
-      xray_role: relay
+      warp_outbound_enabled: false
+      local_exit_rules:
+        - domains: [ "domain:ru" ]
+          outbound: direct
 
     dk_webdock:
       ansible_host: 92.113.145.63
-      ansible_user: root
       domain: quietotter.mooo.com
-      grafana_alloy_collector_attrs:
-        reverse_proxy: caddy
-      xray_role: exit
+      cdn_domain: 3w6i2ij759.cdn.twcstorage.ru
+      server_ip: 91.231.236.240
       warp_outbound_enabled: true
+      xray_xhttp_extra_settings: *xray_xhttp_extra_settings
 
     nl_llhost:
       ansible_host: 45.85.117.151
@@ -25,39 +38,9 @@ xray:
       domain: brisklizard.mooo.com
       grafana_alloy_collector_attrs:
         reverse_proxy: caddy
-      xray_role: exit
       warp_outbound_enabled: true
 
-#    nl_xraytest:
-#      ansible_host: 185.143.179.50
-#      ansible_user: root
-#      domain: scarletfalcon.mooo.com
-#      cdn_domain: 3v6ocwf108.cdn.twcstorage.ru
-#      server_ip: 91.231.236.240
-#      grafana_alloy_collector_attrs:
-#        reverse_proxy: caddy
-#      xray_role: exit
-#      warp_outbound_enabled: true
-#      xray_xhttp_extra_settings:
-#        xPaddingObfsMode: true
-#        xPaddingPlacement: header
-#        xPaddingHeader: b3
-#        xPaddingMethod: tokenish
-
-#    ru_ruvds:
-#      ansible_host: 176.113.82.170
-#      ansible_user: root
-#      domain: scarletfalcon.mooo.com
-#      grafana_repo_mirror: yandex
-#      grafana_alloy_collector_attrs:
-#        reverse_proxy: caddy
-#      xray_role: portal
-
-#    nl_sg:
-#      ansible_host: 45.149.154.132
-#      ansible_user: root
-#      domain: meanderingtortoise.mooo.com
-#      next_address: scarletfalcon.mooo.com
-#      grafana_alloy_collector_attrs:
-#        reverse_proxy: caddy
-#      xray_role: bridge
+  children:
+    xray_publish:
+      hosts:
+        ru_firstvds:

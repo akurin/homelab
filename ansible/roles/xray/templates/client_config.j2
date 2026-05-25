@@ -1,5 +1,5 @@
 {
-  "remarks": "{{ user_name }}@{{ inventory_hostname }}",
+  "remarks": "{{ remark }}",
   "log": {
     "loglevel": "debug"
   },
@@ -36,15 +36,6 @@
         "auth": "noauth",
         "udp": true
       },
-      "sniffing": {
-        "destOverride": [
-          "http",
-          "tls",
-          "quic"
-        ],
-        "enabled": true,
-        "routeOnly": false
-      },
       "tag": "socks_direct"
     }
   ],
@@ -68,13 +59,10 @@
       },
       "streamSettings": {
         "network": "xhttp",
-        "xhttpSettings": {
-          "path": "{{ secret_path }}",
+        "xhttpSettings": {{ {
+          "path": secret_path,
           "mode": "packet-up"
-          {% for key, value in xray_xhttp_extra_settings.items() %}
-          , {{ key | to_json }}: {{ value | to_json }}
-          {% endfor %}
-        },
+        } | combine(xray_xhttp_extra_settings | default({})) | to_json }},
         "security": "tls",
         "tlsSettings": {
           {% if xray_tls_server_name is defined %}
@@ -95,16 +83,6 @@
   "routing": {
     "domainStrategy": "IPIfNonMatch",
     "rules": [
-      {
-        "type": "field",
-        "domain": ["{{ xray_client_domain | default(domain) }}"],
-        "outboundTag": "direct"
-      },
-      {
-        "type": "field",
-        "ip": ["77.88.8.8"],
-        "outboundTag": "direct"
-      },
       {
         "type": "field",
         "protocol": [

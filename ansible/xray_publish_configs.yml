@@ -1,0 +1,53 @@
+---
+- name: Publish Xray client configs
+  hosts: xray_publish
+  gather_facts: false
+  tasks:
+    - name: Parse publish users
+      ansible.builtin.set_fact:
+        publish_users: "{{ publish_users_yaml_b64 | b64decode | from_json }}"
+
+    - name: Find existing token directories
+      ansible.builtin.find:
+        paths: /var/www/xray-configs
+        file_type: directory
+        depth: 1
+      register: existing_dirs
+
+    - name: Remove orphaned token directories
+      ansible.builtin.file:
+        path: "{{ item.path }}"
+        state: absent
+      loop: "{{ existing_dirs.files }}"
+      when: item.path | basename not in publish_users | map(attribute='token') | list
+      loop_control:
+        label: "{{ item.path | basename }}"
+
+    - name: Ensure per-subscription token directory exists
+      ansible.builtin.file:
+        path: "/var/www/xray-configs/{{ item.token }}"
+        state: directory
+        owner: www-data
+        group: www-data
+        mode: "0755"
+      loop: "{{ publish_users }}"
+      loop_control:
+        label: "{{ item.name }}"
+
+    - name: Copy config for each subscription
+      ansible.builtin.copy:
+        src: "{{ lookup('env', 'HOME') }}/vpn/subscriptions/{{ item.name }}/configs.json"
+        dest: "/var/www/xray-configs/{{ item.token }}/configs.json"
+        owner: www-data
+        group: www-data
+        mode: "0644"
+      loop: "{{ publish_users }}"
+      loop_control:
+        label: "{{ item.name }}"
+
+    - name: Show subscription URLs
+      ansible.builtin.debug:
+        msg: "{{ item.name }}: https://{{ domain }}/{{ item.token }}/configs.json"
+      loop: "{{ publish_users }}"
+      loop_control:
+        label: "{{ item.name }}"

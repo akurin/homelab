@@ -30,7 +30,21 @@
        }
     }
 
-    # 2. Fallback Website: All other traffic (for camouflage)
+    {% if publish_users_yaml_b64 is defined and inventory_hostname in groups['xray_publish'] %}
+    {% set publish_users_list = publish_users_yaml_b64 | b64decode | from_json %}
+    # 2. Subscription config routes
+    {% for user in publish_users_list %}
+    handle /{{ user.token }}/* {
+        root * /var/www/xray-configs
+        file_server
+        header profile-title "base64:{{ user.name | b64encode }}"
+        header profile-update-interval "1"
+        header x-robots-tag "noindex, nofollow"
+    }
+
+    {% endfor %}
+    {% endif %}
+    # 3. Fallback Website: All other traffic (for camouflage)
     # Serves content from the fallback directory
     root * /var/www/html/{{ domain }}
     file_server

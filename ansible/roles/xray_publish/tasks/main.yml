@@ -1,0 +1,23 @@
+---
+- name: Parse publish users
+  ansible.builtin.set_fact:
+    publish_users: "{{ publish_users_yaml_b64 | b64decode | from_json }}"
+
+- name: Create xray-configs root directory
+  ansible.builtin.file:
+    path: /var/www/xray-configs
+    state: directory
+    owner: www-data
+    group: www-data
+    mode: "0755"
+
+- name: Create per-user token directories
+  ansible.builtin.file:
+    path: "/var/www/xray-configs/{{ item.token }}"
+    state: directory
+    owner: www-data
+    group: www-data
+    mode: "0755"
+  loop: "{{ publish_users }}"
+  loop_control:
+    label: "{{ item.name }}"

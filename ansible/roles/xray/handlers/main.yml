@@ -1,0 +1,7 @@
+---
+- name: reload systemd and restart watchdog
+  ansible.builtin.systemd:
+    name: xray-warp-watchdog
+    state: restarted
+    enabled: true
+    daemon_reload: true

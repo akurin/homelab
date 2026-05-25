@@ -8,10 +8,14 @@ GCLOUD_FM_POLL_FREQUENCY="$(pass grafana/GCLOUD_FM_POLL_FREQUENCY)"
 GCLOUD_FM_HOSTED_ID="$(pass grafana/GCLOUD_FM_HOSTED_ID)"
 K3S_TOKEN="$(pass k3s/token)"
 
+LIMIT=()
+[[ -n "${1:-}" ]] && LIMIT=(--limit "$1")
+
 (
 	cd ansible && ansible-playbook \
 		k3s_server.yml \
 		--inventory-file "./inventory/${TIER}_hosts.yml" \
+		"${LIMIT[@]+"${LIMIT[@]}"}" \
 		-e tailscale_auth_key="$tailscale_auth_key" \
 		-e GCLOUD_RW_API_KEY="$GCLOUD_RW_API_KEY" \
 		-e GCLOUD_FM_URL="$GCLOUD_FM_URL" \
@@ -27,6 +31,7 @@ chmod 600 "$HOME/.kube/$TIER-k3s-kubeconfig"
 	cd ansible && ansible-playbook \
 		k3s_agent.yml \
 		--inventory-file "./inventory/${TIER}_hosts.yml" \
+		"${LIMIT[@]+"${LIMIT[@]}"}" \
 		-e tailscale_auth_key="$tailscale_auth_key" \
 		-e GCLOUD_RW_API_KEY="$GCLOUD_RW_API_KEY" \
 		-e GCLOUD_FM_URL="$GCLOUD_FM_URL" \

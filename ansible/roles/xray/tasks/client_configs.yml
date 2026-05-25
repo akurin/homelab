@@ -1,0 +1,65 @@
+---
+- name: "Filter out server-side users (skip_client_config: true)"
+  ansible.builtin.set_fact:
+    xray_client_users: >-
+      {{ xray_users | rejectattr('skip_client_config', 'defined') | list }}
+
+- name: Ensure per-user directories exist on localhost
+  ansible.builtin.file:
+    path: "{{ lookup('env', 'HOME') }}/vpn/{{ item.name }}"
+    state: directory
+    mode: "0700"
+  delegate_to: localhost
+  loop: "{{ xray_client_users }}"
+  loop_control:
+    label: "{{ item.name }}"
+
+- name: Render xray client config (JSON) locally per user
+  ansible.builtin.copy:
+    dest: "{{ lookup('env', 'HOME') }}/vpn/{{ item.name }}/{{ inventory_hostname }}_config.json"
+    mode: "0600"
+    content: "{{ lookup('template', 'client_config.j2') | from_json | to_nice_json }}"
+  delegate_to: localhost
+  vars:
+    user_id: "{{ item.id }}"
+    user_name: "{{ item.name }}"
+    xray_server_address: "{{ domain }}"
+    remark: "{{ item.name }}@{{ inventory_hostname }}"
+  loop: "{{ xray_client_users }}"
+  loop_control:
+    label: "{{ item.name }}"
+
+- name: Render xray client config (JSON) via CDN locally per user
+  ansible.builtin.copy:
+    dest: "{{ lookup('env', 'HOME') }}/vpn/{{ item.name }}/{{ inventory_hostname }}_cdn_config.json"
+    mode: "0600"
+    content: "{{ lookup('template', 'client_config.j2') | from_json | to_nice_json }}"
+  delegate_to: localhost
+  when: cdn_domain is defined
+  vars:
+    user_id: "{{ item.id }}"
+    user_name: "{{ item.name }}"
+    xray_server_address: "{{ server_ip | default(cdn_domain) }}"
+    xray_tls_server_name: "{{ cdn_domain if server_ip is defined else omit }}"
+    remark: "{{ item.name }}@{{ inventory_hostname }} · CDN"
+  loop: "{{ xray_client_users }}"
+  loop_control:
+    label: "{{ item.name }}"
+
+- name: Render xray client config (JSON) with load balancer locally per user+profile
+  ansible.builtin.copy:
+    dest: "{{ lookup('env', 'HOME') }}/vpn/{{ item.0.name }}/{{ inventory_hostname }}_lb_{{ item.1.name }}_config.json"
+    mode: "0600"
+    content: "{{ lookup('template', 'client_config_lb.j2') | from_json | to_nice_json }}"
+  delegate_to: localhost
+  when: cdn_domain is defined and server_ip is defined
+  vars:
+    user_id: "{{ item.0.id }}"
+    user_name: "{{ item.0.name }}"
+    remark: "{{ item.0.name }}@{{ inventory_hostname }} · {% if item.1.name == 'full_proxy' %}LB{% else %}LB {{ item.1.name | replace('_', ' ') | title }}{% endif %}"
+    routing_profile: "{{ item.1.name }}"
+    proxy_domains: "{{ item.1.proxy_domains | default([]) }}"
+    proxy_ips: "{{ item.1.proxy_ips | default([]) }}"
+  loop: "{{ xray_client_users | subelements('routing_profiles', skip_missing=True) }}"
+  loop_control:
+    label: "{{ item.0.name }}/{{ item.1.name }}"

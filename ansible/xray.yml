@@ -15,3 +15,8 @@
     - role: xray
     - role: caddy_proxy
     - role: ssh_hardening
+
+- name: Setup config publishing
+  hosts: xray_publish
+  roles:
+    - role: xray_publish

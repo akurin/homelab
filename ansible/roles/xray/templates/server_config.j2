@@ -11,7 +11,7 @@
     ]
   },
 
-  {% if xray_role == 'portal' %}
+  {% if reverse_xray_role is defined and reverse_xray_role == 'portal' %}
   "reverse": {
     "portals": [
       {
@@ -20,7 +20,7 @@
       }
     ]
   },
-  {% elif xray_role == 'bridge' %}
+  {% elif reverse_xray_role is defined and reverse_xray_role == 'bridge' %}
   "reverse": {
     "bridges": [
       {
@@ -40,7 +40,21 @@
         ],
         "outboundTag": "direct"
       }
-      {% if xray_role == 'portal' %}
+      {% if warp_outbound_enabled %}
+      ,{
+        "type": "field",
+        "inboundTag": ["warp_health_check"],
+        "outboundTag": "warp"
+      }
+      {% endif %}
+      {% for rule in local_exit_rules | default([]) %}
+      ,{
+        "type": "field",
+        "domain": {{ rule.domains | to_json }},
+        "outboundTag": "{{ rule.outbound }}"
+      }
+      {% endfor %}
+      {% if reverse_xray_role is defined and reverse_xray_role == 'portal' %}
       ,
       {
         "type": "field",
@@ -49,7 +63,7 @@
         ],
         "outboundTag": "portal"
       }
-      {% elif xray_role == 'bridge' %}
+      {% elif reverse_xray_role is defined and reverse_xray_role == 'bridge' %}
       ,
       {
         "type": "field",
@@ -73,6 +87,17 @@
   },
 
   "inbounds": [
+    {% if warp_outbound_enabled %}
+    {
+      "port": 10890,
+      "listen": "127.0.0.1",
+      "protocol": "socks",
+      "settings": {
+        "auth": "noauth"
+      },
+      "tag": "warp_health_check"
+    },
+    {% endif %}
     {
       "port": {{ xray_xhttp_port_internal }},
       "listen": "127.0.0.1",
@@ -91,13 +116,10 @@
       "streamSettings": {
         "network": "xhttp",
         "security": "none",
-        "xhttpSettings": {
-          "mode": "auto",
-          "path": "{{ secret_path }}"
-          {% for key, value in xray_xhttp_extra_settings.items() %}
-          , {{ key | to_json }}: {{ value | to_json }}
-          {% endfor %}
-        }
+        "xhttpSettings": {{ {
+          "mode": "packet-up",
+          "path": secret_path
+        } | combine(xray_xhttp_extra_settings | default({})) | to_json }}
       },
       "tag": "incoming_xhttp"
     }
@@ -123,13 +145,10 @@
       },
       "streamSettings": {
         "network": "xhttp",
-        "xhttpSettings": {
-          "path": "{{ secret_path }}",
+        "xhttpSettings": {{ {
+          "path": secret_path,
           "mode": "packet-up"
-          {% for key, value in xray_xhttp_extra_settings.items() %}
-          , {{ key | to_json }}: {{ value | to_json }}
-          {% endfor %}
-        },
+        } | combine(next_address_xray_xhttp_extra_settings) | to_json }},
         "security": "tls",
         "tlsSettings": {
           "alpn": [

@@ -11,10 +11,14 @@ HEADSCALE_OIDC_CLIENT_ID="$(pass headscale/oidc_client_id)"
 HEADSCALE_OIDC_CLIENT_SECRET="$(pass headscale/oidc_client_secret)"
 HEADSCALE_OIDC_ALLOWED_USER="$(pass headscale/oidc_allowed_user)"
 
+LIMIT=()
+[[ -n "${1:-}" ]] && LIMIT=(--limit "$1")
+
 (
 	cd ansible && ansible-playbook \
 		headscale.yml \
 		--inventory-file "./inventory/shared_hosts.yml" \
+		"${LIMIT[@]+"${LIMIT[@]}"}" \
 		-e GCLOUD_RW_API_KEY="$GCLOUD_RW_API_KEY" \
 		-e GCLOUD_FM_URL="$GCLOUD_FM_URL" \
 		-e GCLOUD_FM_POLL_FREQUENCY="$GCLOUD_FM_POLL_FREQUENCY" \

@@ -1,0 +1,13 @@
+---
+- name: Generate Xray client configs
+  hosts: xray
+  gather_facts: false
+  tasks:
+    - name: Parse users JSON
+      ansible.builtin.set_fact:
+        xray_users: "{{ xray_users_b64 | b64decode | from_json }}"
+
+    - name: Generate client configs
+      ansible.builtin.include_role:
+        name: xray
+        tasks_from: client_configs

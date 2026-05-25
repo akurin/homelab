@@ -1,4 +1,7 @@
 #!/bin/bash
 set -euo pipefail
 
-(cd ansible && ansible-playbook --inventory-file "./inventory" maintain.yml)
+LIMIT=()
+[[ -n "${1:-}" ]] && LIMIT=(--limit "$1")
+
+(cd ansible && ansible-playbook --inventory-file "./inventory" "${LIMIT[@]+"${LIMIT[@]}"}" maintain.yml)
