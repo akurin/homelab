@@ -57,20 +57,20 @@ inventory group are treated as publish targets.
   {
     "name": "olga",
     "id": "<uuid>",
-    "routing_profiles": [
+    "configs": [
       {
         "name": "selective",
-        "proxy_ips": [
-          "geoip:telegram"
-        ],
-        "proxy_domains": [
-          "geosite:youtube",
-          "geosite:google",
-          "memrise.com"
+        "routing_rules": [
+          { "type": "field", "ip": ["geoip:telegram"], "balancerTag": "balancer" },
+          { "type": "field", "domain": ["geosite:youtube", "geosite:google"], "balancerTag": "balancer" },
+          { "type": "field", "network": "tcp,udp", "outboundTag": "direct" }
         ]
       },
       {
-        "name": "full_proxy"
+        "name": "full_proxy",
+        "routing_rules": [
+          { "type": "field", "network": "tcp,udp", "balancerTag": "balancer" }
+        ]
       }
     ]
   }
@@ -80,13 +80,17 @@ inventory group are treated as publish targets.
 `xray_client` is the server-to-server chaining identity — always mark it
 `skip_client_config: true`.
 
-`routing_profiles` controls the routing rules in load-balanced configs:
+Each user can have multiple named `configs`. Each config generates one LB client config file
+and contains a `routing_rules` array of raw xray routing rule objects, injected after the
+fixed infrastructure rules (bittorrent→direct, socks_direct→direct).
 
-| Profile        | Behaviour                                                 |
-|----------------|-----------------------------------------------------------|
-| `full_proxy`   | All traffic → balancer                                    |
-| `selective`    | Listed domains/IPs → balancer, everything else → direct   |
-| `proxy_direct` | All traffic → `proxy_direct` outbound, bypassing balancer |
+Available outbound tags in LB configs:
+
+| Tag            | Description                                      |
+|----------------|--------------------------------------------------|
+| `balancer`     | Load-balanced proxy (proxy_direct preferred, proxy_cdn fallback) |
+| `proxy_direct` | Direct connection to server, bypassing balancer  |
+| `direct`       | Local internet (no proxy)                        |
 
 ### Subscription record (`xray/subscriptions`)
 
