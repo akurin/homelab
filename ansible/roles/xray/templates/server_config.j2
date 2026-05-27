@@ -121,6 +121,15 @@
           "path": secret_path
         } | combine(xray_xhttp_extra_settings | default({})) | to_json }}
       },
+      "sniffing": {
+        "destOverride": [
+          "http",
+          "tls",
+          "quic"
+        ],
+        "enabled": true,
+        "routeOnly": true
+      },
       "tag": "incoming_xhttp"
     }
   ],
