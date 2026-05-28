@@ -32,6 +32,7 @@
   {% endif %}
 
   "routing": {
+    "domainStrategy": "IPIfNonMatch",
     "rules": [
       {
         "type": "field",
@@ -48,11 +49,7 @@
       }
       {% endif %}
       {% for rule in local_exit_rules | default([]) %}
-      ,{
-        "type": "field",
-        "domain": {{ rule.domains | to_json }},
-        "outboundTag": "{{ rule.outbound }}"
-      }
+      ,{{ rule | to_json }}
       {% endfor %}
       {% if reverse_xray_role is defined and reverse_xray_role == 'portal' %}
       ,

@@ -61,15 +61,36 @@ inventory group are treated as publish targets.
       {
         "name": "selective",
         "routing_rules": [
-          { "type": "field", "ip": ["geoip:telegram"], "balancerTag": "balancer" },
-          { "type": "field", "domain": ["geosite:youtube", "geosite:google"], "balancerTag": "balancer" },
-          { "type": "field", "network": "tcp,udp", "outboundTag": "direct" }
+          {
+            "type": "field",
+            "ip": [
+              "geoip:telegram"
+            ],
+            "balancerTag": "balancer"
+          },
+          {
+            "type": "field",
+            "domain": [
+              "geosite:youtube",
+              "geosite:google"
+            ],
+            "balancerTag": "balancer"
+          },
+          {
+            "type": "field",
+            "network": "tcp,udp",
+            "outboundTag": "direct"
+          }
         ]
       },
       {
         "name": "full_proxy",
         "routing_rules": [
-          { "type": "field", "network": "tcp,udp", "balancerTag": "balancer" }
+          {
+            "type": "field",
+            "network": "tcp,udp",
+            "balancerTag": "balancer"
+          }
         ]
       }
     ]
@@ -86,11 +107,11 @@ fixed infrastructure rules (bittorrent→direct, socks_direct→direct).
 
 Available outbound tags in LB configs:
 
-| Tag            | Description                                      |
-|----------------|--------------------------------------------------|
+| Tag            | Description                                                      |
+|----------------|------------------------------------------------------------------|
 | `balancer`     | Load-balanced proxy (proxy_direct preferred, proxy_cdn fallback) |
-| `proxy_direct` | Direct connection to server, bypassing balancer  |
-| `direct`       | Local internet (no proxy)                        |
+| `proxy_direct` | Direct connection to server, bypassing balancer                  |
+| `direct`       | Local internet (no proxy)                                        |
 
 ### Subscription record (`xray/subscriptions`)
 
@@ -216,16 +237,16 @@ Import this URL into your xray client (v2rayN, NekoBox, etc.).
 
 ## Inventory host vars reference
 
-| Variable                                 | Required | Description                                               |
-|------------------------------------------|----------|-----------------------------------------------------------|
-| `domain`                                 | ✓        | Public domain (FreeDNS), used for TLS and Caddy           |
-| `cdn_domain`                             |          | CDN domain for SNI in CDN/LB client configs               |
-| `server_ip`                              |          | Real IP behind CDN (enables CDN client config generation) |
-| `next_address`                           |          | Next hop domain for server chaining                       |
-| `next_address_xray_xhttp_extra_settings` |          | xhttp settings for the chain outbound                     |
-| `xray_xhttp_extra_settings`              |          | Extra xhttp padding/obfuscation settings                  |
-| `warp_outbound_enabled`                  |          | Enable Cloudflare WARP outbound                           |
-| `local_exit_rules`                       |          | List of `{domains, outbound}` rules for local geo exit    |
+| Variable                                 | Required | Description                                                               |
+|------------------------------------------|----------|---------------------------------------------------------------------------|
+| `domain`                                 | ✓        | Public domain (FreeDNS), used for TLS and Caddy                           |
+| `cdn_domain`                             |          | CDN domain for SNI in CDN/LB client configs                               |
+| `server_ip`                              |          | Real IP behind CDN (enables CDN client config generation)                 |
+| `next_address`                           |          | Next hop domain for server chaining                                       |
+| `next_address_xray_xhttp_extra_settings` |          | xhttp settings for the chain outbound                                     |
+| `xray_xhttp_extra_settings`              |          | Extra xhttp padding/obfuscation settings                                  |
+| `warp_outbound_enabled`                  |          | Enable Cloudflare WARP outbound                                           |
+| `local_exit_rules`                       |          | List of raw xray routing rule objects injected before reverse/chain rules |
 
 ## Inventory groups reference
 

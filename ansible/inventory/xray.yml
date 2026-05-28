@@ -21,8 +21,12 @@ xray:
       grafana_repo_mirror: yandex
       warp_outbound_enabled: false
       local_exit_rules:
-        - domains: [ "domain:ru" ]
-          outbound: direct
+        - type: field
+          domain: [ "domain:ru", "domain:xn--p1ai" ]
+          outboundTag: direct
+    #        - type: field
+    #          ip: [ "geoip:ru" ]
+    #          outboundTag: direct
 
     dk_webdock:
       ansible_host: 92.113.145.63

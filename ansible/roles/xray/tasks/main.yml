@@ -19,80 +19,16 @@
     executable: /bin/bash
   changed_when: true
 
+- name: Download Loyalsoldier geoip.dat
+  ansible.builtin.get_url:
+    url: https://github.com/Loyalsoldier/v2ray-rules-dat/releases/latest/download/geoip.dat
+    dest: /usr/local/share/xray/geoip.dat
+    mode: "0644"
+
 - name: Register WARP device (idempotent)
   ansible.builtin.include_tasks: warp_register.yml
   when: warp_outbound_enabled
 
-- name: Remove WARP watchdog when disabled
-  when: not warp_outbound_enabled
-  block:
-    - name: Stop and disable WARP watchdog service
-      ansible.builtin.systemd:
-        name: xray-warp-watchdog
-        state: stopped
-        enabled: false
-      ignore_errors: true
-
-    - name: Remove WARP watchdog service file
-      ansible.builtin.file:
-        path: /etc/systemd/system/xray-warp-watchdog.service
-        state: absent
-
-    - name: Remove WARP watchdog script
-      ansible.builtin.file:
-        path: /usr/local/bin/xray-warp-watchdog.sh
-        state: absent
-
-    - name: Reload systemd after watchdog removal
-      ansible.builtin.systemd:
-        daemon_reload: true
-
-- name: Deploy WARP watchdog script
-  ansible.builtin.copy:
-    dest: /usr/local/bin/xray-warp-watchdog.sh
-    mode: "0755"
-    content: |
-      #!/bin/bash
-      # Monitors WARP connectivity by making a real request through the local
-      # SOCKS proxy (port 10890) which routes exclusively to the WARP outbound.
-      # Restarts xray if the check fails.
-      CHECK_INTERVAL=60
-      RESTART_WAIT=30
-
-      # Initial delay to allow xray to fully start
-      sleep $RESTART_WAIT
-
-      while true; do
-              if curl -sf --max-time 10 -x socks5h://127.0.0.1:10890 \
-                      https://cloudflare.com/cdn-cgi/trace | grep -q "warp=on"; then
-              sleep $CHECK_INTERVAL
-          else
-              logger -t xray-warp-watchdog "WARP check failed, restarting xray"
-              systemctl restart xray
-              sleep $RESTART_WAIT
-          fi
-      done
-  when: warp_outbound_enabled
-
-- name: Deploy WARP watchdog systemd service
-  ansible.builtin.copy:
-    dest: /etc/systemd/system/xray-warp-watchdog.service
-    mode: "0644"
-    content: |
-      [Unit]
-      Description=Xray WARP watchdog
-      After=network-online.target xray.service
-
-      [Service]
-      Type=simple
-      ExecStart=/usr/local/bin/xray-warp-watchdog.sh
-      Restart=always
-      RestartSec=10
-
-      [Install]
-      WantedBy=multi-user.target
-  when: warp_outbound_enabled
-  notify: reload systemd and restart watchdog
 
 - name: Save Xray config
   ansible.builtin.copy:
