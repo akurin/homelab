@@ -33,3 +33,13 @@ publish_users_yaml_b64="$(printf '%s' "$publish_users_json" | base64)"
 		"${LIMIT[@]+"${LIMIT[@]}"}" \
 		-e publish_users_yaml_b64="$publish_users_yaml_b64"
 )
+
+# Step 4: Update Caddyfile with current token routes and reload Caddy
+(
+	cd ansible
+
+	ansible-playbook caddy_reload.yml \
+		--inventory-file "./inventory/xray.yml" \
+		-e publish_users_yaml_b64="$publish_users_yaml_b64" \
+		-e secret_path="$secret_path"
+)

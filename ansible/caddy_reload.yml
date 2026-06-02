@@ -1,0 +1,21 @@
+---
+- name: Update Caddyfile and reload Caddy
+  hosts: xray_publish
+  gather_facts: false
+  vars_files:
+    - roles/xray/defaults/main.yml
+  tasks:
+    - name: Deploy Caddyfile (from template)
+      ansible.builtin.template:
+        src: roles/caddy_proxy/templates/Caddyfile.j2
+        dest: /etc/caddy/Caddyfile
+        owner: root
+        group: root
+        mode: "0644"
+      notify: Reload Caddy
+
+  handlers:
+    - name: Reload Caddy
+      ansible.builtin.systemd:
+        name: caddy
+        state: reloaded
