@@ -3,6 +3,7 @@ xray:
     ansible_user: root
     grafana_alloy_collector_attrs:
       reverse_proxy: caddy
+    xray_xhttp_port_internal: 10000
 
   hosts:
     ru_firstvds:

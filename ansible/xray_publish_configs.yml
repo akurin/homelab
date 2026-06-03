@@ -47,7 +47,7 @@
 
     - name: Show subscription URLs
       ansible.builtin.debug:
-        msg: "{{ item.name }}: https://{{ domain }}/{{ item.token }}/configs.json"
+        msg: "{{ item.name }}: https://{{ domain }}/subscriptions/{{ item.token }}"
       loop: "{{ publish_users }}"
       loop_control:
         label: "{{ item.name }}"

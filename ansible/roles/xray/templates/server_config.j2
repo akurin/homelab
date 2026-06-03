@@ -41,13 +41,6 @@
         ],
         "outboundTag": "direct"
       }
-      {% if warp_outbound_enabled %}
-      ,{
-        "type": "field",
-        "inboundTag": ["warp_health_check"],
-        "outboundTag": "warp"
-      }
-      {% endif %}
       {% for rule in local_exit_rules | default([]) %}
       ,{{ rule | to_json }}
       {% endfor %}
@@ -84,17 +77,6 @@
   },
 
   "inbounds": [
-    {% if warp_outbound_enabled %}
-    {
-      "port": 10890,
-      "listen": "127.0.0.1",
-      "protocol": "socks",
-      "settings": {
-        "auth": "noauth"
-      },
-      "tag": "warp_health_check"
-    },
-    {% endif %}
     {
       "port": {{ xray_xhttp_port_internal }},
       "listen": "127.0.0.1",
@@ -165,7 +147,7 @@
       "tag": "next_proxy"
     },
     {% endif %}
-    {% if warp_outbound_enabled is defined and warp_outbound_enabled %}
+    {% if warp_outbound_enabled | default(false) %}
     {
       "protocol": "wireguard",
       "settings": {

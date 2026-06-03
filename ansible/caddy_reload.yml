@@ -2,8 +2,6 @@
 - name: Update Caddyfile and reload Caddy
   hosts: xray_publish
   gather_facts: false
-  vars_files:
-    - roles/xray/defaults/main.yml
   tasks:
     - name: Deploy Caddyfile (from template)
       ansible.builtin.template:

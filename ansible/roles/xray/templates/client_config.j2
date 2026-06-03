@@ -194,7 +194,7 @@
       },
       {
         "type": "field",
-        "inboundTag": "socks_direct",
+        "inboundTag": ["socks_direct"],
         "outboundTag": "direct"
       }
       {% for rule in routing_rules | default([]) %}

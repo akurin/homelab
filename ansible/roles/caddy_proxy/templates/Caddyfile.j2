@@ -34,7 +34,9 @@
     {% set publish_users_list = publish_users_yaml_b64 | b64decode | from_json %}
     # 2. Subscription config routes
     {% for user in publish_users_list %}
-    handle /{{ user.token }}/* {
+    handle /subscriptions/{{ user.token }}* {
+        uri strip_prefix /subscriptions
+        try_files {path}/configs.json {path}
         root * /var/www/xray-configs
         file_server
         header profile-title "base64:{{ user.name | b64encode }}"

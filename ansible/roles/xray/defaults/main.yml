@@ -1,4 +1,3 @@
 ---
-xray_xhttp_port_internal: 10000
 xray_xhttp_extra_settings: { }
 next_address_xray_xhttp_extra_settings: { }
