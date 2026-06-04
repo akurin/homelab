@@ -9,15 +9,18 @@ xray:
     ru_firstvds:
       ansible_host: 188.120.246.74
       domain: clumsypanda.mooo.com
-      cdn_domain: 3v6ocwf108.cdn.twcstorage.ru
-      server_ip: 151.236.89.224
+#      cdn_domain: 3v6ocwf108.cdn.twcstorage.ru
+#      server_ip: 151.236.89.224
       next_address: quietotter.mooo.com
       xray_xhttp_extra_settings: &xray_xhttp_extra_settings
-        uplinkHTTPMethod: GET
-        xPaddingObfsMode: true
-        xPaddingPlacement: header
-        xPaddingHeader: b3
-        xPaddingMethod: tokenish
+#        uplinkHTTPMethod: GET
+#        xPaddingObfsMode: true
+#        xPaddingPlacement: header
+#        xPaddingHeader: b3
+#        xPaddingMethod: tokenish
+#        sessionPlacement: query
+#        sessionKey: api_key
+#        seqPlacement: query
       next_address_xray_xhttp_extra_settings: *xray_xhttp_extra_settings
       grafana_repo_mirror: yandex
       warp_outbound_enabled: false

@@ -26,7 +26,6 @@
     remark: "{{ item.0.name }}@{{ inventory_hostname }} · {{ item.1.name | replace('_', ' ') | title }}"
     routing_rules: "{{ item.1.routing_rules | default([]) }}"
     lb_mode: false
-    transport: xhttp
   loop: "{{ xray_client_users | subelements('configs', skip_missing=True) }}"
   loop_control:
     label: "{{ item.0.name }}/{{ item.1.name }}"
@@ -44,42 +43,6 @@
     remark: "{{ item.0.name }}@{{ inventory_hostname }} · {{ item.1.name | replace('_', ' ') | title }} · LB"
     routing_rules: "{{ item.1.routing_rules | default([]) }}"
     lb_mode: true
-    transport: xhttp
-  loop: "{{ xray_client_users | subelements('configs', skip_missing=True) }}"
-  loop_control:
-    label: "{{ item.0.name }}/{{ item.1.name }}"
-
-- name: Render xray client config (gRPC simple) locally per user+config
-  ansible.builtin.copy:
-    dest: "{{ lookup('env', 'HOME') }}/vpn/{{ item.0.name }}/{{ inventory_hostname }}_{{ item.1.name }}_grpc_config.json"
-    mode: "0600"
-    content: "{{ lookup('template', 'client_config.j2') | from_json | to_nice_json }}"
-  delegate_to: localhost
-  vars:
-    user_id: "{{ item.0.id }}"
-    user_name: "{{ item.0.name }}"
-    remark: "{{ item.0.name }}@{{ inventory_hostname }} · {{ item.1.name | replace('_', ' ') | title }} · gRPC"
-    routing_rules: "{{ item.1.routing_rules | default([]) }}"
-    lb_mode: false
-    transport: grpc
-  loop: "{{ xray_client_users | subelements('configs', skip_missing=True) }}"
-  loop_control:
-    label: "{{ item.0.name }}/{{ item.1.name }}"
-
-- name: Render xray client config (gRPC LB) locally per user+config
-  ansible.builtin.copy:
-    dest: "{{ lookup('env', 'HOME') }}/vpn/{{ item.0.name }}/{{ inventory_hostname }}_lb_{{ item.1.name }}_grpc_config.json"
-    mode: "0600"
-    content: "{{ lookup('template', 'client_config.j2') | from_json | to_nice_json }}"
-  delegate_to: localhost
-  when: cdn_domain is defined and server_ip is defined
-  vars:
-    user_id: "{{ item.0.id }}"
-    user_name: "{{ item.0.name }}"
-    remark: "{{ item.0.name }}@{{ inventory_hostname }} · {{ item.1.name | replace('_', ' ') | title }} · LB · gRPC"
-    routing_rules: "{{ item.1.routing_rules | default([]) }}"
-    lb_mode: true
-    transport: grpc
   loop: "{{ xray_client_users | subelements('configs', skip_missing=True) }}"
   loop_control:
     label: "{{ item.0.name }}/{{ item.1.name }}"

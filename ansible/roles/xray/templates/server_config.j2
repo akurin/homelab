@@ -49,8 +49,7 @@
       {
         "type": "field",
         "inboundTag": [
-          "incoming_xhttp",
-          "incoming_grpc"
+          "incoming_xhttp"
         ],
         "outboundTag": "portal"
       }
@@ -97,7 +96,7 @@
         "network": "xhttp",
         "security": "none",
         "xhttpSettings": {{ {
-          "mode": "packet-up",
+          "mode": "auto",
           "path": secret_path
         } | combine(xray_xhttp_extra_settings | default({})) | to_json }}
       },
@@ -111,39 +110,6 @@
         "routeOnly": true
       },
       "tag": "incoming_xhttp"
-    },
-    {
-      "port": {{ xray_grpc_port_internal }},
-      "listen": "127.0.0.1",
-      "protocol": "vless",
-      "settings": {
-        "clients": [
-{% for user in xray_users %}
-          {
-            "id": "{{ user.id }}",
-            "email": "{{ user.name }}@{{ inventory_hostname }}"
-          }{% if not loop.last %},{% endif %}
-{% endfor %}
-        ],
-        "decryption": "none"
-      },
-      "streamSettings": {
-        "network": "grpc",
-        "security": "none",
-        "grpcSettings": {
-          "serviceName": "{{ grpc_service_name }}"
-        }
-      },
-      "sniffing": {
-        "destOverride": [
-          "http",
-          "tls",
-          "quic"
-        ],
-        "enabled": true,
-        "routeOnly": true
-      },
-      "tag": "incoming_grpc"
     }
   ],
 
@@ -166,21 +132,13 @@
         ]
       },
       "streamSettings": {
-        {% if next_address_transport | mandatory == 'grpc' %}
-        "network": "grpc",
-        "grpcSettings": {
-          "serviceName": "{{ grpc_service_name }}"
-        },
-        {% else %}
         "network": "xhttp",
         "xhttpSettings": {{ {
           "path": secret_path,
-          "mode": "packet-up"
+          "mode": "stream-one"
         } | combine(next_address_xray_xhttp_extra_settings) | to_json }},
-        {% endif %}
         "security": "tls",
         "tlsSettings": {
-          "fingerprint": "safari",
           "alpn": [
             "h2"
           ]

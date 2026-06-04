@@ -10,7 +10,6 @@ GCLOUD_FM_POLL_FREQUENCY="$(pass grafana/GCLOUD_FM_POLL_FREQUENCY)"
 GCLOUD_FM_HOSTED_ID="$(pass grafana/GCLOUD_FM_HOSTED_ID)"
 xray_users_b64="$(pass xray/uuids | base64)"
 secret_path="$(pass xray/secret_path)"
-grpc_service_name="$(pass xray/grpc_service_name)"
 freedns_username="$(pass freedns.afraid.org/username)"
 freedns_password="$(pass freedns.afraid.org/password)"
 subscriptions_json="$(pass xray/subscriptions)"
@@ -32,7 +31,6 @@ publish_users_yaml_b64="$(printf '%s' "$publish_users_json" | base64)"
 		-e GCLOUD_FM_HOSTED_ID="$GCLOUD_FM_HOSTED_ID" \
 		-e xray_users_b64="$xray_users_b64" \
 		-e secret_path="$secret_path" \
-		-e grpc_service_name="$grpc_service_name" \
 		-e freedns_username="$freedns_username" \
 		-e freedns_password="$freedns_password" \
 		-e publish_users_yaml_b64="$publish_users_yaml_b64"
@@ -46,8 +44,7 @@ publish_users_yaml_b64="$(printf '%s' "$publish_users_json" | base64)"
 		--inventory-file "./inventory/xray.yml" \
 		"${LIMIT[@]+"${LIMIT[@]}"}" \
 		-e xray_users_b64="$xray_users_b64" \
-		-e secret_path="$secret_path" \
-		-e grpc_service_name="$grpc_service_name"
+		-e secret_path="$secret_path"
 )
 
 # Step 3: Merge config files per subscription
