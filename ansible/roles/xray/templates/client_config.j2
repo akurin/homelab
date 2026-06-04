@@ -73,13 +73,21 @@
         ]
       },
       "streamSettings": {
+        {% if transport | mandatory == 'grpc' %}
+        "network": "grpc",
+        "grpcSettings": {
+          "serviceName": "{{ grpc_service_name }}"
+        },
+        {% else %}
         "network": "xhttp",
         "xhttpSettings": {{ {
           "path": secret_path,
           "mode": "packet-up"
         } | combine(xray_xhttp_extra_settings | default({})) | to_json }},
+        {% endif %}
         "security": "tls",
         "tlsSettings": {
+          "fingerprint": "safari",
           "alpn": [
             "h2"
           ]
@@ -105,13 +113,21 @@
         ]
       },
       "streamSettings": {
+        {% if transport | mandatory == 'grpc' %}
+        "network": "grpc",
+        "grpcSettings": {
+          "serviceName": "{{ grpc_service_name }}"
+        },
+        {% else %}
         "network": "xhttp",
         "xhttpSettings": {{ {
           "path": secret_path,
           "mode": "packet-up"
         } | combine(xray_xhttp_extra_settings | default({})) | to_json }},
+        {% endif %}
         "security": "tls",
         "tlsSettings": {
+          "fingerprint": "safari",
           "serverName": "{{ cdn_domain }}",
           "alpn": [
             "h2"
@@ -139,13 +155,21 @@
         ]
       },
       "streamSettings": {
+        {% if transport | mandatory == 'grpc' %}
+        "network": "grpc",
+        "grpcSettings": {
+          "serviceName": "{{ grpc_service_name }}"
+        },
+        {% else %}
         "network": "xhttp",
         "xhttpSettings": {{ {
           "path": secret_path,
           "mode": "packet-up"
         } | combine(xray_xhttp_extra_settings | default({})) | to_json }},
+        {% endif %}
         "security": "tls",
         "tlsSettings": {
+          "fingerprint": "safari",
           "alpn": [
             "h2"
           ]

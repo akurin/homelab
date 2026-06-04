@@ -16,6 +16,11 @@
         path /{{ secret_path }}/*
     }
 
+    # 1b. Proxy Logic: Check for the gRPC service name path
+    @vless_grpc {
+        path /{{ grpc_service_name }}*
+    }
+
     # If it's the secret path, reverse proxy to the local Xray instance
     reverse_proxy @vless_proxy h2c://127.0.0.1:{{ xray_xhttp_port_internal }} {
         flush_interval -1
@@ -28,6 +33,19 @@
             read_timeout 10m
             write_timeout 10m
        }
+    }
+
+    reverse_proxy @vless_grpc h2c://127.0.0.1:{{ xray_grpc_port_internal }} {
+        flush_interval -1
+
+        header_up Host {http.request.host}
+        header_up X-Forwarded-Proto https
+
+        transport http {
+            dial_timeout 10s
+            read_timeout 10m
+            write_timeout 10m
+        }
     }
 
     {% if publish_users_yaml_b64 is defined and inventory_hostname in groups['xray_publish'] %}

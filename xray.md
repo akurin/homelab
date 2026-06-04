@@ -30,11 +30,12 @@ inventory group are treated as publish targets.
 
 ## Secret store layout (`pass xray/`)
 
-| Key                  | Contents                                      |
-|----------------------|-----------------------------------------------|
-| `xray/uuids`         | JSON array of all users (see below)           |
-| `xray/secret_path`   | xhttp path shared by all servers              |
-| `xray/subscriptions` | JSON array of named subscriptions (see below) |
+| Key                      | Contents                                      |
+|--------------------------|-----------------------------------------------|
+| `xray/uuids`             | JSON array of all users (see below)           |
+| `xray/secret_path`       | xhttp path shared by all servers              |
+| `xray/grpc_service_name` | gRPC service name shared by all servers       |
+| `xray/subscriptions`     | JSON array of named subscriptions (see below) |
 
 ### User record (`xray/uuids`)
 
@@ -147,11 +148,12 @@ uuidgen | tr '[:upper:]' '[:lower:]'
 
 For each user × host, Ansible generates local JSON files under `~/vpn/<user>/`:
 
-| File                              | Remark                     | Description                                           |
-|-----------------------------------|----------------------------|-------------------------------------------------------|
-| `<host>_config.json`              | `user@host`                | Direct connection                                     |
-| `<host>_cdn_config.json`          | `user@host · CDN`          | Static CDN outbound                                   |
-| `<host>_lb_<profile>_config.json` | `user@host · LB [Profile]` | Load-balanced: `proxy_direct` preferred, CDN fallback |
+| File                               | Remark                        | Description                                                 |
+|------------------------------------|-------------------------------|-------------------------------------------------------------|
+| `<host>_<cfg>_config.json`         | `user@host · Cfg`             | Direct connection (xhttp)                                   |
+| `<host>_<cfg>_grpc_config.json`    | `user@host · Cfg · gRPC`      | Direct connection (gRPC)                                    |
+| `<host>_lb_<cfg>_config.json`      | `user@host · Cfg · LB`        | Load-balanced xhttp: `proxy_direct` preferred, CDN fallback |
+| `<host>_lb_<cfg>_grpc_config.json` | `user@host · Cfg · LB · gRPC` | Load-balanced gRPC: `proxy_direct` preferred, CDN fallback  |
 
 The LB config uses `burstObservatory` (3-sample probes every minute) to detect
 when `proxy_direct` is dead and automatically switches to the CDN outbound via
@@ -237,16 +239,17 @@ Import this URL into your xray client (v2rayN, NekoBox, etc.).
 
 ## Inventory host vars reference
 
-| Variable                                 | Required | Description                                                               |
-|------------------------------------------|----------|---------------------------------------------------------------------------|
-| `domain`                                 | ✓        | Public domain (FreeDNS), used for TLS and Caddy                           |
-| `cdn_domain`                             |          | CDN domain for SNI in CDN/LB client configs                               |
-| `server_ip`                              |          | Real IP behind CDN (enables CDN client config generation)                 |
-| `next_address`                           |          | Next hop domain for server chaining                                       |
-| `next_address_xray_xhttp_extra_settings` |          | xhttp settings for the chain outbound                                     |
-| `xray_xhttp_extra_settings`              |          | Extra xhttp padding/obfuscation settings                                  |
-| `warp_outbound_enabled`                  |          | Enable Cloudflare WARP outbound                                           |
-| `local_exit_rules`                       |          | List of raw xray routing rule objects injected before reverse/chain rules |
+| Variable                                 | Required              | Description                                                               |
+|------------------------------------------|-----------------------|---------------------------------------------------------------------------|
+| `domain`                                 | ✓                     | Public domain (FreeDNS), used for TLS and Caddy                           |
+| `cdn_domain`                             |                       | CDN domain for SNI in CDN/LB client configs                               |
+| `server_ip`                              |                       | Real IP behind CDN (enables CDN client config generation)                 |
+| `next_address`                           |                       | Next hop domain for server chaining                                       |
+| `next_address_transport`                 | if `next_address` set | Transport for the chain outbound: `xhttp` or `grpc`                       |
+| `next_address_xray_xhttp_extra_settings` |                       | xhttp padding/obfuscation settings for the chain outbound (xhttp only)    |
+| `xray_xhttp_extra_settings`              |                       | Extra xhttp padding/obfuscation settings                                  |
+| `warp_outbound_enabled`                  |                       | Enable Cloudflare WARP outbound                                           |
+| `local_exit_rules`                       |                       | List of raw xray routing rule objects injected before reverse/chain rules |
 
 ## Inventory groups reference
 

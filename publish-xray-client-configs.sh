@@ -6,6 +6,7 @@ LIMIT=()
 
 xray_users_b64="$(pass xray/uuids | base64)"
 secret_path="$(pass xray/secret_path)"
+grpc_service_name="$(pass xray/grpc_service_name)"
 subscriptions_json="$(pass xray/subscriptions)"
 
 # Step 1: Generate per-host client configs
@@ -16,7 +17,8 @@ subscriptions_json="$(pass xray/subscriptions)"
 		--inventory-file "./inventory/xray.yml" \
 		"${LIMIT[@]+"${LIMIT[@]}"}" \
 		-e xray_users_b64="$xray_users_b64" \
-		-e secret_path="$secret_path"
+		-e secret_path="$secret_path" \
+		-e grpc_service_name="$grpc_service_name"
 )
 
 # Step 2: Merge config files per subscription
@@ -41,5 +43,6 @@ publish_users_yaml_b64="$(printf '%s' "$publish_users_json" | base64)"
 	ansible-playbook caddy_reload.yml \
 		--inventory-file "./inventory/xray.yml" \
 		-e publish_users_yaml_b64="$publish_users_yaml_b64" \
-		-e secret_path="$secret_path"
+		-e secret_path="$secret_path" \
+		-e grpc_service_name="$grpc_service_name"
 )
