@@ -8,6 +8,7 @@ xray:
   hosts:
     ru_firstvds:
       ansible_host: 188.120.246.74
+#      grafana_repo_mirror: yandex
       domain: clumsypanda.mooo.com
 #      cdn_domain: 3v6ocwf108.cdn.twcstorage.ru
 #      server_ip: 151.236.89.224
@@ -21,8 +22,7 @@ xray:
 #        sessionPlacement: query
 #        sessionKey: api_key
 #        seqPlacement: query
-      next_address_xray_xhttp_extra_settings: *xray_xhttp_extra_settings
-      grafana_repo_mirror: yandex
+#      next_address_xray_xhttp_extra_settings: *xray_xhttp_extra_settings
       warp_outbound_enabled: false
       local_exit_rules:
         - type: field
@@ -35,17 +35,14 @@ xray:
     dk_webdock:
       ansible_host: 92.113.145.63
       domain: quietotter.mooo.com
-      cdn_domain: 3w6i2ij759.cdn.twcstorage.ru
-      server_ip: 151.236.89.224
+#      cdn_domain: 3w6i2ij759.cdn.twcstorage.ru
+#      server_ip: 151.236.89.224
       warp_outbound_enabled: true
-      xray_xhttp_extra_settings: *xray_xhttp_extra_settings
+#      xray_xhttp_extra_settings: *xray_xhttp_extra_settings
 
     nl_llhost:
       ansible_host: 45.85.117.151
-      ansible_user: root
       domain: brisklizard.mooo.com
-      grafana_alloy_collector_attrs:
-        reverse_proxy: caddy
       warp_outbound_enabled: true
 
   children:
