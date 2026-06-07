@@ -1,7 +1,0 @@
-vpn:
-  hosts:
-%{ for instance in instances ~}
-    ${instance.hostname}:
-      ansible_host: ${instance.main_ip}
-      ansible_user: root
-%{ endfor ~}
