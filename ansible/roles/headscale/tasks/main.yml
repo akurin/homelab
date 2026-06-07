@@ -1,23 +1,4 @@
 ---
-- name: Allow ports 22, 443 UFW
-  community.general.ufw:
-    rule: allow
-    port: "{{ item }}"
-    proto: tcp
-  loop:
-    - '22'
-    - '443'
-
-- name: Allow port 443 via UDP
-  community.general.ufw:
-    rule: allow
-    port: "443"
-    proto: udp
-
-- name: Ensure UFW is enabled
-  community.general.ufw:
-    state: enabled
-
 - name: Download headscale package
   ansible.builtin.get_url:
     url: "{{ headscale_url }}"
