@@ -12,4 +12,4 @@ grafana_repo_base_url: "{{ grafana_repo_mirrors[grafana_repo_mirror] | default(g
 
 grafana_repo_distribution: stable
 grafana_repo_components: main
-grafana_repo_signed_by: /etc/apt/keyrings/grafana.gpg
+grafana_repo_signed_by: /etc/apt/keyrings/grafana.asc

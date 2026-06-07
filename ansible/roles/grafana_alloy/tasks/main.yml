@@ -13,17 +13,11 @@
     state: directory
     mode: "0755"
 
-- name: Ensure gnupg is installed (for dearmor)
-  ansible.builtin.apt:
-    name: gnupg
-    state: present
-    update_cache: true
-
 - name: Install Grafana GPG key to keyring
-  ansible.builtin.apt_key:
-    data: "{{ lookup('file', role_path + '/files/grafana_gpg.key') }}"
-    keyring: "{{ grafana_repo_signed_by }}"
-    state: present
+  ansible.builtin.get_url:
+    url: https://apt.grafana.com/gpg-full.key
+    dest: "{{ grafana_repo_signed_by }}"
+    mode: "0644"
 
 - name: Add Grafana repository (mirror-aware)
   ansible.builtin.apt_repository:
