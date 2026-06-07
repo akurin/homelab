@@ -11,10 +11,10 @@ Client → ru_firstvds → dk_webdock → internet
                      ↘ (direct) → Russian sites (.ru)
 ```
 
-`nl_llhost` is a standalone server (no chain).
+`nl_llhost` and `de_nuxt` are standalone servers (no chain).
 
 `ru_firstvds` is also the **publish server** — it hosts subscription JSON files via
-Caddy under `https://<domain>/<token>/configs.json`. Hosts in the `xray_publish`
+Caddy under `https://<domain>/subscriptions/<token>`. Hosts in the `xray_publish`
 inventory group are treated as publish targets.
 
 ---
@@ -182,13 +182,23 @@ to redeploy the servers.
 ./publish-xray-client-configs.sh ru_firstvds
 ```
 
-Both scripts run in three stages:
+`install-xray.sh` runs four stages:
+
+1. **Deploy** — Ansible deploys xray + Caddy config to all servers
+2. **Generate** — Ansible renders per-host JSON configs to `~/vpn/<user>/`
+3. **Merge** — `scripts/merge-subscriptions.py` globs + merges files into
+   `~/vpn/subscriptions/<name>/configs.json`, applying any remark overrides
+4. **Publish** — Ansible copies merged bundles to `/var/www/xray-configs/<token>/`
+   on the publish server, cleaning up stale token directories
+
+`publish-xray-client-configs.sh` runs four stages:
 
 1. **Generate** — Ansible renders per-host JSON configs to `~/vpn/<user>/`
 2. **Merge** — `scripts/merge-subscriptions.py` globs + merges files into
    `~/vpn/subscriptions/<name>/configs.json`, applying any remark overrides
 3. **Publish** — Ansible copies merged bundles to `/var/www/xray-configs/<token>/`
    on the publish server, cleaning up stale token directories
+4. **Caddy reload** — updates the Caddyfile with current token routes and reloads Caddy
 
 ---
 
@@ -197,7 +207,7 @@ Both scripts run in three stages:
 After publishing, subscription URLs are printed by Ansible:
 
 ```
-https://clumsypanda.mooo.com/<token>/configs.json
+https://clumsypanda.mooo.com/subscriptions/<token>
 ```
 
 Import this URL into your xray client (v2rayN, NekoBox, etc.).
@@ -239,7 +249,8 @@ Import this URL into your xray client (v2rayN, NekoBox, etc.).
 
 | Variable                                 | Required | Description                                                               |
 |------------------------------------------|----------|---------------------------------------------------------------------------|
-| `domain`                                 | ✓        | Public domain (FreeDNS), used for TLS and Caddy                           |
+| `domain`                                 | ✓        | Public domain, used for TLS and Caddy                                     |
+| `dns`                                    | ✓        | DNS provider: `freedns` (auto-updated via role) or `external` (manual)    |
 | `cdn_domain`                             |          | CDN domain for SNI in CDN/LB client configs                               |
 | `server_ip`                              |          | Real IP behind CDN (enables CDN client config generation)                 |
 | `next_address`                           |          | Next hop domain for server chaining                                       |
