@@ -37,7 +37,6 @@ xray:
       ansible_host: 31.76.18.237
       domain: nuxt.morjoff.com
       dns: external
-      next_address: quietotter.mooo.com
       warp_outbound_enabled: true
 
     dk_webdock:
