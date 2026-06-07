@@ -12,6 +12,7 @@
         - 443
     - role: grafana_alloy
     - role: freedns
+      when: dns == 'freedns'
     - role: xray
     - role: caddy_proxy
     - role: ssh_hardening

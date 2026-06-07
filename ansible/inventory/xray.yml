@@ -8,21 +8,22 @@ xray:
   hosts:
     ru_firstvds:
       ansible_host: 188.120.246.74
-#      grafana_repo_mirror: yandex
+      #      grafana_repo_mirror: yandex
       domain: clumsypanda.mooo.com
-#      cdn_domain: 3v6ocwf108.cdn.twcstorage.ru
-#      server_ip: 151.236.89.224
+      dns: freedns
+      #      cdn_domain: 3v6ocwf108.cdn.twcstorage.ru
+      #      server_ip: 151.236.89.224
       next_address: quietotter.mooo.com
       xray_xhttp_extra_settings: &xray_xhttp_extra_settings
-#        uplinkHTTPMethod: GET
-#        xPaddingObfsMode: true
-#        xPaddingPlacement: header
-#        xPaddingHeader: b3
-#        xPaddingMethod: tokenish
-#        sessionPlacement: query
-#        sessionKey: api_key
-#        seqPlacement: query
-#      next_address_xray_xhttp_extra_settings: *xray_xhttp_extra_settings
+      #        uplinkHTTPMethod: GET
+      #        xPaddingObfsMode: true
+      #        xPaddingPlacement: header
+      #        xPaddingHeader: b3
+      #        xPaddingMethod: tokenish
+      #        sessionPlacement: query
+      #        sessionKey: api_key
+      #        seqPlacement: query
+      #      next_address_xray_xhttp_extra_settings: *xray_xhttp_extra_settings
       warp_outbound_enabled: false
       local_exit_rules:
         - type: field
@@ -32,17 +33,23 @@ xray:
     #          ip: [ "geoip:ru" ]
     #          outboundTag: direct
 
+    de_nuxt:
+      ansible_host: 31.76.18.237
+      domain: nuxt.morjoff.com
+      dns: external
+      next_address: quietotter.mooo.com
+      warp_outbound_enabled: true
+
     dk_webdock:
       ansible_host: 92.113.145.63
       domain: quietotter.mooo.com
-#      cdn_domain: 3w6i2ij759.cdn.twcstorage.ru
-#      server_ip: 151.236.89.224
+      dns: freedns
       warp_outbound_enabled: true
-#      xray_xhttp_extra_settings: *xray_xhttp_extra_settings
 
     nl_llhost:
       ansible_host: 45.85.117.151
       domain: brisklizard.mooo.com
+      dns: freedns
       warp_outbound_enabled: true
 
   children:
