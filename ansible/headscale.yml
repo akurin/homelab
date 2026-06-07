@@ -3,6 +3,13 @@
   hosts: headscale
 
   roles:
+    - role: ufw_base
+      vars:
+        ufw_allowed_tcp:
+          - 22
+          - 443
+        ufw_allowed_udp:
+          - 443
     - role: grafana_alloy
     - role: headscale
     - role: ssh_hardening
