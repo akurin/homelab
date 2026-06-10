@@ -13,23 +13,7 @@ LIMIT=()
 
 (
 	cd ansible && ansible-playbook \
-		k3s_server.yml \
-		--inventory-file "./inventory/${TIER}_hosts.yml" \
-		"${LIMIT[@]+"${LIMIT[@]}"}" \
-		-e tailscale_auth_key="$tailscale_auth_key" \
-		-e GCLOUD_RW_API_KEY="$GCLOUD_RW_API_KEY" \
-		-e GCLOUD_FM_URL="$GCLOUD_FM_URL" \
-		-e GCLOUD_FM_POLL_FREQUENCY="$GCLOUD_FM_POLL_FREQUENCY" \
-		-e GCLOUD_FM_HOSTED_ID="$GCLOUD_FM_HOSTED_ID" \
-		-e K3S_TOKEN="$K3S_TOKEN" \
-		-e TIER="$TIER"
-)
-
-chmod 600 "$HOME/.kube/$TIER-k3s-kubeconfig"
-
-(
-	cd ansible && ansible-playbook \
-		k3s_agent.yml \
+		k3s.yml \
 		--inventory-file "./inventory/${TIER}_hosts.yml" \
 		"${LIMIT[@]+"${LIMIT[@]}"}" \
 		-e tailscale_auth_key="$tailscale_auth_key" \

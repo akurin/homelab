@@ -5,18 +5,22 @@
       - tailscale_auth_key is defined
 
 - name: Add Tailscale's package signing key
-  ansible.builtin.apt_key:
-    url: https://pkgs.tailscale.com/stable/ubuntu/focal.gpg
-    state: present
+  ansible.builtin.get_url:
+    url: "https://pkgs.tailscale.com/stable/{{ ansible_facts['distribution'] | lower }}/{{ ansible_facts['distribution_release'] | lower }}.noarmor.gpg"
+    dest: /usr/share/keyrings/tailscale-archive-keyring.gpg
+    mode: "0644"
 
 - name: Add Tailscale's repository
-  ansible.builtin.apt_repository:
-    repo: deb https://pkgs.tailscale.com/stable/ubuntu focal main
-    state: present
+  ansible.builtin.get_url:
+    url: "https://pkgs.tailscale.com/stable/{{ ansible_facts['distribution'] | lower }}/{{ ansible_facts['distribution_release'] | lower }}.tailscale-keyring.list"
+    dest: /etc/apt/sources.list.d/tailscale.list
+    mode: "0644"
 
 - name: Install Tailscale
   ansible.builtin.apt:
-    name: tailscale
+    name:
+      - tailscale
+      - tailscale-archive-keyring
     update_cache: true
 
 - name: Check Tailscale online status
@@ -41,7 +45,7 @@
     reload: true
 
 - name: Bring Tailscale Up
-  ansible.builtin.command: "tailscale up --login-server={{ tailscale_server_url }} --advertise-exit-node --authkey={{ tailscale_auth_key | quote }}"
+  ansible.builtin.command: "tailscale up --login-server={{ tailscale_server_url }} --advertise-exit-node --hostname={{ inventory_hostname }} --authkey={{ tailscale_auth_key | quote }}"
   when: not (tailscale_status.stdout | from_json).Self.Online
   register: tailscale_up_result
   ignore_errors: true

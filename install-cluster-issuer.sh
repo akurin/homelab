@@ -1,4 +1,4 @@
 #!/bin/bash
 set -euo pipefail
 
-helm upgrade --install --atomic cluster-issuer cluster-issuer
+helm upgrade --install --rollback-on-failure cluster-issuer cluster-issuer

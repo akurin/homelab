@@ -1,3 +1,3 @@
 #!/bin/bash
 
-helm upgrade --install --atomic coredns-warn-fix ./coredns-warn-fix
+helm upgrade --install --rollback-on-failure coredns-warn-fix ./coredns-warn-fix

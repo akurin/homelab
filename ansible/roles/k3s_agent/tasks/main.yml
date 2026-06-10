@@ -8,9 +8,15 @@
 - name: Populate service facts
   ansible.builtin.service_facts:
 
+- name: Check if UFW is installed
+  ansible.builtin.stat:
+    path: /usr/sbin/ufw
+  register: ufw_binary
+
 - name: Disable UFW
   community.general.ufw:
     state: disabled
+  when: ufw_binary.stat.exists
 
 - name: Gather facts about services
   ansible.builtin.service_facts:
@@ -21,12 +27,11 @@
   ansible.builtin.shell: >
     set -o pipefail &&
     curl -sfL https://get.k3s.io | INSTALL_K3S_EXEC="agent
-      --debug
-      --server https://{{ TIER }}-k3s-server-0:6443
+      --server https://{{ k3s_server_host }}:6443
       --flannel-iface tailscale0
-      --node-ip {{ ansible_tailscale0.ipv4.address }}
+      --node-ip {{ ansible_facts['tailscale0']['ipv4']['address'] }}
       --token {{ K3S_TOKEN | quote }}" sh -
-  when: "'k3s-agent' not in services"
+  when: "'k3s-agent' not in ansible_facts.services"
   changed_when: true
 
 - name: Ensure k3s is in a running state

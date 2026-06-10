@@ -4,7 +4,7 @@ set -euo pipefail
 username=$(pass github/username)
 password=$(pass github/password)
 
-helm upgrade --install --atomic dockerconfigjson ./dockerconfigjson \
+helm upgrade --install --rollback-on-failure dockerconfigjson ./dockerconfigjson \
 	--set imageCredentials.registry=ghcr.io \
 	--set imageCredentials.username="$username" \
 	--set imageCredentials.password="$password"

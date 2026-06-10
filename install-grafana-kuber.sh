@@ -6,7 +6,7 @@ helm repo update
 
 access_policy_token="$(pass grafana/alloy_token)"
 
-helm upgrade --install --atomic \
+helm upgrade --install --rollback-on-failure \
 	--values grafana-kuber/values.yaml \
 	--set destinations[0].auth.password="$access_policy_token" \
 	--set destinations[1].auth.password="$access_policy_token" \
