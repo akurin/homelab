@@ -1,8 +1,12 @@
 #!/usr/sbin/nft -f
 
-# Flush only our table to avoid wiping iptables-nft rules (K3s CNI/NAT)
+{% if nftables_full_flush %}
+flush ruleset
+{% else %}
+# Scoped flush — preserves iptables-nft rules used by K3s CNI/NAT
 table inet filter {}
 delete table inet filter
+{% endif %}
 
 table inet filter {
   chain input {

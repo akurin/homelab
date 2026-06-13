@@ -3,3 +3,5 @@ nftables_allowed_tcp:
   - 22
 
 nftables_allowed_udp: []
+
+nftables_full_flush: false

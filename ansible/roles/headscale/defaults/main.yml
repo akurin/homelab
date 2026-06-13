@@ -1,6 +1,6 @@
 headscale_version: "0.28.0"
 headscale_arch: "amd64"
-headscale_checksum: "95f242a31003d60646d233b14a1acacac20d8f319886d0441df085cc3a920f2d"
+headscale_checksum: "8c3afb2e950e060d21bdefa98cda3accdcc1cb893bbed2e94a58de25a42f6dbe"
 headscale_url: https://github.com/juanfont/headscale/releases/download/v{{ headscale_version }}/headscale_{{ headscale_version }}_linux_{{ headscale_arch }}.deb
 headscale_config_file_path: "/etc/headscale/config.yaml"
 headscale_server_url: https://headscale.morjoff.com

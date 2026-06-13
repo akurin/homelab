@@ -8,7 +8,7 @@ xray:
   hosts:
     ru_firstvds:
       ansible_host: 188.120.246.74
-      #      grafana_repo_mirror: yandex
+      grafana_repo_mirror: yandex
       domain: clumsypanda.mooo.com
       dns: freedns
       #      cdn_domain: 3v6ocwf108.cdn.twcstorage.ru

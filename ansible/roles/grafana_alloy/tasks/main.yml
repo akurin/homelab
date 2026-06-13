@@ -14,8 +14,8 @@
     mode: "0755"
 
 - name: Install Grafana GPG key to keyring
-  ansible.builtin.get_url:
-    url: https://apt.grafana.com/gpg-full.key
+  ansible.builtin.copy:
+    src: gpg-full.key
     dest: "{{ grafana_repo_signed_by }}"
     mode: "0644"
 
@@ -46,6 +46,12 @@
   vars:
     GCLOUD_FM_COLLECTOR_ID: "{{ inventory_hostname }}"
   notify: Restart Grafana Alloy
+
+- name: Enable and start Grafana Alloy
+  ansible.builtin.service:
+    name: alloy
+    state: started
+    enabled: true
 
 - name: Ensure drop-in directory exists
   ansible.builtin.file:

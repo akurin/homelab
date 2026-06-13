@@ -1,4 +1,12 @@
 ---
+- name: Disable UFW
+  ansible.builtin.service:
+    name: ufw
+    state: stopped
+    enabled: false
+  when: nftables_full_flush
+  ignore_errors: true
+
 - name: Install nftables
   ansible.builtin.package:
     name: nftables
