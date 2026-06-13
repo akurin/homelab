@@ -3,12 +3,13 @@
   hosts: headscale
 
   roles:
-    - role: ufw_base
+    - role: nftables
       vars:
-        ufw_allowed_tcp:
+        nftables_full_flush: true
+        nftables_allowed_tcp:
           - 22
           - 443
-        ufw_allowed_udp:
+        nftables_allowed_udp:
           - 443
     - role: grafana_alloy
     - role: headscale
