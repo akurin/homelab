@@ -7,5 +7,5 @@ helm upgrade --install --rollback-on-failure \
 	cert-manager jetstack/cert-manager \
 	--namespace cert-manager \
 	--create-namespace \
-	--version v1.18.2 \
+	--version v1.20.2 \
 	--set crds.enabled=true
