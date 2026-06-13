@@ -1,0 +1,33 @@
+#!/usr/sbin/nft -f
+
+flush ruleset
+
+table inet filter {
+  chain input {
+    type filter hook input priority 0; policy drop;
+
+    iif "lo" accept
+    ct state established,related accept
+
+{% for iface in nftables_trusted_ifaces | default([]) %}
+    iif "{{ iface }}" accept
+{% endfor %}
+    ip protocol icmp accept
+    ip6 nexthdr icmpv6 accept
+
+{% if nftables_allowed_tcp | length > 0 %}
+    tcp dport { {{ nftables_allowed_tcp | join(', ') }} } accept
+{% endif %}
+{% if nftables_allowed_udp | length > 0 %}
+    udp dport { {{ nftables_allowed_udp | join(', ') }} } accept
+{% endif %}
+  }
+
+  chain forward {
+    type filter hook forward priority 0; policy accept;
+  }
+
+  chain output {
+    type filter hook output priority 0; policy accept;
+  }
+}

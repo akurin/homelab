@@ -1,0 +1,5 @@
+---
+nftables_allowed_tcp:
+  - 22
+
+nftables_allowed_udp: []

@@ -3,6 +3,17 @@
   hosts: k3s_server
 
   roles:
+    - role: nftables
+      vars:
+        nftables_trusted_ifaces:
+          - tailscale0
+        nftables_allowed_tcp:
+          - 22
+          - 25
+          - 80
+          - 443
+        nftables_allowed_udp:
+          - 41641
     - role: no_swap
     - role: grafana_alloy
     - role: tailscale
@@ -13,6 +24,16 @@
   hosts: k3s_agent
 
   roles:
+    - role: nftables
+      vars:
+        nftables_trusted_ifaces:
+          - tailscale0
+        nftables_allowed_tcp:
+          - 22
+          - 80
+          - 443
+        nftables_allowed_udp:
+          - 41641
     - role: no_swap
     - role: grafana_alloy
     - role: tailscale
