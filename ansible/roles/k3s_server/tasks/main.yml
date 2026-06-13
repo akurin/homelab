@@ -2,7 +2,6 @@
 - name: Check mandatory variables are defined
   ansible.builtin.assert:
     that:
-      - TIER is defined
       - K3S_TOKEN is defined
 
 - name: Comment out swap entries in /etc/fstab
@@ -61,18 +60,11 @@
 - name: Fetch kubeconfig
   ansible.builtin.fetch:
     src: /etc/rancher/k3s/k3s.yaml
-    dest: ~/.kube/{{ TIER }}-k3s-kubeconfig
+    dest: ~/.kube/k3s-kubeconfig
     flat: true
-
-- name: Update server URL in kubeconfig
-  ansible.builtin.replace:
-    path: ~/.kube/{{ TIER }}-k3s-kubeconfig
-    regexp: 'https://127\.0\.0\.1:6443'
-    replace: "https://{{ inventory_hostname }}:6443"
-  delegate_to: localhost
 
 - name: Set kubeconfig permissions
   ansible.builtin.file:
-    path: ~/.kube/{{ TIER }}-k3s-kubeconfig
+    path: ~/.kube/k3s-kubeconfig
     mode: "0600"
   delegate_to: localhost
