@@ -26,7 +26,7 @@
     executable: /usr/bin/bash
   ansible.builtin.shell: >
     set -o pipefail &&
-    curl -sfL https://get.k3s.io | INSTALL_K3S_EXEC="agent
+    curl -sfL https://get.k3s.io | INSTALL_K3S_VERSION={{ k3s_version | quote }} INSTALL_K3S_EXEC="agent
       --server https://{{ k3s_server_host }}:6443
       --flannel-iface tailscale0
       --node-ip {{ ansible_facts['tailscale0']['ipv4']['address'] }}

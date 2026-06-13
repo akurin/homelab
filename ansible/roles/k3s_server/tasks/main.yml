@@ -29,11 +29,13 @@
     executable: /usr/bin/bash
   ansible.builtin.shell: >
     set -o pipefail &&
-    curl -sfL https://get.k3s.io | INSTALL_K3S_EXEC="server
+    curl -sfL https://get.k3s.io | INSTALL_K3S_VERSION={{ k3s_version | quote }} INSTALL_K3S_EXEC="server
       --token {{ K3S_TOKEN | quote }}
       --advertise-address {{ ansible_facts['tailscale0']['ipv4']['address'] }}
       --flannel-iface tailscale0
       --node-ip {{ ansible_facts['tailscale0']['ipv4']['address'] }}
+      --cluster-cidr {{ k3s_pod_cidr }}
+      --service-cidr {{ k3s_service_cidr }}
       --disable-cloud-controller
       --tls-san {{ inventory_hostname }}
       {% if k3s_cluster_init | default(false) %}--cluster-init{% elif k3s_init_host | default('') != '' and k3s_init_host != inventory_hostname %}--server https://{{ k3s_init_host }}:6443{% endif %}" sh -
@@ -44,6 +46,17 @@
   ansible.builtin.service:
     name: k3s
     state: started
+
+- name: Taint server node to prevent workload scheduling
+  ansible.builtin.command:
+    cmd: k3s kubectl taint node {{ inventory_hostname }} node-role.kubernetes.io/control-plane=:NoSchedule --overwrite
+  changed_when: false
+
+- name: Deploy Traefik HelmChartConfig
+  ansible.builtin.template:
+    src: traefik-config.yaml.j2
+    dest: /var/lib/rancher/k3s/server/manifests/traefik-config.yaml
+    mode: "0644"
 
 - name: Fetch kubeconfig
   ansible.builtin.fetch:

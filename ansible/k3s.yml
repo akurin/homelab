@@ -1,12 +1,24 @@
 ---
 - name: Deploy k3s server
   hosts: k3s_server
+  vars:
+    k3s_pod_cidr: 10.42.0.0/16
+    k3s_service_cidr: 10.43.0.0/16
 
   roles:
+    - role: no_swap
+    - role: grafana_alloy
+    - role: tailscale
     - role: nftables
       vars:
         nftables_trusted_ifaces:
           - tailscale0
+        nftables_trusted_sources:
+          # K3s pod IPs — pods on this node communicate with the host (e.g. Traefik → API server)
+          - "{{ k3s_pod_cidr }}"
+          # K3s service ClusterIPs — virtual IPs DNAT'd by kube-proxy; source remains a pod IP
+          # after DNAT but the destination passes through the host INPUT chain
+          - "{{ k3s_service_cidr }}"
         nftables_allowed_tcp:
           - 22
           - 25
@@ -14,28 +26,31 @@
           - 443
         nftables_allowed_udp:
           - 41641
-    - role: no_swap
-    - role: grafana_alloy
-    - role: tailscale
     - role: k3s_server
     - role: ssh_hardening
 
 - name: Deploy k3s agent
   hosts: k3s_agent
+  vars:
+    k3s_pod_cidr: 10.42.0.0/16
+    k3s_service_cidr: 10.43.0.0/16
 
   roles:
+    - role: no_swap
+    - role: grafana_alloy
+    - role: tailscale
     - role: nftables
       vars:
         nftables_trusted_ifaces:
           - tailscale0
+        nftables_trusted_sources:
+          - "{{ k3s_pod_cidr }}"
+          - "{{ k3s_service_cidr }}"
         nftables_allowed_tcp:
           - 22
           - 80
           - 443
         nftables_allowed_udp:
           - 41641
-    - role: no_swap
-    - role: grafana_alloy
-    - role: tailscale
     - role: k3s_agent
     - role: ssh_hardening

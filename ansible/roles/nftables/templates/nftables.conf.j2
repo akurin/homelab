@@ -1,6 +1,8 @@
 #!/usr/sbin/nft -f
 
-flush ruleset
+# Flush only our table to avoid wiping iptables-nft rules (K3s CNI/NAT)
+table inet filter {}
+delete table inet filter
 
 table inet filter {
   chain input {
@@ -12,6 +14,9 @@ table inet filter {
 {% for iface in nftables_trusted_ifaces | default([]) %}
     iif "{{ iface }}" accept
 {% endfor %}
+{% if nftables_trusted_sources | default([]) | length > 0 %}
+    ip saddr { {{ nftables_trusted_sources | join(', ') }} } accept
+{% endif %}
     ip protocol icmp accept
     ip6 nexthdr icmpv6 accept
 
