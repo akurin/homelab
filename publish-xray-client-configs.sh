@@ -13,7 +13,7 @@ subscriptions_json="$(pass xray/subscriptions)"
 	cd ansible
 
 	ansible-playbook xray_client_configs.yml \
-		--inventory-file "./inventory/xray.yml" \
+		--inventory "./inventory/xray.yml" \
 		"${LIMIT[@]+"${LIMIT[@]}"}" \
 		-e xray_users_b64="$xray_users_b64" \
 		-e secret_path="$secret_path"
@@ -29,7 +29,7 @@ publish_users_yaml_b64="$(printf '%s' "$publish_users_json" | base64)"
 	cd ansible
 
 	ansible-playbook xray_publish_configs.yml \
-		--inventory-file "./inventory/xray.yml" \
+		--inventory "./inventory/xray.yml" \
 		"${LIMIT[@]+"${LIMIT[@]}"}" \
 		-e publish_users_yaml_b64="$publish_users_yaml_b64"
 )
@@ -39,7 +39,7 @@ publish_users_yaml_b64="$(printf '%s' "$publish_users_json" | base64)"
 	cd ansible
 
 	ansible-playbook caddy_reload.yml \
-		--inventory-file "./inventory/xray.yml" \
+		--inventory "./inventory/xray.yml" \
 		-e publish_users_yaml_b64="$publish_users_yaml_b64" \
 		-e secret_path="$secret_path"
 )

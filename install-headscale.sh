@@ -17,7 +17,7 @@ LIMIT=()
 (
 	cd ansible && ansible-playbook \
 		headscale.yml \
-		--inventory-file "./inventory/shared_hosts.yml" \
+		--inventory "./inventory/shared_hosts.yml" \
 		"${LIMIT[@]+"${LIMIT[@]}"}" \
 		-e GCLOUD_RW_API_KEY="$GCLOUD_RW_API_KEY" \
 		-e GCLOUD_FM_URL="$GCLOUD_FM_URL" \

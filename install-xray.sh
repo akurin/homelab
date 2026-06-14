@@ -23,7 +23,7 @@ publish_users_yaml_b64="$(printf '%s' "$publish_users_json" | base64)"
 	cd ansible
 
 	ansible-playbook xray.yml \
-		--inventory-file "./inventory/xray.yml" \
+		--inventory "./inventory/xray.yml" \
 		"${LIMIT[@]+"${LIMIT[@]}"}" \
 		-e GCLOUD_RW_API_KEY="$GCLOUD_RW_API_KEY" \
 		-e GCLOUD_FM_URL="$GCLOUD_FM_URL" \
@@ -41,7 +41,7 @@ publish_users_yaml_b64="$(printf '%s' "$publish_users_json" | base64)"
 	cd ansible
 
 	ansible-playbook xray_client_configs.yml \
-		--inventory-file "./inventory/xray.yml" \
+		--inventory "./inventory/xray.yml" \
 		"${LIMIT[@]+"${LIMIT[@]}"}" \
 		-e xray_users_b64="$xray_users_b64" \
 		-e secret_path="$secret_path"
@@ -56,7 +56,7 @@ printf '%s' "$subscriptions_json" | python3 scripts/merge-subscriptions.py >/dev
 	cd ansible
 
 	ansible-playbook xray_publish_configs.yml \
-		--inventory-file "./inventory/xray.yml" \
+		--inventory "./inventory/xray.yml" \
 		"${LIMIT[@]+"${LIMIT[@]}"}" \
 		-e publish_users_yaml_b64="$publish_users_yaml_b64"
 )

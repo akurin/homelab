@@ -14,7 +14,7 @@ LIMIT=()
 (
 	cd ansible && ansible-playbook \
 		k3s.yml \
-		--inventory-file "./inventory/k3s.yml" \
+		--inventory "./inventory/k3s.yml" \
 		"${LIMIT[@]+"${LIMIT[@]}"}" \
 		-e tailscale_auth_key="$tailscale_auth_key" \
 		-e GCLOUD_RW_API_KEY="$GCLOUD_RW_API_KEY" \
