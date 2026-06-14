@@ -21,9 +21,6 @@
           - "{{ k3s_service_cidr }}"
         nftables_allowed_tcp:
           - 22
-          - 25
-          - 80
-          - 443
         nftables_allowed_udp:
           - 41641
     - role: k3s_server
@@ -48,6 +45,7 @@
           - "{{ k3s_service_cidr }}"
         nftables_allowed_tcp:
           - 22
+          - 25
           - 80
           - 443
         nftables_allowed_udp:
