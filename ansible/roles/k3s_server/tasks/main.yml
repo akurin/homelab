@@ -51,12 +51,6 @@
     cmd: k3s kubectl taint node {{ inventory_hostname }} node-role.kubernetes.io/control-plane=:NoSchedule --overwrite
   changed_when: false
 
-- name: Deploy Traefik HelmChartConfig
-  ansible.builtin.template:
-    src: traefik-config.yaml.j2
-    dest: /var/lib/rancher/k3s/server/manifests/traefik-config.yaml
-    mode: "0644"
-
 - name: Fetch kubeconfig
   ansible.builtin.fetch:
     src: /etc/rancher/k3s/k3s.yaml

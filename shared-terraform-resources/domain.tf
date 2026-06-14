@@ -5,8 +5,8 @@ resource "vultr_dns_domain" "my_domain" {
 resource "vultr_dns_record" "wildcard" {
   domain = vultr_dns_domain.my_domain.domain
   name   = "*"
-  type   = "CNAME"
-  data   = vultr_dns_domain.my_domain.domain
+  type   = "A"
+  data   = "209.250.225.251"
   ttl    = 300
 }
 
@@ -14,7 +14,7 @@ resource "vultr_dns_record" "fallback" {
   domain = vultr_dns_domain.my_domain.domain
   name   = ""
   type   = "A"
-  data   = "193.181.212.97"
+  data   = "209.250.225.251"
   ttl    = 300
 }
 
