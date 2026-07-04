@@ -6,13 +6,10 @@ helm repo update
 
 access_policy_token="$(pass grafana/alloy_token)"
 
-helm upgrade --install --rollback-on-failure \
+helm upgrade --install --atomic --timeout 300s \
+	--version "^4" \
 	--values grafana-kuber/values.yaml \
-	--set destinations[0].auth.password="$access_policy_token" \
-	--set destinations[1].auth.password="$access_policy_token" \
-	--set destinations[2].auth.password="$access_policy_token" \
-	--set alloy-metrics.remoteConfig.auth.password="$access_policy_token" \
-	--set alloy-singleton.remoteConfig.auth.password="$access_policy_token" \
-	--set alloy-logs.remoteConfig.auth.password="$access_policy_token" \
-	--set alloy-receiver.remoteConfig.auth.password="$access_policy_token" \
+	--set destinations.grafana-cloud-metrics.auth.password="$access_policy_token" \
+	--set destinations.grafana-cloud-logs.auth.password="$access_policy_token" \
+	--set collectorCommon.alloy.remoteConfig.auth.password="$access_policy_token" \
 	grafana-k8s-monitoring grafana/k8s-monitoring
