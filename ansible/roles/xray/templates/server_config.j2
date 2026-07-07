@@ -96,7 +96,7 @@
         "network": "xhttp",
         "security": "none",
         "xhttpSettings": {{ {
-          "mode": "auto",
+          "mode": "packet-up",
           "path": secret_path
         } | combine(xray_xhttp_extra_settings | default({})) | to_json }}
       },

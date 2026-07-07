@@ -50,9 +50,25 @@
     group: www-data
     mode: '0755'
 
-- name: Deploy static HTML file (from template)
+- name: Create /info subdirectory
+  ansible.builtin.file:
+    path: /var/www/html/{{ domain }}/info
+    state: directory
+    owner: www-data
+    group: www-data
+    mode: '0755'
+
+- name: Deploy /info page (from template)
   ansible.builtin.template:
-    src: index.html.j2
+    src: info.html.j2
+    dest: /var/www/html/{{ domain }}/info/index.html
+    owner: www-data
+    group: www-data
+    mode: '0644'
+
+- name: Deploy main index.html
+  ansible.builtin.copy:
+    src: index.html
     dest: /var/www/html/{{ domain }}/index.html
     owner: www-data
     group: www-data

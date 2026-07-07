@@ -23,6 +23,12 @@
         header_up Host {http.request.host}
         header_up X-Forwarded-Proto https
 
+        # Prevent caching of proxied responses
+        header_down Cache-Control "no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0"
+        header_down Pragma "no-cache"
+        header_down Expires "0"
+        header_down Surrogate-Control "no-store"
+
         transport http {
             dial_timeout 10s
             read_timeout 10m

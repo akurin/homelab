@@ -33,16 +33,23 @@ xray:
     #          ip: [ "geoip:ru" ]
     #          outboundTag: direct
 
-    de_nuxt:
-      ansible_host: 31.76.18.237
-      domain: nuxt.morjoff.com
-      dns: external
-      warp_outbound_enabled: true
-
     dk_webdock:
       ansible_host: 92.113.145.63
       domain: quietotter.mooo.com
       dns: freedns
+      cdn_domain: c0gziaho6h.cdn.twcstorage.ru
+      server_ip: 151.236.89.224
+      xray_xhttp_extra_settings:
+        uplinkHTTPMethod: GET
+        xPaddingObfsMode: true
+        xPaddingPlacement: header
+        xPaddingHeader: x-b3-traceid
+        xPaddingMethod: tokenish
+        sessionIDPlacement: path
+        sessionIDTable: Base62
+        sessionIDLength: 15
+        seqPlacement: header
+        seqKey: x-b3-spanid
       warp_outbound_enabled: true
 
     nl_llhost:
