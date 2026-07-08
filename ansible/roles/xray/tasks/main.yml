@@ -14,7 +14,7 @@
       }}
 
 - name: Install Xray
-  ansible.builtin.shell: bash -c "$(curl -L https://github.com/XTLS/Xray-install/raw/main/install-release.sh)" @ install
+  ansible.builtin.shell: bash -c "$(curl -L https://github.com/XTLS/Xray-install/raw/main/install-release.sh)" @ install --version {{ xray_version }}
   args:
     executable: /bin/bash
   changed_when: true
