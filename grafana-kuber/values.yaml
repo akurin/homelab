@@ -31,6 +31,9 @@ clusterEvents:
 podLogsViaLoki:
   enabled: true
   collector: alloy-logs
+nodeLogs:
+  enabled: true
+  collector: alloy-logs
 collectors:
   alloy-metrics:
     presets:

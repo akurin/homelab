@@ -7,7 +7,6 @@
 
   roles:
     - role: no_swap
-    - role: grafana_alloy
     - role: tailscale
     - role: nftables
       vars:
@@ -34,7 +33,6 @@
 
   roles:
     - role: no_swap
-    - role: grafana_alloy
     - role: tailscale
     - role: nftables
       vars:
