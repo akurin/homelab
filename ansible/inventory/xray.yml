@@ -59,6 +59,12 @@ xray:
       dns: freedns
       warp_outbound_enabled: true
 
+    nl_vdsina:
+      ansible_host: 89.124.104.67
+      domain: nl1.morjoff.com
+      dns: external
+      warp_outbound_enabled: true
+
   children:
     xray_publish:
       hosts:

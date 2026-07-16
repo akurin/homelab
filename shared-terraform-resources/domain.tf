@@ -50,11 +50,10 @@ resource "vultr_dns_record" "headscale" {
   ttl    = 300
 }
 
-resource "vultr_dns_record" "nuxt" {
+resource "vultr_dns_record" "nl1" {
   domain = vultr_dns_domain.my_domain.domain
-  name   = "nuxt"
+  name   = "nl1"
   type   = "A"
-  data   = "31.76.18.237"
+  data   = "89.124.104.67"
   ttl    = 300
 }
-
