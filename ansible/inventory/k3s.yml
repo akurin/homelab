@@ -7,6 +7,9 @@ k3s_agent:
   vars:
     k3s_server_host: prod-k3s-server-0
   hosts:
-    prod-k3s-agent-0:
+    k3s-agent-legacy:
       ansible_host: 209.250.225.251
+      ansible_user: root
+    k3s-agent:
+      ansible_host: 193.181.216.56
       ansible_user: root
