@@ -25,6 +25,10 @@
         nftables_allowed_udp:
           - 41641
     - role: k3s_server
+    - role: grafana_alloy
+      tags: [grafana-alloy]
+      vars:
+        grafana_alloy_collect_pod_logs: true
     - role: ssh_hardening
 
 - name: Deploy k3s agent
@@ -53,4 +57,8 @@
         nftables_allowed_udp:
           - 41641
     - role: k3s_agent
+    - role: grafana_alloy
+      tags: [grafana-alloy]
+      vars:
+        grafana_alloy_collect_pod_logs: true
     - role: ssh_hardening

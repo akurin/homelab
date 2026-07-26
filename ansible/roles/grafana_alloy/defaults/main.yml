@@ -13,3 +13,13 @@ grafana_repo_base_url: "{{ grafana_repo_mirrors[grafana_repo_mirror] | default(g
 grafana_repo_distribution: stable
 grafana_repo_components: main
 grafana_repo_signed_by: /etc/apt/keyrings/grafana.asc
+
+# Also tail Kubernetes pod logs locally (Fleet Management doesn't manage this —
+# containerd writes pod logs to files, not systemd's journal, so the host-log journal
+# reader Fleet Management provides can't see them). No effect on non-Kubernetes hosts
+# running this role. When enabled, pushes directly to grafana_alloy_loki_url below —
+# independent of whatever destinations Fleet Management's own pipeline uses.
+grafana_alloy_collect_pod_logs: false
+grafana_alloy_loki_url: https://logs-prod3.grafana.net./loki/api/v1/push
+grafana_alloy_loki_username: "205789"
+grafana_alloy_pod_logs_path: /var/log/pods/**/*.log

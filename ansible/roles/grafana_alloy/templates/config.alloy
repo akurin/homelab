@@ -14,3 +14,33 @@ remotecfg {
 		{% endfor %}
 	}
 }
+{% if grafana_alloy_collect_pod_logs | default(false) %}
+
+// Kubernetes pod logs — not managed by Fleet Management (containerd writes these to
+// files, not the systemd journal), so tailed locally and shipped alongside it.
+local.file_match "pod_logs" {
+	path_targets = [
+		{
+			"__path__" = "{{ grafana_alloy_pod_logs_path }}",
+			"job"      = "pod-logs",
+			"host"     = "{{ inventory_hostname }}",
+		},
+	]
+}
+
+loki.source.file "pod_logs" {
+	targets    = local.file_match.pod_logs.targets
+	forward_to = [loki.write.pod_logs.receiver]
+}
+
+loki.write "pod_logs" {
+	endpoint {
+		url = "{{ grafana_alloy_loki_url }}"
+
+		basic_auth {
+			username = "{{ grafana_alloy_loki_username }}"
+			password = "{{ GCLOUD_RW_API_KEY }}"
+		}
+	}
+}
+{% endif %}

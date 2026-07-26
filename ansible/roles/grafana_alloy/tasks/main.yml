@@ -34,6 +34,17 @@
     name: alloy
     update_cache: true
 
+# Pod log directories (e.g. /var/log/pods) are owned root:root 0750, unreadable by the
+# packaged alloy user. Grant just enough capability to bypass read/traverse permission
+# checks rather than running the whole process as root.
+- name: Grant pod log read access (bypasses DAC checks for reads only)
+  community.general.capabilities:
+    path: /usr/bin/alloy
+    capability: cap_dac_read_search+ep
+    state: present
+  when: grafana_alloy_collect_pod_logs | default(false)
+  notify: Restart Grafana Alloy
+
 # The template file is created as follows:
 # curl -sSL https://storage.googleapis.com/cloud-onboarding/alloy/config/config-fm.alloy | sed 's/\({[A-Z_]\+}\)/{\1}/g' > ansible/roles/grafana_alloy/templates/config.alloy
 - name: Create Alloy config

@@ -1,9 +1,9 @@
 ---
+- name: Daemon reload
+  ansible.builtin.systemd:
+    daemon_reload: true
+
 - name: Restart Grafana Alloy
   ansible.builtin.service:
     name: alloy
     state: restarted
-
-- name: Daemon reload
-  ansible.builtin.systemd:
-    daemon_reload: true
