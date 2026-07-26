@@ -20,6 +20,22 @@
 - name: Gather facts about services
   ansible.builtin.service_facts:
 
+- name: IPv4 forwarding
+  ansible.posix.sysctl:
+    name: net.ipv4.ip_forward
+    value: "1"
+    sysctl_set: true
+    state: present
+    reload: true
+
+- name: IPv6 forwarding
+  ansible.posix.sysctl:
+    name: net.ipv6.conf.all.forwarding
+    value: "1"
+    sysctl_set: true
+    state: present
+    reload: true
+
 - name: Ensure k3s config directory exists
   ansible.builtin.file:
     path: /etc/rancher/k3s
@@ -35,16 +51,16 @@
   notify: Restart k3s-agent
   tags: [k3s-node-name]
 
+# All runtime flags (token, server URL, node-external-ip, ...) live in
+# /etc/rancher/k3s/config.yaml, which k3s reads on every start — so changing them later just
+# means editing config.yaml.j2 and letting the restart handler apply it, instead of this
+# install step (which only ever runs once) silently going stale.
 - name: Install k3s
   args:
     executable: /usr/bin/bash
   ansible.builtin.shell: >
     set -o pipefail &&
-    curl -sfL https://get.k3s.io | INSTALL_K3S_VERSION={{ k3s_version | quote }} INSTALL_K3S_EXEC="agent
-      --server https://{{ k3s_server_host }}:6443
-      --flannel-iface tailscale0
-      --node-ip {{ ansible_facts['tailscale0']['ipv4']['address'] }}
-      --token {{ K3S_TOKEN | quote }}" sh -
+    curl -sfL https://get.k3s.io | INSTALL_K3S_VERSION={{ k3s_version | quote }} INSTALL_K3S_EXEC=agent sh -
   when: "'k3s-agent' not in ansible_facts.services"
   changed_when: true
 

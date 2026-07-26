@@ -9,22 +9,24 @@
     - role: hostname
       tags: [hostname]
     - role: no_swap
-    - role: tailscale
     - role: nftables
       vars:
-        nftables_trusted_ifaces:
-          - tailscale0
         nftables_trusted_sources:
           # K3s pod IPs — pods on this node communicate with the host (e.g. Traefik → API server)
           - "{{ k3s_pod_cidr }}"
           # K3s service ClusterIPs — virtual IPs DNAT'd by kube-proxy; source remains a pod IP
           # after DNAT but the destination passes through the host INPUT chain
           - "{{ k3s_service_cidr }}"
+        nftables_trusted_source_groups:
+          # k3s agents — only the API server (6443) and flannel's WireGuard tunnel (51820), not every port
+          - group: k3s_agent
+            tcp: [6443]
+            udp: [51820]
         nftables_allowed_tcp:
           - 22
-        nftables_allowed_udp:
-          - 41641
     - role: k3s_server
+    - role: ci_deploy_key
+      tags: [ci-deploy-key]
     - role: grafana_alloy
       tags: [grafana-alloy]
       vars:
@@ -41,21 +43,22 @@
     - role: hostname
       tags: [hostname]
     - role: no_swap
-    - role: tailscale
     - role: nftables
       vars:
-        nftables_trusted_ifaces:
-          - tailscale0
         nftables_trusted_sources:
           - "{{ k3s_pod_cidr }}"
           - "{{ k3s_service_cidr }}"
+        nftables_trusted_source_groups:
+          # k3s servers — only kubelet (10250, for kubectl logs/exec against pods here) and
+          # flannel's WireGuard tunnel (51820) back to the agent
+          - group: k3s_server
+            tcp: [10250]
+            udp: [51820]
         nftables_allowed_tcp:
           - 22
           - 25
           - 80
           - 443
-        nftables_allowed_udp:
-          - 41641
     - role: k3s_agent
     - role: grafana_alloy
       tags: [grafana-alloy]

@@ -7,13 +7,13 @@ and configured from a local machine; client configs are generated locally and
 published to a Caddy-hosted subscription URL.
 
 ```
-Client → ru_firstvds → dk_webdock → internet
+Client → ru-firstvds → dk-webdock → internet
                      ↘ (direct) → Russian sites (.ru)
 ```
 
-`nl_llhost` and `de_nuxt` are standalone servers (no chain).
+`nl-llhost` and `nl-vdsina` are standalone servers (no chain).
 
-`ru_firstvds` is also the **publish server** — it hosts subscription JSON files via
+`ru-firstvds` is also the **publish server** — it hosts subscription JSON files via
 Caddy under `https://<domain>/subscriptions/<token>`. Hosts in the `xray_publish`
 inventory group are treated as publish targets.
 
@@ -122,10 +122,10 @@ Available outbound tags in LB configs:
     "token": "<uuid>",
     "files": [
       {
-        "path": "~/vpn/morjoff/ru_firstvds_lb_full_proxy_config.json"
+        "path": "~/vpn/morjoff/ru-firstvds_lb_full_proxy_config.json"
       },
       {
-        "path": "~/vpn/morjoff/ru_firstvds_lb_full_proxy_config.json",
+        "path": "~/vpn/morjoff/ru-firstvds_lb_full_proxy_config.json",
         "remark": "Custom name"
       }
     ]
@@ -168,7 +168,7 @@ subscriptions, uploads to publish server.
 
 ```bash
 ./install-xray.sh              # all hosts
-./install-xray.sh ru_firstvds  # single host
+./install-xray.sh ru-firstvds  # single host
 ```
 
 ### `./publish-xray-client-configs.sh [host]`
@@ -179,7 +179,7 @@ to redeploy the servers.
 
 ```bash
 ./publish-xray-client-configs.sh
-./publish-xray-client-configs.sh ru_firstvds
+./publish-xray-client-configs.sh ru-firstvds
 ```
 
 `install-xray.sh` runs four stages:

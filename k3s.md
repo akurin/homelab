@@ -4,27 +4,34 @@
 
 Two nodes managed by `ansible/k3s.yml`:
 
-| Node              | Public IP       | Role          | Provider               |
-|-------------------|-----------------|---------------|------------------------|
-| prod-k3s-server-0 | 193.181.212.97  | Control plane | —                      |
-| prod-k3s-agent-0  | 209.250.225.251 | Worker        | Vultr (migrating away) |
+| Node       | Public IP       | Role          |
+|------------|-----------------|---------------|
+| k3s-server | 193.181.212.97  | Control plane |
+| k3s-agent  | 193.181.216.56  | Worker        |
 
 DNS points to the server IP. The server is tainted (`node-role.kubernetes.io/control-plane:NoSchedule`) so workloads
 only run on the agent.
 
 ## Networking
 
-Nodes communicate over **Tailscale** (`tailscale0`). K3s is configured with `--flannel-iface tailscale0` and
-`--node-ip <tailscale_ip>`, so all cluster-internal traffic (API server, kubelet, etcd, flannel) stays on the Tailscale
-overlay.
+Nodes communicate over k3s's built-in multicloud networking: `--node-external-ip` (each node's public IP) plus
+`--flannel-backend=wireguard-native` + `--flannel-external-ip`, so cluster-internal pod traffic is wrapped in a
+flannel-managed WireGuard tunnel between the two public IPs — no separate VPN (Tailscale/Headscale) is involved.
+Flannel generates and exchanges the WireGuard keys itself; there's no manual key setup.
 
 Each node runs **nftables** for host-level firewall:
 
-- Public: SSH (22), HTTP (80), HTTPS (443), SMTP (25 — server only), Tailscale (UDP 41641)
-- Trusted: `tailscale0` interface, pod CIDR (`10.42.0.0/16`), service CIDR (`10.43.0.0/16`)
+- Public: SSH (22), HTTP (80), HTTPS (443), SMTP (25 — agent only)
+- Trusted, unscoped: pod CIDR (`10.42.0.0/16`), service CIDR (`10.43.0.0/16`)
+- Trusted, port-scoped (`nftables_trusted_source_rules` in `ansible/k3s.yml`): the peer node is only trusted for
+  flannel's WireGuard tunnel (UDP 51820) plus whatever it actually needs from the other side — the API server
+  (TCP 6443) on the server, kubelet (TCP 10250, for `kubectl logs`/`exec`) on the agent
 - Default: drop incoming, accept forward (K3s CNI rules live in the forward chain)
 
 nftables is the sole firewall — there is no cloud firewall in front of these nodes.
+
+`net.ipv4.ip_forward` and `net.ipv6.conf.all.forwarding` are enabled by both `k3s_server` and `k3s_agent` roles
+(required for flannel to route pod traffic across the WireGuard tunnel).
 
 ## Ingress
 
@@ -37,10 +44,21 @@ Internet → server public IP → Traefik → service ClusterIP → pod (on agen
 
 TLS certificates are issued by **cert-manager** using the `letsencrypt-prod` ClusterIssuer.
 
+## CI deploys
+
+CI pipelines reach the API server through a restricted SSH tunnel set up by the `ci_deploy_key` role: a `ci-deploy`
+user on the server whose only authorized key is forwarding-restricted (`permitopen="127.0.0.1:6443"`, no
+shell/pty/agent-forwarding) to `127.0.0.1:6443`. A consumer opens `ssh -L 16443:127.0.0.1:6443 -N ci-deploy@<server>`
+and points `kubectl`/`helm` at the forwarded local port.
+
 ## Key configuration
 
 - K3s version is pinned in `ansible/roles/k3s_server/defaults/main.yml` and `ansible/roles/k3s_agent/defaults/main.yml`
-- Pod CIDR and service CIDR are defined in `k3s_server/defaults/main.yml` and referenced in both the k3s install flags
-  and the nftables trusted sources
+- Pod CIDR and service CIDR are defined in `k3s_server/defaults/main.yml` and `ansible/k3s.yml`'s play vars, and
+  referenced by both the k3s config and the nftables trusted sources
+- All k3s runtime flags (token, node-external-ip, flannel backend, cidrs, tls-san, ...) live in
+  `ansible/roles/k3s_server/templates/config.yaml.j2` / `k3s_agent/templates/config.yaml.j2`, rendered to
+  `/etc/rancher/k3s/config.yaml` and reapplied (with a restart) on every Ansible run — this is the single source of
+  truth for install flags, not the one-shot install command
 - Traefik config (IngressClass, nodeAffinity, tolerations) lives in
   `ansible/roles/k3s_server/templates/traefik-config.yaml.j2`, applied as a K3s HelmChartConfig

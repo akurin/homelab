@@ -1,0 +1,9 @@
+---
+ci_deploy_user: ci-deploy
+
+# The port CI is allowed to forward to via this key — the k3s API server, nothing else.
+ci_deploy_permitopen: "127.0.0.1:6443"
+
+# To rotate: replace files/ci_deploy_key.pub and re-run with the ci-deploy-key tag —
+# authorized_keys is fully overwritten each run, so the old key stops working immediately.
+ci_deploy_public_key: "{{ lookup('file', role_path + '/files/ci_deploy_key.pub') }}"

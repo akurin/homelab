@@ -1,1 +1,4 @@
 node-name: "{{ inventory_hostname }}"
+token: "{{ K3S_TOKEN }}"
+server: "https://{{ k3s_server_host }}:6443"
+node-external-ip: "{{ ansible_host }}"

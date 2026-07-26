@@ -5,7 +5,7 @@ k3s_server:
       ansible_user: root
 k3s_agent:
   vars:
-    k3s_server_host: k3s-server
+    k3s_server_host: "{{ hostvars[groups['k3s_server'][0]]['ansible_host'] }}"
   hosts:
     k3s-agent:
       ansible_host: 193.181.216.56

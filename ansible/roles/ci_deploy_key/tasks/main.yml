@@ -1,0 +1,29 @@
+---
+- name: Check mandatory variables are defined
+  ansible.builtin.assert:
+    that:
+      - ci_deploy_public_key != ""
+
+# No shell, no sudo — this account exists only to be sshd's authentication context for a
+# forwarding-restricted key. Even a fully compromised key can't do anything beyond what
+# the authorized_keys restrictions below allow.
+- name: Create restricted CI deploy user
+  ansible.builtin.user:
+    name: "{{ ci_deploy_user }}"
+    shell: /usr/sbin/nologin
+    system: true
+    create_home: true
+
+# command= overrides anything the client asks to run — even if CI's ssh invocation isn't
+# built with -N, no shell/command ever executes. permitopen= caps forwarding to just the
+# k3s API server; no-pty/no-agent-forwarding/no-X11-forwarding/no-user-rc close the rest
+# of the usual SSH-key attack surface. exclusive=true keeps this the only key on the
+# account, so rotation (swap files/ci_deploy_key.pub, re-run) fully revokes the old one.
+- name: Install restricted authorized_keys entry
+  ansible.posix.authorized_key:
+    user: "{{ ci_deploy_user }}"
+    key: "{{ ci_deploy_public_key }}"
+    key_options: >-
+      command="echo 'This key only allows port forwarding'",no-pty,no-agent-forwarding,no-X11-forwarding,no-user-rc,permitopen="{{ ci_deploy_permitopen }}"
+    exclusive: true
+    state: present

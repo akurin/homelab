@@ -21,6 +21,16 @@ table inet filter {
 {% if nftables_trusted_sources | default([]) | length > 0 %}
     ip saddr { {{ nftables_trusted_sources | join(', ') }} } accept
 {% endif %}
+{% for entry in nftables_trusted_source_groups | default([]) %}
+{% for peer in groups[entry.group] | default([]) %}
+{% if entry.tcp | default([]) | length > 0 %}
+    ip saddr {{ hostvars[peer]['ansible_host'] }} tcp dport { {{ entry.tcp | join(', ') }} } accept
+{% endif %}
+{% if entry.udp | default([]) | length > 0 %}
+    ip saddr {{ hostvars[peer]['ansible_host'] }} udp dport { {{ entry.udp | join(', ') }} } accept
+{% endif %}
+{% endfor %}
+{% endfor %}
     ip protocol icmp accept
     ip6 nexthdr icmpv6 accept
 
