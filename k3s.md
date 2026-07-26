@@ -48,8 +48,17 @@ TLS certificates are issued by **cert-manager** using the `letsencrypt-prod` Clu
 
 CI pipelines reach the API server through a restricted SSH tunnel set up by the `ci_deploy_key` role: a `ci-deploy`
 user on the server whose only authorized key is forwarding-restricted (`permitopen="127.0.0.1:6443"`, no
-shell/pty/agent-forwarding) to `127.0.0.1:6443`. A consumer opens `ssh -L 16443:127.0.0.1:6443 -N ci-deploy@<server>`
-and points `kubectl`/`helm` at the forwarded local port.
+shell/pty/agent-forwarding) to `127.0.0.1:6443`. A consumer opens
+`ssh -L 6443:127.0.0.1:6443 -N ci-deploy@<server>` and points `kubectl`/`helm` at `127.0.0.1:6443`.
+
+The local forward must be **port 6443, not some other local port** — the `KUBECONFIG` secret holds k3s's
+self-generated kubeconfig as-is, which always points at `server: https://127.0.0.1:6443` (k3s's standard default),
+so the tunnel has to land on that exact local port or the client gets "connection refused" even though the tunnel
+itself came up fine.
+
+In GitHub Actions specifically, set up the tunnel and run the command that uses it (`helm`/`kubectl`) **within the
+same step** — each step is a separate process invocation, and a backgrounded `ssh -N` from one step isn't reliably
+still alive by the time a later step tries to use it.
 
 ## Key configuration
 
