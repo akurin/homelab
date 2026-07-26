@@ -161,25 +161,27 @@ when `proxy_direct` is dead and automatically switches to the CDN outbound via
 
 ## Scripts
 
-### `./install-xray.sh [host]`
+### `./install-xray.sh [ansible-playbook args...]`
 
 Full deploy: installs xray on all servers, generates client configs, merges
-subscriptions, uploads to publish server.
+subscriptions, uploads to publish server. Any arguments are passed straight
+through to every `ansible-playbook` invocation in the script.
 
 ```bash
-./install-xray.sh              # all hosts
-./install-xray.sh ru-firstvds  # single host
+./install-xray.sh                       # all hosts
+./install-xray.sh --limit ru-firstvds   # single host
 ```
 
-### `./publish-xray-client-configs.sh [host]`
+### `./publish-xray-client-configs.sh [ansible-playbook args...]`
 
 Lightweight update: regenerates client configs and re-publishes subscriptions.
 Use this after changing `xray/uuids` or `xray/subscriptions` without needing
-to redeploy the servers.
+to redeploy the servers. Arguments are passed straight through to every
+`ansible-playbook` invocation in the script.
 
 ```bash
 ./publish-xray-client-configs.sh
-./publish-xray-client-configs.sh ru-firstvds
+./publish-xray-client-configs.sh --limit ru-firstvds
 ```
 
 `install-xray.sh` runs four stages:

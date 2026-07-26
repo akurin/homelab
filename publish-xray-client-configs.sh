@@ -1,9 +1,6 @@
 #!/bin/bash
 set -euo pipefail
 
-LIMIT=()
-[[ -n "${1:-}" ]] && LIMIT=(--limit "$1")
-
 xray_users_b64="$(pass xray/uuids | base64)"
 secret_path="$(pass xray/secret_path)"
 subscriptions_json="$(pass xray/subscriptions)"
@@ -14,9 +11,9 @@ subscriptions_json="$(pass xray/subscriptions)"
 
 	ansible-playbook xray_client_configs.yml \
 		--inventory "./inventory/xray.yml" \
-		"${LIMIT[@]+"${LIMIT[@]}"}" \
 		-e xray_users_b64="$xray_users_b64" \
-		-e secret_path="$secret_path"
+		-e secret_path="$secret_path" \
+		"$@"
 )
 
 # Step 2: Merge config files per subscription
@@ -30,8 +27,8 @@ publish_users_yaml_b64="$(printf '%s' "$publish_users_json" | base64)"
 
 	ansible-playbook xray_publish_configs.yml \
 		--inventory "./inventory/xray.yml" \
-		"${LIMIT[@]+"${LIMIT[@]}"}" \
-		-e publish_users_yaml_b64="$publish_users_yaml_b64"
+		-e publish_users_yaml_b64="$publish_users_yaml_b64" \
+		"$@"
 )
 
 # Step 4: Update Caddyfile with current token routes and reload Caddy
@@ -41,5 +38,6 @@ publish_users_yaml_b64="$(printf '%s' "$publish_users_json" | base64)"
 	ansible-playbook caddy_reload.yml \
 		--inventory "./inventory/xray.yml" \
 		-e publish_users_yaml_b64="$publish_users_yaml_b64" \
-		-e secret_path="$secret_path"
+		-e secret_path="$secret_path" \
+		"$@"
 )
