@@ -2,6 +2,8 @@
 - name: Deploy Xray chain
   hosts: xray
   roles:
+    - role: hostname
+      tags: [hostname]
     - role: nftables
       vars:
         nftables_full_flush: true

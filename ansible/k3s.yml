@@ -6,6 +6,8 @@
     k3s_service_cidr: 10.43.0.0/16
 
   roles:
+    - role: hostname
+      tags: [hostname]
     - role: no_swap
     - role: tailscale
     - role: nftables
@@ -32,6 +34,8 @@
     k3s_service_cidr: 10.43.0.0/16
 
   roles:
+    - role: hostname
+      tags: [hostname]
     - role: no_swap
     - role: tailscale
     - role: nftables

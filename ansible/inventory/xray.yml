@@ -6,7 +6,7 @@ xray:
     xray_xhttp_port_internal: 10000
 
   hosts:
-    ru_firstvds:
+    ru-firstvds:
       ansible_host: 188.120.246.74
       grafana_repo_mirror: yandex
       domain: clumsypanda.mooo.com
@@ -44,7 +44,7 @@ xray:
     #          ip: [ "geoip:ru" ]
     #          outboundTag: direct
 
-    dk_webdock:
+    dk-webdock:
       ansible_host: 92.113.145.63
       domain: quietotter.mooo.com
       dns: freedns
@@ -53,13 +53,13 @@ xray:
       xray_xhttp_extra_settings: *xray_xhttp_extra_settings
       warp_outbound_enabled: true
 
-    nl_llhost:
+    nl-llhost:
       ansible_host: 45.85.117.151
       domain: brisklizard.mooo.com
       dns: freedns
       warp_outbound_enabled: true
 
-    nl_vdsina:
+    nl-vdsina:
       ansible_host: 89.124.104.67
       domain: nl1.morjoff.com
       dns: external
@@ -68,4 +68,4 @@ xray:
   children:
     xray_publish:
       hosts:
-        ru_firstvds:
+        ru-firstvds:

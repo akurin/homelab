@@ -1,0 +1,10 @@
+---
+- name: Set system hostname
+  ansible.builtin.hostname:
+    name: "{{ system_hostname | default(inventory_hostname) }}"
+
+- name: Ensure hostname resolves to 127.0.1.1 in /etc/hosts
+  ansible.builtin.lineinfile:
+    path: /etc/hosts
+    regexp: '^127\.0\.1\.1\s'
+    line: "127.0.1.1\t{{ system_hostname | default(inventory_hostname) }}"

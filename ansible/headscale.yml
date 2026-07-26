@@ -3,6 +3,8 @@
   hosts: headscale
 
   roles:
+    - role: hostname
+      tags: [hostname]
     - role: nftables
       vars:
         nftables_full_flush: true
