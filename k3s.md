@@ -53,9 +53,19 @@ volumes externally rather than relying on in-cluster replication for durability.
 
 `install-vultr-csi.sh` and the `vultr-csi/` chart also live in this repo but are **not installed** on this cluster
 (the nodes are Vultr instances and Vultr still provides DNS, SSH keys and firewall groups, but no Vultr Block
-Storage volumes are attached). k3s's built-in `local-path` and Longhorn's `longhorn` StorageClass are both currently
-marked default, which is ambiguous — a PVC that doesn't name a StorageClass gets whichever the admission controller
-picks. Worth resolving before anything actually requests storage.
+Storage volumes are attached).
+
+Both k3s's built-in `local-path` and Longhorn's `longhorn` StorageClass are currently annotated
+`is-default-class: true`. Kubernetes breaks that tie by **newest `creationTimestamp`**, so `longhorn` wins today
+(verified empirically — a PVC with no `storageClassName` binds to `longhorn`). That's the desired behaviour here,
+but it rests on a tie-break rather than intent: if anything recreates `local-path` (a k3s upgrade re-applying its
+manifests, say) it becomes the newer object and silently takes over as default. Removing the annotation from
+`local-path` would make it explicit.
+
+Longhorn on this node costs roughly **200 MiB at rest**, plus **~85-100 MiB per volume** (measured: 197 MiB idle,
+298 MiB with a single 1 GiB volume provisioned but unattached). With ~1.2 GiB available that's a practical ceiling
+of well under ten volumes. Running it here at all is a deliberate experiment in how Longhorn behaves under
+constraint, not a recommendation — it is far below the documented 4 vCPU / 4 GiB per-node minimum.
 
 Prerequisite: `open-iscsi` (`iscsid`) must be installed and running on any node Longhorn schedules to — handled by
 the `open_iscsi` role, wired into the `k3s_agent` play in `ansible/k3s.yml`.
