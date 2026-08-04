@@ -5,6 +5,11 @@ metadata:
   name: {{ include "wallabag.fullname" . }}-data
   labels:
     {{- include "wallabag.labels" . | nindent 4 }}
+  annotations:
+    # This volume holds the SQLite database — i.e. all of wallabag's data. Helm deletes
+    # chart-created PVCs on uninstall, including the implicit uninstall that a failed first
+    # install can trigger, so opt out of that and require deleting it deliberately.
+    helm.sh/resource-policy: keep
 spec:
   accessModes:
     - {{ .Values.persistence.accessMode }}
