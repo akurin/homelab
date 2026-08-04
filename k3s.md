@@ -76,6 +76,22 @@ constraint, not a recommendation — it is far below the documented 4 vCPU / 4 G
 Prerequisite: `open-iscsi` (`iscsid`) must be installed and running on any node Longhorn schedules to — handled by
 the `open_iscsi` role, wired into the `k3s_agent` play in `ansible/k3s.yml`.
 
+### Longhorn's admission webhook is a cluster-wide dependency
+
+`longhorn-webhook-validator` registers a rule on **`persistentvolumeclaims` UPDATE in the core API group**, with
+`namespaceSelector: {}`, `objectSelector: {}` and `failurePolicy: Fail`. No selectors means it is not scoped to
+Longhorn's own volumes: while Longhorn is unhealthy, **no PVC in any namespace can be updated**, including
+`local-path` ones and workloads with no relationship to Longhorn.
+
+This is not theoretical. Installing wallabag knocked `longhorn-manager` over (see below), the webhook lost its
+endpoints, and the resulting `no endpoints available for service "longhorn-admission-webhook"` failed a Helm
+upgrade *and then failed its automatic rollback*, leaving the release half-applied — an Ingress created, but the
+release recorded as rolled back. So the practical failure radius of Longhorn falling over here is "every Helm
+release that owns a PVC", not "Longhorn volumes".
+
+Worth keeping in mind before assuming `local-path` is a safe fallback: it is, for provisioning and mounting, but
+not for `helm upgrade` on a chart with a PVC while Longhorn is down.
+
 ### Reaching the Longhorn UI
 
 There's no public ingress for it. Port-forward through SSH in one hop, running `kubectl port-forward` on the server
@@ -134,6 +150,30 @@ because no resource requests are set.
 
 Swap is a mitigation, not a fix. The node is still oversubscribed, and the durable options are fewer pods on it
 (Longhorn is ~11 pods for storage nothing currently uses) or a larger instance.
+
+### CPU storms are a separate failure with the same symptoms
+
+Swap fixed the memory thrashing but not the fact that there is one core. A CPU-bound workload starves everything
+else and produces an identical-looking cascade — probe timeouts, kills, restarts — so check `MemFree` and
+`kswapd0` before assuming it is the memory problem again. Note that kubelet's `availableBytes` counts reclaimable
+page cache and looked healthy (~1 GiB) throughout; `MemFree` was 122 MiB.
+
+The wallabag install is the worked example. Its container runs `composer install` **on every start** — this is in
+the upstream image's entrypoint, guarded by nothing, unlike `wallabag:install` which checks for the SQLite file:
+
+```sh
+rm -f -r /var/www/wallabag/var/cache
+su -c "SYMFONY_ENV=prod composer install --no-dev -o --prefer-dist" -s /bin/sh nobody
+```
+
+So every restart — reboot, eviction, a `helm upgrade` that changes the pod spec — pins the core for ~2 minutes.
+During the first install that took Traefik down twice (61 → 63 restarts), pushed cert-manager and every Longhorn
+component into restart loops, and made Longhorn briefly report the node as down. It recovered on its own about
+three minutes after `composer install` finished, without intervention, and settled back to ~40-55% CPU.
+
+Two things follow. First, a transient storm looks identical to a permanent capacity problem in a snapshot — the
+distinction is only visible in a trend, so sample over minutes before concluding a workload does not fit. Second,
+anything scheduled here that does heavy work at startup will do this again.
 
 ## CI deploys
 
