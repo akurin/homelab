@@ -9,4 +9,5 @@ set -euo pipefail
 # and re-running this script picks it back up. Worst case is a re-run.
 helm upgrade --install --rollback-on-failure \
 	wallabag ./wallabag/ \
-	--set domainName=https://wallabag.morjoff.com
+	--set domainName=https://wallabag.morjoff.com \
+	"$@"

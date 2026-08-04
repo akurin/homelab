@@ -5,11 +5,25 @@ volume). This can take a few minutes on a small node — check progress with:
 
   kubectl -n {{ .Release.Namespace }} logs -f deploy/{{ include "wallabag.fullname" . }}
 
-Default login is:
+The installer runs non-interactively, so it creates its account with upstream's defaults:
 
   username: wallabag
   password: wallabag
+  role:     ROLE_SUPER_ADMIN
+{{ if .Values.ingress.enabled }}
+!! This release is publicly reachable at {{ .Values.domainName }} RIGHT NOW with those
+!! credentials. Let's Encrypt publishes issued certificates to Certificate Transparency
+!! logs, so the hostname is discoverable within minutes and gets probed automatically.
+!! Change the password before doing anything else.
+{{- else }}
+The ingress is disabled, so this is only reachable in-cluster. Change the password before
+enabling it:
 
-Log in and change the password immediately — public registration is disabled
-(userRegistration: {{ .Values.userRegistration }}), so this is the only account until you
-change that.
+  kubectl -n {{ .Release.Namespace }} port-forward svc/{{ include "wallabag.fullname" . }} 8080:80
+  # log in at http://127.0.0.1:8080, then Config -> change password
+
+  ./install-wallabag.sh          # re-run without the override to publish the ingress
+{{- end }}
+
+Public registration is disabled (userRegistration: {{ .Values.userRegistration }}), so this
+is the only account unless you change that.
