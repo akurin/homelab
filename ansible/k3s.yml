@@ -8,7 +8,8 @@
   roles:
     - role: hostname
       tags: [hostname]
-    - role: no_swap
+    - role: swap
+      tags: [swap]
     - role: nftables
       vars:
         nftables_trusted_sources:
@@ -42,7 +43,13 @@
   roles:
     - role: hostname
       tags: [hostname]
-    - role: no_swap
+    # This node runs the entire workload (the server is tainted NoSchedule) on 1 vCPU /
+    # 1.7 GiB. Without swap the kernel can only reclaim page cache, and it thrashes hard
+    # enough to starve Traefik's liveness probe — see k3s.md's Memory and swap section.
+    - role: swap
+      tags: [swap]
+      vars:
+        swap_enabled: true
     - role: open_iscsi
     - role: nftables
       vars:

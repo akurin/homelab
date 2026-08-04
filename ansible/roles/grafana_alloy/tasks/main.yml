@@ -80,3 +80,24 @@
   notify:
     - Daemon reload
     - Restart Grafana Alloy
+
+# Alloy is a background monitoring agent running as a host service, so Kubernetes doesn't
+# schedule or weight it alongside the workloads it observes. On a constrained node it should
+# lose CPU contention rather than compete on equal footing. CPUWeight is the cgroup v2
+# proportional lever (default 100; lower = smaller share, and only bites when the CPU is
+# actually saturated); Nice is the classic priority hint alongside it.
+#
+# Note this is hygiene, not a fix for anything: it was tried against the Traefik crash-loop
+# described in k3s.md and made no difference, because that turned out to be memory thrashing
+# rather than CPU contention. Scheduling weight can't shrink a memory footprint.
+- name: Write priority.conf for alloy service (lower CPU priority than k8s workloads)
+  ansible.builtin.copy:
+    dest: /etc/systemd/system/alloy.service.d/priority.conf
+    mode: "0644"
+    content: |
+      [Service]
+      CPUWeight=20
+      Nice=10
+  notify:
+    - Daemon reload
+    - Restart Grafana Alloy

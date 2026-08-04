@@ -1,0 +1,15 @@
+---
+# Kubernetes nodes conventionally run without swap, and that stays the default here. Enable
+# it per-host only where memory pressure costs more than paging does — see k3s.md's Memory
+# and swap section. k3s's kubelet already runs with failSwapOn: false, so swap doesn't block
+# kubelet startup either way.
+swap_enabled: false
+
+swap_file: /swapfile
+swap_size: 2G
+
+# Left at the kernel default. Raising it (80-100) biases reclaim further towards evicting
+# cold anonymous pages instead of the page cache, which is the direction a memory-starved
+# node wants — but 60 is the value that was actually measured to resolve the thrashing on
+# k3s-agent, so it stays until something says otherwise.
+swap_swappiness: 60

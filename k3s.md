@@ -46,11 +46,16 @@ TLS certificates are issued by **cert-manager** using the `letsencrypt-prod` Clu
 
 ## Storage
 
-**Longhorn** provides block storage via `install-longhorn.sh`, alongside the existing `vultr-csi` (Vultr Block
-Storage) StorageClasses. Since the agent is the only schedulable node (see Nodes above), `defaultReplicaCount` and
-the CSI sidecar replica counts are set to `1` — replicas can't span nodes when there's only one to schedule onto, so
-Longhorn's usual multi-node redundancy doesn't apply here; back up volumes externally rather than relying on
-in-cluster replication for durability.
+**Longhorn** provides block storage via `install-longhorn.sh`. Since the agent is the only schedulable node (see
+Nodes above), `defaultReplicaCount` and the CSI sidecar replica counts are set to `1` — replicas can't span nodes
+when there's only one to schedule onto, so Longhorn's usual multi-node redundancy doesn't apply here; back up
+volumes externally rather than relying on in-cluster replication for durability.
+
+`install-vultr-csi.sh` and the `vultr-csi/` chart also live in this repo but are **not installed** on this cluster
+(the nodes are Vultr instances and Vultr still provides DNS, SSH keys and firewall groups, but no Vultr Block
+Storage volumes are attached). k3s's built-in `local-path` and Longhorn's `longhorn` StorageClass are both currently
+marked default, which is ambiguous — a PVC that doesn't name a StorageClass gets whichever the admission controller
+picks. Worth resolving before anything actually requests storage.
 
 Prerequisite: `open-iscsi` (`iscsid`) must be installed and running on any node Longhorn schedules to — handled by
 the `open_iscsi` role, wired into the `k3s_agent` play in `ansible/k3s.yml`.
@@ -66,6 +71,53 @@ ssh -L 8080:127.0.0.1:8080 root@193.181.212.97 \
 ```
 
 Then open `http://127.0.0.1:8080`. Leave the SSH session running while using the UI.
+
+## Memory and swap
+
+`k3s-agent` has **1 vCPU and 1.7 GiB** and runs the entire workload, since the server is tainted `NoSchedule`. That
+is well under what this stack wants (Longhorn alone documents a 4 vCPU / 4 GiB per-node minimum), and the failure
+mode it produces is worth recognising because it doesn't look like a memory problem at first.
+
+**Symptom:** Traefik crash-loops — liveness probe `GET /ping` times out, kubelet kills the container (exit 137), it
+restarts, repeat. Because Traefik is the only ingress path, every domain on the cluster intermittently hangs mid-TLS
+handshake. Longhorn's CSI sidecars fail the same way (`context deadline exceeded` connecting to their own unix
+socket).
+
+**Actual cause:** memory, not CPU. With swap off, anonymous memory (the Go heaps of k3s, containerd, Alloy, Traefik,
+Longhorn's ~11 pods, cert-manager's 3) is unreclaimable, so `kswapd0` can only reclaim page cache — and the working
+set doesn't fit. Pages get evicted and immediately faulted back in, continuously. Measured at its worst:
+
+| | thrashing | with 2 GiB swap |
+|---|---|---|
+| CPU idle | 0% | 77% |
+| CPU sys time | 84% | 8% |
+| load average (1 min) | 5.4 | 1.0 |
+| page-cache refaults | 23,700/sec | 4,200/sec |
+| PSI memory `full` (avg60) | 12.9% | 3.4% |
+
+The CPU saturation was a *symptom* — 84% of it was kernel time spent on reclaim and fault handling. This is why
+lowering Alloy's scheduling priority (`CPUWeight`/`Nice`, in the `grafana_alloy` role) did not help: scheduling
+weights redistribute CPU, they don't shrink anyone's memory footprint, and reclaim happens in kernel threads that
+don't answer to a service's cgroup weight. Swap fixed it by giving cold anonymous pages somewhere to go — Alloy's
+resident set alone dropped from 97 MiB to 18 MiB.
+
+Useful signals when diagnosing this, all on the node itself:
+
+```
+cat /proc/pressure/memory          # 'full' above a few percent means real stalling
+grep -E 'workingset_refault_file|pgscan_kswapd|pgmajfault' /proc/vmstat   # sample twice, diff
+top -bn1                           # high 'sy' + low 'id' + kswapd0 near the top
+```
+
+Swap is enabled on the agent only, by the `swap` role (`swap_enabled: true` in `ansible/k3s.yml`); the server keeps
+the conventional Kubernetes swap-off setup, which is the role's default. k3s's kubelet already runs with
+`failSwapOn: false`, so no kubelet change was needed. Note that kubelet's `memorySwap` behaviour is unset, i.e.
+`NoSwap` — **containers get no swap at all**; only host-level processes (Alloy, k3s, containerd) benefit. Even
+setting `swapBehavior: LimitedSwap` would only cover Burstable pods, and almost every pod here is BestEffort
+because no resource requests are set.
+
+Swap is a mitigation, not a fix. The node is still oversubscribed, and the durable options are fewer pods on it
+(Longhorn is ~11 pods for storage nothing currently uses) or a larger instance.
 
 ## CI deploys
 
