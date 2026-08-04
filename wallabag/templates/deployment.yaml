@@ -1,0 +1,83 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "wallabag.fullname" . }}
+  labels:
+    {{- include "wallabag.labels" . | nindent 4 }}
+spec:
+  # SQLite can't safely be written by more than one process at a time, and the data volume is
+  # ReadWriteOnce anyway (can only be mounted on one node at once) — so this is always a single
+  # replica. Recreate (not RollingUpdate) so the old pod releases the volume before the new one
+  # tries to mount it.
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      {{- include "wallabag.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        {{- include "wallabag.selectorLabels" . | nindent 8 }}
+    spec:
+      containers:
+        - name: wallabag
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          ports:
+            - name: http
+              containerPort: 80
+          env:
+            - name: SYMFONY__ENV__DOMAIN_NAME
+              value: {{ required "domainName is required (e.g. https://wallabag.example.com)" .Values.domainName | quote }}
+            - name: SYMFONY__ENV__SERVER_NAME
+              value: {{ .Values.serverName | quote }}
+            - name: SYMFONY__ENV__LOCALE
+              value: {{ .Values.locale | quote }}
+            - name: SYMFONY__ENV__FOSUSER_REGISTRATION
+              value: {{ .Values.userRegistration | quote }}
+            - name: SYMFONY__ENV__SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "wallabag.fullname" . }}
+                  key: SYMFONY__ENV__SECRET
+            {{- range $key, $value := .Values.extraEnv }}
+            - name: SYMFONY__ENV__{{ $key }}
+              value: {{ $value | quote }}
+            {{- end }}
+          volumeMounts:
+            - name: data
+              mountPath: /var/www/wallabag/data
+          # First boot runs `wallabag:install` plus a `composer install` on every container
+          # start (baked into the image's entrypoint, not something this chart controls) — on
+          # this cluster's single 1 vCPU agent node that can take a while. A generous
+          # startupProbe means liveness/readiness don't get a chance to kill the container
+          # mid-install and trigger a restart loop (exactly what happened with Longhorn's CSI
+          # sidecars on this same node — see k3s.md).
+          startupProbe:
+            httpGet:
+              path: /api/info
+              port: http
+            initialDelaySeconds: 10
+            periodSeconds: 5
+            failureThreshold: 60
+          livenessProbe:
+            httpGet:
+              path: /api/info
+              port: http
+            periodSeconds: 10
+          readinessProbe:
+            httpGet:
+              path: /api/info
+              port: http
+            periodSeconds: 5
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+      volumes:
+        - name: data
+          {{- if .Values.persistence.enabled }}
+          persistentVolumeClaim:
+            claimName: {{ include "wallabag.fullname" . }}-data
+          {{- else }}
+          emptyDir: {}
+          {{- end }}

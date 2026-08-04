@@ -1,0 +1,6 @@
+apiVersion: v2
+name: wallabag
+description: A Helm chart for wallabag, a self-hostable read-it-later application
+type: application
+version: 0.1.0
+appVersion: "2.6.14"

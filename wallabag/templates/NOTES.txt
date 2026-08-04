@@ -1,0 +1,15 @@
+wallabag is deploying to {{ .Values.domainName }}
+
+First boot runs the installer automatically (SQLite database, created on the persistence
+volume). This can take a few minutes on a small node — check progress with:
+
+  kubectl -n {{ .Release.Namespace }} logs -f deploy/{{ include "wallabag.fullname" . }}
+
+Default login is:
+
+  username: wallabag
+  password: wallabag
+
+Log in and change the password immediately — public registration is disabled
+(userRegistration: {{ .Values.userRegistration }}), so this is the only account until you
+change that.

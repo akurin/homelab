@@ -1,0 +1,56 @@
+image:
+  repository: wallabag/wallabag
+  tag: "2.6.14"
+  pullPolicy: IfNotPresent
+
+# Database is intentionally not configurable here: this chart only supports wallabag's
+# built-in SQLite driver (the image's own default when no DATABASE_DRIVER is set), stored on
+# the persistence volume below. No separate database deployment needed.
+
+# Required. Full public URL wallabag will be served at, e.g. "https://wallabag.example.com".
+# Must include the scheme, and must match ingress.tls.enabled (https if TLS, http if not).
+domainName: ""
+
+# Friendly instance name, shown in the UI and used as the 2FA issuer name.
+serverName: "wallabag"
+
+locale: en
+
+# Public registration is off by default — this is a personal instance, not a multi-user
+# service. The first account is created automatically on first boot (default login
+# wallabag/wallabag — change the password immediately after logging in).
+userRegistration: false
+
+# Extra SYMFONY__ENV__* variables, for things this chart doesn't expose directly
+# (e.g. MAILER_DSN, SENTRY_DSN). Example: { MAILER_DSN: "smtp://user:pass@host:587" }
+extraEnv: {}
+
+persistence:
+  enabled: true
+  size: 5Gi
+  # Named explicitly rather than relying on the cluster default, which is k3s's local-path
+  # (see k3s.md). Longhorn is deliberately not the default, so anything that should exercise
+  # it has to ask for it — which is the point here.
+  storageClass: longhorn
+  accessMode: ReadWriteOnce
+
+service:
+  port: 80
+
+ingress:
+  enabled: true
+  className: traefik
+  annotations:
+    cert-manager.io/cluster-issuer: letsencrypt-prod
+  tls:
+    enabled: true
+    secretName: wallabag-tls
+
+# k3s-agent is a single 1 vCPU / ~1.7 GiB node already running Longhorn, Traefik,
+# cert-manager, etc. — keep this pod's footprint bounded rather than leaving it unset.
+resources:
+  requests:
+    cpu: 100m
+    memory: 256Mi
+  limits:
+    memory: 512Mi
