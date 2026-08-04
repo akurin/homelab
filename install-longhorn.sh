@@ -26,4 +26,5 @@ helm upgrade --install --take-ownership \
 	--set csi.provisionerReplicaCount=1 \
 	--set csi.resizerReplicaCount=1 \
 	--set csi.snapshotterReplicaCount=1 \
-	--set longhornUI.replicas=1
+	--set longhornUI.replicas=1 \
+	--set persistence.defaultClass=false

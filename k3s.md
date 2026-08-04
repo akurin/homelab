@@ -55,12 +55,18 @@ volumes externally rather than relying on in-cluster replication for durability.
 (the nodes are Vultr instances and Vultr still provides DNS, SSH keys and firewall groups, but no Vultr Block
 Storage volumes are attached).
 
-Both k3s's built-in `local-path` and Longhorn's `longhorn` StorageClass are currently annotated
-`is-default-class: true`. Kubernetes breaks that tie by **newest `creationTimestamp`**, so `longhorn` wins today
-(verified empirically — a PVC with no `storageClassName` binds to `longhorn`). That's the desired behaviour here,
-but it rests on a tie-break rather than intent: if anything recreates `local-path` (a k3s upgrade re-applying its
-manifests, say) it becomes the newer object and silently takes over as default. Removing the annotation from
-`local-path` would make it explicit.
+**`local-path` is the default StorageClass; `longhorn` is deliberately not.** Both charts ship wanting to be
+default, and when both were annotated `is-default-class: true` Kubernetes broke the tie by newest
+`creationTimestamp` — which `longhorn` happened to win, but only by accident of install order.
+
+k3s is the wrong side of that to fight: `local-path` comes from a packaged manifest
+(`/var/lib/rancher/k3s/server/manifests/local-storage.yaml`) applied through k3s's addon controller, so the
+annotation is re-applied whenever that manifest's checksum changes, e.g. on a k3s upgrade. Longhorn's StorageClass
+is ours, so it yields instead: `persistence.defaultClass=false` in `install-longhorn.sh`.
+
+Consequence: **anything that wants Longhorn must name it explicitly** (`storageClassName: longhorn`); a PVC that
+doesn't name a class gets `local-path`. That's intentional — it keeps the Longhorn experiment opt-in and leaves a
+working storage path if Longhorn degrades under the constraints described below.
 
 Longhorn on this node costs roughly **200 MiB at rest**, plus **~85-100 MiB per volume** (measured: 197 MiB idle,
 298 MiB with a single 1 GiB volume provisioned but unattached). With ~1.2 GiB available that's a practical ceiling
