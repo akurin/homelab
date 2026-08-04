@@ -3,7 +3,6 @@ set -euo pipefail
 
 release=wallabag
 domain=https://wallabag.morjoff.com
-pass_entry=wallabag/admin
 
 # The upstream image installs its admin account non-interactively, which means it always gets
 # the documented defaults: wallabag/wallabag with ROLE_SUPER_ADMIN. There is no env var or
@@ -26,11 +25,15 @@ if kubectl get ingress "$release" >/dev/null 2>&1; then
 	exit 0
 fi
 
-if ! password="$(pass "$pass_entry" 2>/dev/null)"; then
-	read -rsp "No '$pass_entry' in pass. Password for wallabag's admin account: " password
-	echo
-fi
+# Asked for up front, before anything is deployed, so a typo or a change of mind costs
+# nothing. Confirmed because the input is hidden and a mistake here means being locked out of
+# the account it is about to set.
+read -rsp "Choose a password for wallabag's admin account: " password
+echo
+read -rsp "Repeat it: " password_confirm
+echo
 [ -n "$password" ] || { echo "empty password, aborting" >&2; exit 1; }
+[ "$password" = "$password_confirm" ] || { echo "passwords do not match, aborting" >&2; exit 1; }
 
 echo "First install: bringing wallabag up unpublished..."
 helm upgrade --install --rollback-on-failure \
@@ -43,7 +46,7 @@ helm upgrade --install --rollback-on-failure \
 # /api/info answers, which only happens after the entrypoint has finished installing the
 # database. Feed the password on stdin rather than as an argument so it stays out of the
 # container's process list.
-echo "Setting the admin password from ${pass_entry}..."
+echo "Setting the admin password..."
 printf '%s\n' "$password" | kubectl exec -i "deploy/$release" -- \
 	php bin/console fos:user:change-password wallabag --env=prod
 
