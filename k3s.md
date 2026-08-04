@@ -44,6 +44,29 @@ Internet → server public IP → Traefik → service ClusterIP → pod (on agen
 
 TLS certificates are issued by **cert-manager** using the `letsencrypt-prod` ClusterIssuer.
 
+## Storage
+
+**Longhorn** provides block storage via `install-longhorn.sh`, alongside the existing `vultr-csi` (Vultr Block
+Storage) StorageClasses. Since the agent is the only schedulable node (see Nodes above), `defaultReplicaCount` and
+the CSI sidecar replica counts are set to `1` — replicas can't span nodes when there's only one to schedule onto, so
+Longhorn's usual multi-node redundancy doesn't apply here; back up volumes externally rather than relying on
+in-cluster replication for durability.
+
+Prerequisite: `open-iscsi` (`iscsid`) must be installed and running on any node Longhorn schedules to — handled by
+the `open_iscsi` role, wired into the `k3s_agent` play in `ansible/k3s.yml`.
+
+### Reaching the Longhorn UI
+
+There's no public ingress for it. Port-forward through SSH in one hop, running `kubectl port-forward` on the server
+itself (root has a working kubeconfig at `/etc/rancher/k3s/k3s.yaml` there):
+
+```
+ssh -L 8080:127.0.0.1:8080 root@193.181.212.97 \
+	'kubectl --kubeconfig=/etc/rancher/k3s/k3s.yaml -n longhorn-system port-forward svc/longhorn-frontend 8080:80'
+```
+
+Then open `http://127.0.0.1:8080`. Leave the SSH session running while using the UI.
+
 ## CI deploys
 
 CI pipelines reach the API server through a restricted SSH tunnel set up by the `ci_deploy_key` role: a `ci-deploy`

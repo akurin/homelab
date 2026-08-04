@@ -43,6 +43,7 @@
     - role: hostname
       tags: [hostname]
     - role: no_swap
+    - role: open_iscsi
     - role: nftables
       vars:
         nftables_trusted_sources:
