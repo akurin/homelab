@@ -1,0 +1,30 @@
+---
+# Public keys allowed to log in as this account directly — both the Mac's own key
+# (for `ssh personal-fedora-ai@orb`) and each client device's home-hop key routed
+# through the jump tunnel. Add a .pub file per key to ansible/files/devices/ (shared
+# with ssh_jump_user — see that role's comment) and list it here; removing an entry
+# revokes that key on the next run (exclusive: true rewrites the whole
+# authorized_keys file, same pattern as ssh_jump_user).
+ssh_reverse_tunnel_client_authorized_keys:
+  - "{{ lookup('file', playbook_dir + '/files/devices/mac.pub') }}"
+  - "{{ lookup('file', playbook_dir + '/files/devices/phone.pub') }}"
+
+# Must match ssh_reverse_tunnel_user_permitlisten on the jump host.
+ssh_reverse_tunnel_client_permitlisten: "127.0.0.1:2222"
+
+# Must match ssh_reverse_tunnel_user_name / the jump host's domain.
+ssh_reverse_tunnel_client_remote_user: tunnel
+ssh_reverse_tunnel_client_jump_host: nl1.morjoff.com
+
+# Private half of the keypair whose public half is already registered in
+# ansible/roles/ssh_reverse_tunnel_user/files/ssh_reverse_tunnel_user.pub on the jump
+# host. This role does NOT generate it — see ssh-jump.md step 1. Regenerating it here
+# would produce a keypair the jump host doesn't recognize.
+ssh_reverse_tunnel_client_identity_file: "{{ ansible_env.HOME }}/.ssh/reverse_tunnel"
+
+# Group membership that trips a `required` pam_limits.so over an rtprio/nice limit
+# (from the pipewire package's /etc/security/limits.d/25-pw-rlimits.conf) that this
+# host can't actually satisfy, taking down every SSH login with
+# "PAM: pam_open_session(): Permission denied" even after successful auth. Not needed
+# on a headless dev VM.
+ssh_reverse_tunnel_client_pipewire_group: pipewire

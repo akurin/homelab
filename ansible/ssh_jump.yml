@@ -1,0 +1,7 @@
+---
+- name: Configure SSH jump host for reaching home behind NAT
+  hosts: ssh_jump
+
+  roles:
+    - role: ssh_reverse_tunnel_user
+    - role: ssh_jump_user

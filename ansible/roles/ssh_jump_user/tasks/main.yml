@@ -1,0 +1,31 @@
+---
+- name: Check mandatory variables are defined
+  ansible.builtin.assert:
+    that:
+      - ssh_jump_user_public_keys | length > 0
+      - ssh_jump_user_public_keys | select('equalto', '') | list | length == 0
+
+# No shell, no sudo — this account exists only to be sshd's authentication context for
+# forward-restricted keys. Even a fully compromised key can't do anything beyond what
+# the authorized_keys restrictions below allow.
+- name: Create restricted jump user
+  ansible.builtin.user:
+    name: "{{ ssh_jump_user_name }}"
+    shell: /usr/sbin/nologin
+    system: true
+    create_home: true
+
+# command= overrides anything the client asks to run — no shell/command ever executes.
+# permitopen= caps forwarding to just the reverse-tunnel listener on this same host;
+# no-pty/no-agent-forwarding/no-X11-forwarding/no-user-rc close the rest of the usual
+# SSH-key attack surface. exclusive=true rewrites the whole file from
+# ssh_jump_user_public_keys each run, so dropping a device from the list fully revokes
+# it — a stolen phone can be cut off by deleting its .pub and re-running.
+- name: Install restricted authorized_keys entries
+  ansible.posix.authorized_key:
+    user: "{{ ssh_jump_user_name }}"
+    key: "{{ ssh_jump_user_public_keys | join('\n') }}"
+    key_options: >-
+      command="echo 'This key only allows local port forwarding'",no-pty,no-agent-forwarding,no-X11-forwarding,no-user-rc,permitopen="{{ ssh_jump_user_permitopen }}"
+    exclusive: true
+    state: present

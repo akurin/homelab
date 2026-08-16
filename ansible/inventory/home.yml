@@ -1,0 +1,6 @@
+home:
+  hosts:
+    personal-fedora-ai:
+      # OrbStack registers this as an SSH config Host alias (see `ssh personal-fedora-ai@orb`),
+      # so ansible_host is the alias itself rather than a bare hostname/IP.
+      ansible_host: personal-fedora-ai@orb

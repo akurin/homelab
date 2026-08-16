@@ -1,0 +1,19 @@
+[Unit]
+Description=Reverse SSH tunnel to jump host
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+User={{ ansible_user_id }}
+ExecStart=/usr/bin/autossh -M 0 -N \
+  -o "ServerAliveInterval 30" -o "ServerAliveCountMax 3" \
+  -o "ExitOnForwardFailure yes" \
+  -o "StrictHostKeyChecking accept-new" \
+  -i {{ ssh_reverse_tunnel_client_identity_file }} \
+  -R {{ ssh_reverse_tunnel_client_permitlisten }}:localhost:22 \
+  {{ ssh_reverse_tunnel_client_remote_user }}@{{ ssh_reverse_tunnel_client_jump_host }}
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target

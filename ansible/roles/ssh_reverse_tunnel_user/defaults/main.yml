@@ -1,0 +1,11 @@
+---
+ssh_reverse_tunnel_user_name: tunnel
+
+# Loopback-only bind on the jump host — never reachable from the internet. Must
+# match ssh_jump_user_permitopen so the two accounts form a closed loop.
+ssh_reverse_tunnel_user_permitlisten: "127.0.0.1:2222"
+
+# Public half of the home host's dedicated tunnel keypair. Generate on the home
+# host with `ssh-keygen -t ed25519 -f /etc/ssh/tunnel_key -N ""` and drop the
+# resulting .pub here — see ssh-jump.md.
+ssh_reverse_tunnel_user_public_key: "{{ lookup('file', role_path + '/files/ssh_reverse_tunnel_user.pub') }}"

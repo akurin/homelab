@@ -1,0 +1,100 @@
+---
+- name: Check mandatory variables are defined
+  ansible.builtin.assert:
+    that:
+      - ssh_reverse_tunnel_client_authorized_keys | length > 0
+      - ssh_reverse_tunnel_client_authorized_keys | select('equalto', '') | list | length == 0
+    fail_msg: >-
+      ssh_reverse_tunnel_client_authorized_keys is empty. Add a .pub file per trusted
+      key to files/ and list it here — this role won't disable password auth or touch
+      authorized_keys without at least one key to install, to avoid locking you out.
+
+- name: Install and start sshd
+  become: true
+  block:
+    - name: Install sshd, autossh, tmux
+      ansible.builtin.dnf:
+        name:
+          - openssh-server
+          - autossh
+          - tmux
+        state: present
+
+    - name: Enable and start sshd
+      ansible.builtin.systemd:
+        name: sshd
+        enabled: true
+        state: started
+
+- name: Install authorized_keys for direct/tunnel login
+  ansible.posix.authorized_key:
+    user: "{{ ansible_user_id }}"
+    key: "{{ ssh_reverse_tunnel_client_authorized_keys | join('\n') }}"
+    exclusive: true
+    state: present
+
+- name: Disable password authentication
+  ansible.builtin.copy:
+    dest: /etc/ssh/sshd_config.d/99-key-only.conf
+    content: "PasswordAuthentication no\n"
+    mode: "0644"
+    validate: "sshd -t -f %s"
+  become: true
+  notify: Reload sshd
+
+- name: Check group memberships
+  ansible.builtin.command: id -Gn {{ ansible_user_id }}
+  register: ssh_reverse_tunnel_client_user_groups
+  changed_when: false
+
+- name: Remove user from pipewire group
+  ansible.builtin.command: gpasswd -d {{ ansible_user_id }} {{ ssh_reverse_tunnel_client_pipewire_group }}
+  when: ssh_reverse_tunnel_client_pipewire_group in ssh_reverse_tunnel_client_user_groups.stdout.split()
+  become: true
+
+- name: Check reverse tunnel identity file exists
+  ansible.builtin.stat:
+    path: "{{ ssh_reverse_tunnel_client_identity_file }}"
+  register: ssh_reverse_tunnel_client_identity_stat
+
+- name: Fail if identity file is missing
+  ansible.builtin.assert:
+    that:
+      - ssh_reverse_tunnel_client_identity_stat.stat.exists
+    fail_msg: >-
+      {{ ssh_reverse_tunnel_client_identity_file }} not found. Generate it with
+      `ssh-keygen -t ed25519 -f {{ ssh_reverse_tunnel_client_identity_file }} -N ""` and register
+      its public half in ansible/roles/ssh_reverse_tunnel_user/files/ssh_reverse_tunnel_user.pub
+      on the jump host first (see ssh-jump.md) — this role won't create a new, unregistered
+      keypair for you.
+
+- name: Auto-attach tmux on interactive SSH login
+  ansible.builtin.blockinfile:
+    path: "{{ ansible_env.HOME }}/.bashrc"
+    marker: "# {mark} ANSIBLE MANAGED BLOCK - tmux auto-attach"
+    block: |
+      case $- in
+        *i*) ;;
+        *) return ;;
+      esac
+
+      if [ -z "$TMUX" ] && [ -n "$SSH_CONNECTION" ]; then
+        exec tmux new -A -s main
+      fi
+
+- name: Install and start the reverse tunnel service
+  become: true
+  block:
+    - name: Install reverse tunnel systemd unit
+      ansible.builtin.template:
+        src: ssh-tunnel.service.j2
+        dest: /etc/systemd/system/ssh-tunnel.service
+        mode: "0644"
+      notify: Reload systemd
+
+    - name: Enable and start reverse tunnel service
+      ansible.builtin.systemd:
+        name: ssh-tunnel
+        enabled: true
+        state: started
+        daemon_reload: true

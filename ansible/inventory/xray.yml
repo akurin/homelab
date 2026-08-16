@@ -69,3 +69,7 @@ xray:
     xray_publish:
       hosts:
         ru-firstvds:
+
+    ssh_jump:
+      hosts:
+        nl-vdsina:
