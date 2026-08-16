@@ -11,6 +11,18 @@
       notify:
         - Restart sshd
 
+    # Needed by ssh_alert: without it sshd never logs the key fingerprint on
+    # an accepted login, only that some publickey succeeded.
+    - name: Set LogLevel VERBOSE in main sshd_config
+      ansible.builtin.lineinfile:
+        dest: /etc/ssh/sshd_config
+        regexp: '^\s*LogLevel\s+'
+        line: 'LogLevel VERBOSE'
+        state: present
+        validate: 'sshd -t -f %s'
+      notify:
+        - Restart sshd
+
     - name: Find sshd override config files
       ansible.builtin.find:
         paths: /etc/ssh/sshd_config.d
@@ -29,7 +41,22 @@
       notify:
         - Restart sshd
 
-    - name: Check effective sshd configuration for PasswordAuthentication
+    # Debian's default sshd_config Includes sshd_config.d/*.conf near the
+    # top, and sshd keeps the first-seen value for most directives — so an
+    # override file's LogLevel would silently win over the one set above
+    # unless it's patched too, same as PasswordAuthentication above.
+    - name: Set LogLevel VERBOSE in sshd override configs (if any)
+      ansible.builtin.lineinfile:
+        path: "{{ item.path }}"
+        regexp: '^\s*LogLevel\s+'
+        line: 'LogLevel VERBOSE'
+        state: present
+      loop: "{{ sshd_override_files.files }}"
+      when: sshd_override_files.files | length > 0
+      notify:
+        - Restart sshd
+
+    - name: Check effective sshd configuration
       ansible.builtin.command: sshd -T
       register: sshd_effective_config
       changed_when: false
@@ -37,7 +64,15 @@
     - name: Fail if PasswordAuthentication is still enabled
       ansible.builtin.fail:
         msg: "SSH hardening failed: PasswordAuthentication is still enabled in the effective sshd configuration."
-      when: "'passwordauthentication yes' in sshd_effective_config.stdout"
+      when: "'passwordauthentication yes' in sshd_effective_config.stdout | lower"
+
+    # sshd -T lowercases directive names but preserves the enum's own casing
+    # for the value (e.g. "loglevel VERBOSE"), unlike yes/no booleans — lower
+    # the whole string before matching so this doesn't depend on that.
+    - name: Fail if LogLevel VERBOSE is not effective
+      ansible.builtin.fail:
+        msg: "SSH hardening failed: LogLevel VERBOSE is not set in the effective sshd configuration."
+      when: "'loglevel verbose' not in sshd_effective_config.stdout | lower"
 
 - name: Install fail2ban
   ansible.builtin.apt:

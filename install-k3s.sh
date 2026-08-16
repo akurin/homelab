@@ -6,6 +6,8 @@ GCLOUD_RW_API_KEY="$(pass grafana/alloy_token)"
 GCLOUD_FM_URL="$(pass grafana/GCLOUD_FM_URL)"
 GCLOUD_FM_POLL_FREQUENCY="$(pass grafana/GCLOUD_FM_POLL_FREQUENCY)"
 GCLOUD_FM_HOSTED_ID="$(pass grafana/GCLOUD_FM_HOSTED_ID)"
+ssh_alert_telegram_bot_token="$(pass ssh-alert/telegram_bot_token)"
+ssh_alert_telegram_chat_id="$(pass ssh-alert/telegram_chat_id)"
 
 (
 	cd ansible && ansible-playbook \
@@ -16,5 +18,7 @@ GCLOUD_FM_HOSTED_ID="$(pass grafana/GCLOUD_FM_HOSTED_ID)"
 		-e GCLOUD_FM_URL="$GCLOUD_FM_URL" \
 		-e GCLOUD_FM_POLL_FREQUENCY="$GCLOUD_FM_POLL_FREQUENCY" \
 		-e GCLOUD_FM_HOSTED_ID="$GCLOUD_FM_HOSTED_ID" \
+		-e ssh_alert_telegram_bot_token="$ssh_alert_telegram_bot_token" \
+		-e ssh_alert_telegram_chat_id="$ssh_alert_telegram_chat_id" \
 		"$@"
 )

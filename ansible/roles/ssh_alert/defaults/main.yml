@@ -1,0 +1,8 @@
+---
+ssh_alert_dormancy_days_default: 90
+ssh_alert_dormancy_overrides: {}
+# Fingerprint -> "low" or "suppress". New-fingerprint alerts always fire
+# regardless of suppression; only new-IP alerts for an already-known
+# fingerprint are downgraded/dropped.
+ssh_alert_suppressed_fingerprints: {}
+ssh_alert_rate_limit_per_minute: 5

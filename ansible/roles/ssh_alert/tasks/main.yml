@@ -1,0 +1,90 @@
+---
+- name: Check mandatory variables are defined
+  ansible.builtin.assert:
+    that:
+      - ssh_alert_telegram_bot_token | default('') | length > 0
+      - ssh_alert_telegram_chat_id | default('') | length > 0
+
+# Without LogLevel VERBOSE, sshd never logs the key fingerprint, and the whole
+# tripwire is blind to *which* key authenticated — refuse rather than run
+# silently degraded.
+- name: Check effective sshd configuration for LogLevel
+  ansible.builtin.command: sshd -T
+  register: ssh_alert_sshd_effective_config
+  changed_when: false
+
+- name: Fail if LogLevel VERBOSE is not set
+  ansible.builtin.fail:
+    msg: >-
+      ssh-alert requires 'LogLevel VERBOSE' in sshd_config so fingerprints are
+      logged — set it and reload sshd before re-running this role.
+  when: "'loglevel verbose' not in ssh_alert_sshd_effective_config.stdout | lower"
+
+- name: Create ssh-alert system user
+  ansible.builtin.user:
+    name: ssh-alert
+    shell: /usr/sbin/nologin
+    system: true
+    create_home: true
+    groups: systemd-journal
+    append: true
+
+- name: Create /var/lib/ssh-alert
+  ansible.builtin.file:
+    path: /var/lib/ssh-alert
+    state: directory
+    owner: ssh-alert
+    group: ssh-alert
+    mode: '0750'
+
+- name: Create /etc/ssh-alert
+  ansible.builtin.file:
+    path: /etc/ssh-alert
+    state: directory
+    owner: root
+    group: root
+    mode: '0755'
+
+- name: Install Telegram credentials
+  ansible.builtin.template:
+    src: env.j2
+    dest: /etc/ssh-alert/env
+    owner: ssh-alert
+    group: ssh-alert
+    mode: '0600'
+  notify: Restart ssh-alert
+
+- name: Install tier/suppression/dormancy config
+  ansible.builtin.template:
+    src: config.json.j2
+    dest: /etc/ssh-alert/config.json
+    owner: root
+    group: root
+    mode: '0644'
+  notify: Restart ssh-alert
+
+- name: Install ssh-alert agent
+  ansible.builtin.copy:
+    src: ssh-alert.py
+    dest: /usr/local/bin/ssh-alert.py
+    owner: root
+    group: root
+    mode: '0755'
+  notify: Restart ssh-alert
+
+- name: Install ssh-alert systemd unit
+  ansible.builtin.template:
+    src: ssh-alert.service.j2
+    dest: /etc/systemd/system/ssh-alert.service
+    owner: root
+    group: root
+    mode: '0644'
+  notify:
+    - Daemon reload
+    - Restart ssh-alert
+
+- name: Enable and start ssh-alert
+  ansible.builtin.systemd:
+    name: ssh-alert
+    enabled: true
+    state: started

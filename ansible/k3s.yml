@@ -33,6 +33,9 @@
       vars:
         grafana_alloy_collect_pod_logs: true
     - role: ssh_hardening
+      tags: [ssh_hardening]
+    - role: ssh_alert
+      tags: [ssh_alert]
 
 - name: Deploy k3s agent
   hosts: k3s_agent
@@ -73,3 +76,6 @@
       vars:
         grafana_alloy_collect_pod_logs: true
     - role: ssh_hardening
+      tags: [ssh_hardening]
+    - role: ssh_alert
+      tags: [ssh_alert]
