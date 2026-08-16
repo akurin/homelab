@@ -53,12 +53,6 @@ xray:
       xray_xhttp_extra_settings: *xray_xhttp_extra_settings
       warp_outbound_enabled: true
 
-    nl-llhost:
-      ansible_host: 45.85.117.151
-      domain: brisklizard.mooo.com
-      dns: freedns
-      warp_outbound_enabled: true
-
     nl-vdsina:
       ansible_host: 89.124.104.67
       domain: nl1.morjoff.com

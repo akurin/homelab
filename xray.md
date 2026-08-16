@@ -11,7 +11,7 @@ Client → ru-firstvds → dk-webdock → internet
                      ↘ (direct) → Russian sites (.ru)
 ```
 
-`nl-llhost` and `nl-vdsina` are standalone servers (no chain).
+`nl-vdsina` is a standalone server (no chain).
 
 `ru-firstvds` is also the **publish server** — it hosts subscription JSON files via
 Caddy under `https://<domain>/subscriptions/<token>`. Hosts in the `xray_publish`
