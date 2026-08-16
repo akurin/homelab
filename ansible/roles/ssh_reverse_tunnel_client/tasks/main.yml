@@ -68,6 +68,18 @@
       on the jump host first (see ssh-jump.md) — this role won't create a new, unregistered
       keypair for you.
 
+# Lets tmux copy-mode selections reach the SSH client's clipboard over OSC 52,
+# instead of only tmux's own internal buffer — without it, copying from a
+# tmux session mid-tunnel goes nowhere the client can paste from.
+- name: Enable tmux clipboard integration
+  ansible.builtin.blockinfile:
+    path: "{{ ansible_env.HOME }}/.tmux.conf"
+    create: true
+    mode: "0644"
+    marker: "# {mark} ANSIBLE MANAGED BLOCK - clipboard"
+    block: |
+      set -s set-clipboard on
+
 - name: Auto-attach tmux on interactive SSH login
   ansible.builtin.blockinfile:
     path: "{{ ansible_env.HOME }}/.bashrc"
