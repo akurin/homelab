@@ -7,7 +7,6 @@ import signal
 import socket
 import sqlite3
 import subprocess
-import sys
 import threading
 import urllib.error
 import urllib.parse
@@ -456,48 +455,8 @@ def follow_journal(stop_event):
         backoff = min(60, backoff * 2)
 
 
-def seed(store, since):
-    proc = subprocess.run(
-        ["journalctl", "-u", SSH_UNIT, "--since", since, "-o", "json"],
-        capture_output=True,
-        text=True,
-        check=True,
-    )
-    last_cursor = None
-    for line in proc.stdout.splitlines():
-        line = line.strip()
-        if not line:
-            continue
-        try:
-            entry = json.loads(line)
-        except json.JSONDecodeError:
-            continue
-        last_cursor = entry.get("__CURSOR", last_cursor)
-        event = event_from_journal_entry(entry)
-        if event is None:
-            continue
-        if store.get_row(event["user"], event["fingerprint"], event["ip"]) is not None:
-            continue
-        store.insert_new(
-            event["user"], event["keytype"], event["fingerprint"], event["ip"], event["ts"]
-        )
-    if last_cursor is not None:
-        os.makedirs(os.path.dirname(CURSOR_PATH), exist_ok=True)
-        tmp = CURSOR_PATH + ".tmp"
-        with open(tmp, "w") as f:
-            f.write(last_cursor)
-        os.replace(tmp, CURSOR_PATH)
-
-
 def main():
     store = Store(DB_PATH)
-
-    if "--seed" in sys.argv:
-        since = "30 days ago"
-        if "--since" in sys.argv:
-            since = sys.argv[sys.argv.index("--since") + 1]
-        seed(store, since)
-        return
 
     config = load_config()
     token = os.environ["TELEGRAM_BOT_TOKEN"]

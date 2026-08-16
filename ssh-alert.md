@@ -108,13 +108,9 @@ watch.
 The role does **not** pre-seed `state.db` — every account/IP combo alerts as
 new the first time it's seen after install, including ones already in routine
 use. That's a deliberate choice for a low-traffic homelab: better to see
-everything once than to silently trust whatever was already logged. If you
-ever deploy to a much noisier host and want to avoid a wall of day-one alerts,
-`ssh-alert.py` still supports seeding manually — it's just not run
-automatically:
-```bash
-sudo -u ssh-alert /usr/local/bin/ssh-alert.py --seed --since "30 days ago"
-```
+everything once than to silently trust whatever was already logged. There's no
+built-in seeding option (it was cut as unused — recoverable from git history
+if a much noisier host ever needs it later).
 
 ---
 
