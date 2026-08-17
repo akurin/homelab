@@ -29,6 +29,20 @@
   ansible.builtin.include_tasks: warp_register.yml
   when: warp_outbound_enabled
 
+- name: Parse ProtonVPN configs JSON
+  ansible.builtin.set_fact:
+    protonvpn_configs: "{{ protonvpn_configs_b64 | b64decode | from_json }}"
+
+- name: Select ProtonVPN config
+  ansible.builtin.set_fact:
+    protonvpn_config: >-
+      {{
+        protonvpn_configs
+        | selectattr('name', 'equalto', protonvpn_config_name)
+        | list
+        | first
+      }}
+  when: protonvpn_config_name is defined
 
 - name: Save Xray config
   ansible.builtin.copy:

@@ -18,6 +18,7 @@
     - role: freedns
       when: dns == 'freedns'
     - role: xray
+      tags: [xray]
     - role: caddy_proxy
     - role: ssh_hardening
       tags: [ssh_hardening]

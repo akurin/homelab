@@ -35,6 +35,7 @@ inventory group are treated as publish targets.
 | `xray/uuids`         | JSON array of all users (see below)           |
 | `xray/secret_path`   | xhttp path shared by all servers              |
 | `xray/subscriptions` | JSON array of named subscriptions (see below) |
+| `xray/protonvpn`     | JSON array of named ProtonVPN WireGuard configs (see below) |
 
 ### User record (`xray/uuids`)
 
@@ -141,6 +142,31 @@ uuidgen | tr '[:upper:]' '[:lower:]'
 
 `files` supports glob patterns and an optional `remark` override per entry.
 
+### ProtonVPN config record (`xray/protonvpn`)
+
+```json
+[
+  {
+    "name": "nl-free-126",
+    "private_key": "<Interface PrivateKey>",
+    "address": ["10.2.0.2/32", "2a07:b944::2:2/128"],
+    "public_key": "<Peer PublicKey>",
+    "endpoint": "<Peer Endpoint, e.g. 185.107.56.69:51820>"
+  }
+]
+```
+
+Field values come straight from the WireGuard `.conf` file ProtonVPN gives you for a
+device. `address` is always a JSON array — split the `.conf` file's comma-separated
+`Interface Address` line into one entry per item (one entry if it's IPv4-only, two
+for dual-stack). `allowed_ips` (default `["0.0.0.0/0", "::/0"]`) and
+`persistent_keepalive` (default `25`) may be overridden per entry but normally don't
+need to be.
+
+A ProtonVPN WireGuard config is tied to a single device — only one xray server can
+use a given entry at a time. Add one entry per server that needs a ProtonVPN exit,
+each generated as a separate device/config in the ProtonVPN dashboard.
+
 ---
 
 ## Generated client configs
@@ -240,10 +266,24 @@ Import this URL into your xray client (v2rayN, NekoBox, etc.).
 
 1. Add host to `ansible/inventory/xray.yml` with `domain`, `ansible_host`, and
    optionally `cdn_domain`/`server_ip`, `next_address`, `xray_xhttp_extra_settings`,
-   `local_exit_rules`, `warp_outbound_enabled`
+   `local_exit_rules`, `warp_outbound_enabled`, `protonvpn_config_name`
 2. `./install-xray.sh <new_host>`
 3. Add the new host's config files to subscriptions as needed
 4. `./publish-xray-client-configs.sh`
+
+### Switch a server's exit to ProtonVPN
+
+1. `pass edit xray/protonvpn` — add an entry with the WireGuard config values for
+   a device dedicated to this server (see [ProtonVPN config
+   record](#protonvpn-config-record-xrayprotonvpn))
+2. Set `protonvpn_config_name: <entry name>` on the host in
+   `ansible/inventory/xray.yml`
+3. `./install-xray.sh --limit <host>`
+
+A server picks its egress from whichever of these is defined, in this priority
+order: `next_address` (chain to next hop) → `warp_outbound_enabled` →
+`protonvpn_config_name` → its own IP. Only set one of `warp_outbound_enabled` /
+`protonvpn_config_name` on a given host — if both are set, WARP wins.
 
 ---
 
@@ -259,6 +299,7 @@ Import this URL into your xray client (v2rayN, NekoBox, etc.).
 | `next_address_xray_xhttp_extra_settings` |          | xhttp settings for the chain outbound                                     |
 | `xray_xhttp_extra_settings`              |          | Extra xhttp padding/obfuscation settings                                  |
 | `warp_outbound_enabled`                  |          | Enable Cloudflare WARP outbound                                           |
+| `protonvpn_config_name`                  |          | Name of a `xray/protonvpn` entry to use as the ProtonVPN WireGuard outbound |
 | `local_exit_rules`                       |          | List of raw xray routing rule objects injected before reverse/chain rules |
 
 ## Inventory groups reference
