@@ -1,6 +1,0 @@
----
-- name: Configure home host for the reverse SSH tunnel
-  hosts: home
-
-  roles:
-    - role: ssh_reverse_tunnel_client

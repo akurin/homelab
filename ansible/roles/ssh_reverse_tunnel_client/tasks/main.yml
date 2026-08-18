@@ -13,7 +13,7 @@
   become: true
   block:
     - name: Install sshd, autossh, tmux
-      ansible.builtin.dnf:
+      ansible.builtin.package:
         name:
           - openssh-server
           - autossh
@@ -22,7 +22,7 @@
 
     - name: Enable and start sshd
       ansible.builtin.systemd:
-        name: sshd
+        name: "{{ ssh_reverse_tunnel_client_sshd_service }}"
         enabled: true
         state: started
 
@@ -64,9 +64,9 @@
     fail_msg: >-
       {{ ssh_reverse_tunnel_client_identity_file }} not found. Generate it with
       `ssh-keygen -t ed25519 -f {{ ssh_reverse_tunnel_client_identity_file }} -N ""` and register
-      its public half in ansible/roles/ssh_reverse_tunnel_user/files/ssh_reverse_tunnel_user.pub
-      on the jump host first (see ssh-jump.md) — this role won't create a new, unregistered
-      keypair for you.
+      its public half as this target's public_key under ssh_reverse_tunnel_targets
+      (ansible/roles/ssh_reverse_tunnel_user/files/) on the jump host first (see
+      ssh-jump.md) — this role won't create a new, unregistered keypair for you.
 
 # Lets tmux copy-mode selections reach the SSH client's clipboard over OSC 52,
 # instead of only tmux's own internal buffer — without it, copying from a

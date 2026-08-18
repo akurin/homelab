@@ -1,0 +1,14 @@
+tunnel_clients:
+  hosts:
+    personal-fedora-ai:
+      # OrbStack registers this as an SSH config Host alias (see `ssh personal-fedora-ai@orb`),
+      # so ansible_host is the alias itself rather than a bare hostname/IP.
+      ansible_host: personal-fedora-ai@orb
+      ssh_reverse_tunnel_client_remote_user: tunnel-personal
+      ssh_reverse_tunnel_client_permitlisten: "127.0.0.1:2222"
+
+    work-asbx-neo:
+      ansible_host: asbx-neo
+      ansible_user: agent
+      ssh_reverse_tunnel_client_remote_user: tunnel-work
+      ssh_reverse_tunnel_client_permitlisten: "127.0.0.1:2223"

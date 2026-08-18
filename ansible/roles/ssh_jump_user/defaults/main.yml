@@ -1,16 +1,27 @@
 ---
-ssh_jump_user_name: jump
-
-# Must match ssh_reverse_tunnel_user_permitlisten — this is the only destination
-# this account is ever allowed to forward a connection to.
-ssh_jump_user_permitopen: "127.0.0.1:2222"
-
-# Public keys of trusted client devices (phone, spare laptop, ...). Add a .pub file
-# per device to ansible/files/devices/ (shared with ssh_reverse_tunnel_client — a
-# device's key often needs to be trusted for both the jump hop and the home hop, and
-# a single copy avoids the two drifting out of sync) and list it here; removing an
-# entry revokes that device on the next run (exclusive: true rewrites the whole
-# authorized_keys file).
-ssh_jump_user_public_keys:
-  - "{{ lookup('file', playbook_dir + '/files/devices/phone.pub') }}"
-  - "{{ lookup('file', playbook_dir + '/files/devices/mac.pub') }}"
+# One client-facing forwarding account per tunneled target. The account name
+# is what a client device connects as (e.g. `ssh -J personal@<jump-host> ...`
+# / `ssh -J work@<jump-host> ...`), so it doubles as documentation of which
+# box a hop reaches — and because each account's permitopen is pinned to that
+# target's own port (see ssh_reverse_tunnel_targets in
+# ansible/roles/ssh_reverse_tunnel_user/defaults/main.yml, which must match),
+# a leaked key for one target can never be used to reach another.
+#
+# Public keys of trusted client devices (phone, spare laptop, ...). Add a .pub
+# file per device to ansible/files/devices/ (shared with
+# ssh_reverse_tunnel_client — a device's key often needs to be trusted for
+# both the jump hop and the tunnel-client hop, and a single copy avoids the
+# two drifting out of sync) and list it under every target that device should
+# reach. Removing an entry revokes that device for that target on the next
+# run (exclusive: true rewrites the whole authorized_keys file).
+ssh_jump_targets:
+  - name: personal
+    port: 2222
+    public_keys:
+      - "{{ lookup('file', playbook_dir + '/files/devices/phone.pub') }}"
+      - "{{ lookup('file', playbook_dir + '/files/devices/mac.pub') }}"
+  - name: work
+    port: 2223
+    public_keys:
+      - "{{ lookup('file', playbook_dir + '/files/devices/phone.pub') }}"
+      - "{{ lookup('file', playbook_dir + '/files/devices/mac.pub') }}"

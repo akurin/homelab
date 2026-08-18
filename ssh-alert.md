@@ -100,10 +100,10 @@ playbook already provisions the host, right after `ssh_hardening`:
 Both scripts now also pull `ssh-alert/telegram_bot_token` /
 `ssh-alert/telegram_chat_id` from `pass` and pass them through. Drop
 `--limit`/`--tags` for a normal full deploy of that playbook — the tripwire
-just comes along with everything else for that host. `personal-fedora-ai`
-(`home.yml`) isn't covered by either playbook, so it's excluded by
-construction — it's a local dev container, not a server this is meant to
-watch.
+just comes along with everything else for that host. The `tunnel_clients`
+hosts (`tunnel_clients.yml` — `personal-fedora-ai`, `work-asbx-neo`) aren't
+covered by either playbook, so they're excluded by construction — they're
+local/dev containers, not servers this is meant to watch.
 
 The role does **not** pre-seed `state.db` — every account/IP combo alerts as
 new the first time it's seen after install, including ones already in routine

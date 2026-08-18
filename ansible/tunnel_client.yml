@@ -1,0 +1,6 @@
+---
+- name: Configure tunnel client host for the reverse SSH tunnel
+  hosts: tunnel_clients
+
+  roles:
+    - role: ssh_reverse_tunnel_client

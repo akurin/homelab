@@ -2,29 +2,39 @@
 - name: Check mandatory variables are defined
   ansible.builtin.assert:
     that:
-      - ssh_reverse_tunnel_user_public_key != ""
+      - item.public_key != ""
+    fail_msg: "ssh_reverse_tunnel_targets entry '{{ item.name }}' has no public_key configured"
+  loop: "{{ ssh_reverse_tunnel_targets }}"
+  loop_control:
+    label: "{{ item.name }}"
 
-# No shell, no sudo — this account exists only to be sshd's authentication context for a
-# listen-restricted key. Even a fully compromised key can't do anything beyond what the
+# No shell, no sudo — these accounts exist only to be sshd's authentication context for
+# listen-restricted keys. Even a fully compromised key can't do anything beyond what the
 # authorized_keys restrictions below allow.
-- name: Create restricted reverse-tunnel user
+- name: Create restricted reverse-tunnel users
   ansible.builtin.user:
-    name: "{{ ssh_reverse_tunnel_user_name }}"
+    name: "tunnel-{{ item.name }}"
     shell: /usr/sbin/nologin
     system: true
     create_home: true
+  loop: "{{ ssh_reverse_tunnel_targets }}"
+  loop_control:
+    label: "{{ item.name }}"
 
-# command= overrides anything the client asks to run, so even without -N on the home
+# command= overrides anything the client asks to run, so even without -N on the target
 # host's autossh invocation no shell/command ever executes. permitlisten= caps this key
 # to opening one loopback listener on the jump host; no-pty/no-agent-forwarding/
 # no-X11-forwarding/no-user-rc close the rest of the usual SSH-key attack surface.
-# exclusive=true keeps this the only key on the account, so rotation (swap
-# files/ssh_reverse_tunnel_user.pub, re-run) fully revokes the old one.
+# exclusive=true keeps this the only key on the account, so rotation (swap the target's
+# files/*_reverse_tunnel.pub, re-run) fully revokes the old one.
 - name: Install restricted authorized_keys entry
   ansible.posix.authorized_key:
-    user: "{{ ssh_reverse_tunnel_user_name }}"
-    key: "{{ ssh_reverse_tunnel_user_public_key }}"
+    user: "tunnel-{{ item.name }}"
+    key: "{{ item.public_key }}"
     key_options: >-
-      command="echo 'This key only allows reverse port forwarding'",no-pty,no-agent-forwarding,no-X11-forwarding,no-user-rc,permitlisten="{{ ssh_reverse_tunnel_user_permitlisten }}"
+      command="echo 'This key only allows reverse port forwarding for {{ item.name }}'",no-pty,no-agent-forwarding,no-X11-forwarding,no-user-rc,permitlisten="127.0.0.1:{{ item.port }}"
     exclusive: true
     state: present
+  loop: "{{ ssh_reverse_tunnel_targets }}"
+  loop_control:
+    label: "{{ item.name }}"

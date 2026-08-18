@@ -1,5 +1,5 @@
 ---
-- name: Configure SSH jump host for reaching home behind NAT
+- name: Configure SSH jump host for reaching tunneled hosts behind NAT
   hosts: ssh_jump
 
   roles:
