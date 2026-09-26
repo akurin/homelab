@@ -55,5 +55,13 @@ resource "vultr_dns_record" "nl1" {
   name   = "nl1"
   type   = "A"
   data   = "89.124.104.67"
-  ttl    = 300
+  ttl    = 60
+}
+
+resource "vultr_dns_record" "dk1" {
+  domain = vultr_dns_domain.my_domain.domain
+  name   = "dk1"
+  type   = "A"
+  data   = "92.113.145.63"
+  ttl    = 60
 }

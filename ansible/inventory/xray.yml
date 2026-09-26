@@ -46,8 +46,8 @@ xray:
 
     dk-webdock:
       ansible_host: 92.113.145.63
-      domain: quietotter.mooo.com
-      dns: freedns
+      domain: dk1.morjoff.com
+      dns: external
       cdn_domain: c0gziaho6h.cdn.twcstorage.ru
       server_ip: 151.236.89.224
       xray_xhttp_extra_settings: *xray_xhttp_extra_settings
