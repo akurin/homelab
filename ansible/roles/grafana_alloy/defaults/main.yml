@@ -23,3 +23,19 @@ grafana_alloy_collect_pod_logs: false
 grafana_alloy_loki_url: https://logs-prod3.grafana.net./loki/api/v1/push
 grafana_alloy_loki_username: "205789"
 grafana_alloy_pod_logs_path: /var/log/pods/**/*.log
+# Glob of pod log files to skip; /var/log/pods/<namespace>_<pod>_<uid>/... Empty = none.
+grafana_alloy_pod_logs_exclude_path: /var/log/pods/longhorn-system_*/**/*.log
+
+# Pod log volume ceiling, so Alloy's work stays bounded however much the cluster logs.
+# Lines over the limit are dropped and counted (loki_process_dropped_lines_total).
+grafana_alloy_pod_logs_rate: 200
+grafana_alloy_pod_logs_burst: 1000
+# Lines older than this when read (e.g. backlog after a throttled period) are dropped.
+grafana_alloy_pod_logs_max_age: 15m
+
+# Hard resource limits for the whole Alloy process — they cover Fleet Management's
+# pipelines too, since those run inside the same process.
+grafana_alloy_cpu_quota: 25%
+grafana_alloy_memory_high: 150M
+grafana_alloy_memory_max: 250M
+grafana_alloy_gomemlimit: 120MiB

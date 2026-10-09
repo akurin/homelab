@@ -21,21 +21,54 @@ remotecfg {
 local.file_match "pod_logs" {
 	path_targets = [
 		{
-			"__path__" = "{{ grafana_alloy_pod_logs_path }}",
-			"job"      = "pod-logs",
-			"host"     = "{{ inventory_hostname }}",
+			"__path__"         = "{{ grafana_alloy_pod_logs_path }}",
+			"__path_exclude__" = "{{ grafana_alloy_pod_logs_exclude_path }}",
+			"job"              = "pod-logs",
+			"host"             = "{{ inventory_hostname }}",
 		},
 	]
 }
 
 loki.source.file "pod_logs" {
-	targets    = local.file_match.pod_logs.targets
+	targets       = local.file_match.pod_logs.targets
+	forward_to    = [loki.process.pod_logs.receiver]
+	// No full re-read of existing logs when there's no saved position yet.
+	tail_from_end = true
+
+	// Default polls every 250ms; back off on a 1 vCPU node.
+	file_watch {
+		min_poll_frequency = "1s"
+		max_poll_frequency = "5s"
+	}
+}
+
+loki.process "pod_logs" {
 	forward_to = [loki.write.pod_logs.receiver]
+
+	// Parse the containerd line prefix: sets the entry timestamp from the log line (which
+	// the age check below relies on) and strips the "<ts> stdout F " prefix from the content.
+	stage.cri { }
+
+	// After a throttled period, don't spend CPU shipping stale backlog.
+	stage.drop {
+		older_than          = "{{ grafana_alloy_pod_logs_max_age }}"
+		drop_counter_reason = "too_old"
+	}
+
+	// Hard ceiling on lines/sec; excess is dropped (and counted), not queued.
+	stage.limit {
+		rate  = {{ grafana_alloy_pod_logs_rate }}
+		burst = {{ grafana_alloy_pod_logs_burst }}
+		drop  = true
+	}
 }
 
 loki.write "pod_logs" {
 	endpoint {
-		url = "{{ grafana_alloy_loki_url }}"
+		url        = "{{ grafana_alloy_loki_url }}"
+		// Fewer, larger pushes: less TLS and compression overhead.
+		batch_wait = "5s"
+		batch_size = "1MiB"
 
 		basic_auth {
 			username = "{{ grafana_alloy_loki_username }}"

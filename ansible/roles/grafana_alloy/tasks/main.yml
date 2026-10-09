@@ -90,7 +90,13 @@
 # Note this is hygiene, not a fix for anything: it was tried against the Traefik crash-loop
 # described in k3s.md and made no difference, because that turned out to be memory thrashing
 # rather than CPU contention. Scheduling weight can't shrink a memory footprint.
-- name: Write priority.conf for alloy service (lower CPU priority than k8s workloads)
+#
+# Weights only apply under saturation and don't cap anything, so log-tailing work that grows
+# with cluster log volume is also hard-capped: CPUQuota is absolute (% of one core, enforced
+# even when idle), MemoryHigh throttles/reclaims before MemoryMax OOM-kills Alloy alone
+# (systemd restarts it), and GOMEMLIMIT makes the Go GC work harder before reaching MemoryHigh.
+# The pod-log pipeline in config.alloy is rate-limited so it can't consume the whole quota.
+- name: Write priority.conf for alloy service (lower priority and hard limits vs k8s workloads)
   ansible.builtin.copy:
     dest: /etc/systemd/system/alloy.service.d/priority.conf
     mode: "0644"
@@ -98,6 +104,10 @@
       [Service]
       CPUWeight=20
       Nice=10
+      CPUQuota={{ grafana_alloy_cpu_quota }}
+      MemoryHigh={{ grafana_alloy_memory_high }}
+      MemoryMax={{ grafana_alloy_memory_max }}
+      Environment="GOMEMLIMIT={{ grafana_alloy_gomemlimit }}"
   notify:
     - Daemon reload
     - Restart Grafana Alloy
