@@ -13,17 +13,35 @@
         | first
       }}
 
+- name: Check installed Xray version
+  ansible.builtin.command: /usr/local/bin/xray version
+  register: xray_installed_version
+  changed_when: false
+  failed_when: false
+  check_mode: false
+
 - name: Install Xray
   ansible.builtin.shell: bash -c "$(curl -L https://github.com/XTLS/Xray-install/raw/main/install-release.sh)" @ install --version {{ xray_version }}
   args:
     executable: /bin/bash
-  changed_when: true
+  when: >-
+    xray_installed_version.rc != 0
+    or ('Xray ' ~ (xray_version | regex_replace('^v', '')) ~ ' ') not in xray_installed_version.stdout
+  notify: Restart Xray
 
-- name: Download Loyalsoldier geoip.dat
+- name: Download runetfreedom geo data
   ansible.builtin.get_url:
-    url: https://github.com/Loyalsoldier/v2ray-rules-dat/releases/latest/download/geoip.dat
-    dest: /usr/local/share/xray/geoip.dat
+    url: "{{ xray_geodata_base_url }}/{{ item }}"
+    # Re-downloads only when the published checksum changes
+    checksum: "sha256:{{ xray_geodata_base_url }}/{{ item }}.sha256sum"
+    dest: "/usr/local/share/xray/{{ item }}"
     mode: "0644"
+  loop:
+    - geoip.dat
+    - geosite.dat
+  # geosite.dat is ~74 MB; fetch it only where routing rules reference geosite
+  when: item != 'geosite.dat' or 'geosite:' in (local_exit_rules | default([]) | to_json)
+  notify: Restart Xray
 
 - name: Register WARP device (idempotent)
   ansible.builtin.include_tasks: warp_register.yml
@@ -44,16 +62,57 @@
       }}
   when: protonvpn_config_name is defined
 
+- name: Resolve default outbound
+  ansible.builtin.set_fact:
+    xray_default_outbound: >-
+      {{
+        xray_default_outbound_override
+        | default('next_proxy' if (next_address | default('')) else
+                  'warp' if (warp_outbound_enabled | default(false)) else
+                  'protonvpn' if (protonvpn_config_name | default('')) else
+                  'direct', true)
+      }}
+
+- name: Check default outbound is configured on this host
+  ansible.builtin.assert:
+    that: >-
+      xray_default_outbound in ['direct', 'block']
+      or (xray_default_outbound == 'next_proxy' and (next_address | default('') | length > 0))
+      or (xray_default_outbound == 'warp' and (warp_outbound_enabled | default(false) | bool))
+      or (xray_default_outbound == 'protonvpn' and (protonvpn_config_name | default('') | length > 0))
+    fail_msg: "Outbound '{{ xray_default_outbound }}' is not configured on {{ inventory_hostname }}"
+    quiet: true
+
+- name: Get Xray service group
+  ansible.builtin.shell: |
+    set -o pipefail
+    user="$(systemctl show -p User --value xray)"
+    id -gn "${user:-root}"
+  args:
+    executable: /bin/bash
+  register: xray_service_group
+  changed_when: false
+  check_mode: false
+
 - name: Save Xray config
   ansible.builtin.copy:
     dest: /usr/local/etc/xray/config.json
-    mode: '0644'
+    owner: root
+    group: "{{ xray_service_group.stdout }}"
+    mode: "0640"
     content: "{{ lookup('template', 'server_config.j2') | from_json | to_nice_json }}"
+    # Temp file has no .json extension, so the format must be explicit
+    validate: /usr/local/bin/xray run -test -format json -c %s
+  notify: Restart Xray
 
-- name: Restart Xray service
+- name: Apply Xray changes before the next roles run
+  ansible.builtin.meta: flush_handlers
+
+- name: Ensure Xray service is enabled and running
   ansible.builtin.systemd:
     name: xray
-    state: restarted
+    state: started
+    enabled: true
 
 - name: Generate client configs
   ansible.builtin.include_tasks: client_configs.yml

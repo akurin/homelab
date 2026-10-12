@@ -49,7 +49,7 @@ inventory group are treated as publish targets.
   {
     "name": "morjoff",
     "id": "<uuid>",
-    "routing_profiles": [
+    "configs": [
       {
         "name": "full_proxy"
       }
@@ -173,11 +173,10 @@ each generated as a separate device/config in the ProtonVPN dashboard.
 
 For each user × host, Ansible generates local JSON files under `~/vpn/<user>/`:
 
-| File                              | Remark                     | Description                                           |
-|-----------------------------------|----------------------------|-------------------------------------------------------|
-| `<host>_config.json`              | `user@host`                | Direct connection                                     |
-| `<host>_cdn_config.json`          | `user@host · CDN`          | Static CDN outbound                                   |
-| `<host>_lb_<profile>_config.json` | `user@host · LB [Profile]` | Load-balanced: `proxy_direct` preferred, CDN fallback |
+| File                             | Remark                       | Description                                                                          |
+|----------------------------------|------------------------------|--------------------------------------------------------------------------------------|
+| `<host>_<config>_config.json`    | `user@host · Config`         | Direct connection                                                                    |
+| `<host>_lb_<config>_config.json` | `user@host · Config · LB`    | Load-balanced: `proxy_direct` preferred, CDN fallback (needs `cdn_domain` + `server_ip`) |
 
 The LB config uses `burstObservatory` (3-sample probes every minute) to detect
 when `proxy_direct` is dead and automatically switches to the CDN outbound via
@@ -259,7 +258,7 @@ Import this URL into your xray client (v2rayN, NekoBox, etc.).
 
 ### Change routing rules for a user
 
-1. `pass edit xray/uuids` — update `routing_profiles` for the user
+1. `pass edit xray/uuids` — update `configs` for the user
 2. `./publish-xray-client-configs.sh` — regenerate and republish
 
 ### Add a new server
@@ -283,7 +282,14 @@ Import this URL into your xray client (v2rayN, NekoBox, etc.).
 A server picks its egress from whichever of these is defined, in this priority
 order: `next_address` (chain to next hop) → `warp_outbound_enabled` →
 `protonvpn_config_name` → its own IP. Only set one of `warp_outbound_enabled` /
-`protonvpn_config_name` on a given host — if both are set, WARP wins.
+`protonvpn_config_name` on a given host — if both are set, WARP wins. Set
+`xray_default_outbound_override` (`next_proxy`, `warp`, `protonvpn`, `direct` or
+`block`) to pick the egress explicitly; the deploy fails if that outbound is not
+configured on the host.
+
+BitTorrent traffic sniffed on a server is always blocked: ProtonVPN free servers
+forbid P2P, and exiting it from the VPS IP invites abuse complaints. Clients
+send detectable BitTorrent `direct` themselves.
 
 ---
 
@@ -301,6 +307,8 @@ order: `next_address` (chain to next hop) → `warp_outbound_enabled` →
 | `warp_outbound_enabled`                  |          | Enable Cloudflare WARP outbound                                           |
 | `protonvpn_config_name`                  |          | Name of a `xray/protonvpn` entry to use as the ProtonVPN WireGuard outbound |
 | `local_exit_rules`                       |          | List of raw xray routing rule objects injected before reverse/chain rules |
+| `xray_default_outbound_override`         |          | Egress for traffic matching no rule (default: priority order above)       |
+| `xray_geodata_release`                   |          | runetfreedom geo data release path, e.g. `download/202610121114` (default: latest) |
 
 ## Inventory groups reference
 

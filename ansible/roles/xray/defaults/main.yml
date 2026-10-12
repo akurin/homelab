@@ -2,3 +2,10 @@
 xray_version: v26.6.27
 xray_xhttp_extra_settings: { }
 next_address_xray_xhttp_extra_settings: { }
+# runetfreedom/russia-v2ray-rules-dat release (geoip.dat + geosite.dat, incl. geoip:ru
+# and geosite:ru-available-only-inside); set to e.g. "download/202610121114" to pin
+xray_geodata_release: latest/download
+xray_geodata_base_url: "https://github.com/runetfreedom/russia-v2ray-rules-dat/releases/{{ xray_geodata_release }}"
+# Outbound for traffic that matches no routing rule. Unset = first available of
+# next_proxy → warp → protonvpn → direct
+# xray_default_outbound_override: direct

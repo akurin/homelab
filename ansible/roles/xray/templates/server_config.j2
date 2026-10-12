@@ -40,6 +40,16 @@
           "1.1.1.1"
         ],
         "outboundTag": "direct"
+      },
+      {
+        "type": "field",
+        "inboundTag": [
+          "incoming_xhttp"
+        ],
+        "protocol": [
+          "bittorrent"
+        ],
+        "outboundTag": "block"
       }
       {% for rule in local_exit_rules | default([]) %}
       ,{{ rule | to_json }}
@@ -113,8 +123,11 @@
     }
   ],
 
-  "outbounds": [
-    {% if next_address is defined and next_address %}
+  {# Xray sends traffic that matches no routing rule to the FIRST outbound,
+     so xray_default_outbound (resolved in tasks/main.yml) is rendered first. #}
+{% set outbounds = [] %}
+{% if next_address is defined and next_address %}
+{% set ob %}
     {
       "protocol": "vless",
       "settings": {
@@ -135,20 +148,23 @@
         "network": "xhttp",
         "xhttpSettings": {{ {
           "path": secret_path,
-          "mode": "stream-one"
+          "mode": "packet-up"
         } | combine(next_address_xray_xhttp_extra_settings) | to_json }},
         "security": "tls",
         "tlsSettings": {
           "alpn": [
             "h2"
-          ]
-        },
-        "fingerprint": "safari"
+          ],
+          "fingerprint": "safari"
+        }
       },
       "tag": "next_proxy"
-    },
-    {% endif %}
-    {% if warp_outbound_enabled | default(false) %}
+    }
+{% endset %}
+{% set _ = outbounds.append({'tag': 'next_proxy', 'json': ob}) %}
+{% endif %}
+{% if warp_outbound_enabled | default(false) %}
+{% set ob %}
     {
       "protocol": "wireguard",
       "settings": {
@@ -173,9 +189,12 @@
         "noKernelTun": true
       },
       "tag": "warp"
-    },
-    {% endif %}
-    {% if protonvpn_config_name is defined and protonvpn_config_name %}
+    }
+{% endset %}
+{% set _ = outbounds.append({'tag': 'warp', 'json': ob}) %}
+{% endif %}
+{% if protonvpn_config_name is defined and protonvpn_config_name %}
+{% set ob %}
     {
       "protocol": "wireguard",
       "settings": {
@@ -194,15 +213,17 @@
         "noKernelTun": true
       },
       "tag": "protonvpn"
-    },
-    {% endif %}
-    {
-      "protocol": "freedom",
-      "tag": "direct"
-    },
-    {
-      "protocol": "blackhole",
-      "tag": "block"
     }
+{% endset %}
+{% set _ = outbounds.append({'tag': 'protonvpn', 'json': ob}) %}
+{% endif %}
+{% set _ = outbounds.append({'tag': 'direct', 'json': '{"protocol": "freedom", "tag": "direct"}'}) %}
+{% set _ = outbounds.append({'tag': 'block', 'json': '{"protocol": "blackhole", "tag": "block"}'}) %}
+  "outbounds": [
+    {% for ob in (outbounds | selectattr('tag', 'equalto', xray_default_outbound) | list)
+                + (outbounds | rejectattr('tag', 'equalto', xray_default_outbound) | list) %}
+    {{ ob.json }}{% if not loop.last %},{% endif %}
+
+    {% endfor %}
   ]
 }
