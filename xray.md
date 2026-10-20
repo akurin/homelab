@@ -7,13 +7,13 @@ and configured from a local machine; client configs are generated locally and
 published to a Caddy-hosted subscription URL.
 
 ```
-Client → ru-firstvds → dk-webdock → internet
-                     ↘ (direct) → Russian sites (.ru)
+Client → ru-ruvds → dk-webdock → internet
+                  ↘ (direct) → Russian sites (.ru)
 ```
 
 `nl-vdsina` is a standalone server (no chain).
 
-`ru-firstvds` is also the **publish server** — it hosts subscription JSON files via
+`ru-ruvds` is also the **publish server** — it hosts subscription JSON files via
 Caddy under `https://<domain>/subscriptions/<token>`. Hosts in the `xray_publish`
 inventory group are treated as publish targets.
 
@@ -123,10 +123,10 @@ Available outbound tags in LB configs:
     "token": "<uuid>",
     "files": [
       {
-        "path": "~/vpn/morjoff/ru-firstvds_lb_full_proxy_config.json"
+        "path": "~/vpn/morjoff/ru-ruvds_lb_full_proxy_config.json"
       },
       {
-        "path": "~/vpn/morjoff/ru-firstvds_lb_full_proxy_config.json",
+        "path": "~/vpn/morjoff/ru-ruvds_lb_full_proxy_config.json",
         "remark": "Custom name"
       }
     ]
@@ -194,7 +194,7 @@ through to every `ansible-playbook` invocation in the script.
 
 ```bash
 ./install-xray.sh                       # all hosts
-./install-xray.sh --limit ru-firstvds   # single host
+./install-xray.sh --limit ru-ruvds      # single host
 ```
 
 ### `./publish-xray-client-configs.sh [ansible-playbook args...]`
@@ -206,7 +206,7 @@ to redeploy the servers. Arguments are passed straight through to every
 
 ```bash
 ./publish-xray-client-configs.sh
-./publish-xray-client-configs.sh --limit ru-firstvds
+./publish-xray-client-configs.sh --limit ru-ruvds
 ```
 
 `install-xray.sh` runs four stages:

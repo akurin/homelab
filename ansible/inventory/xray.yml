@@ -6,8 +6,8 @@ xray:
     xray_xhttp_port_internal: 10000
 
   hosts:
-    ru-firstvds:
-      ansible_host: 188.120.246.74
+    ru-ruvds:
+      ansible_host: 194.35.112.2
       grafana_repo_mirror: yandex
       domain: clumsypanda.mooo.com
       dns: freedns
@@ -65,7 +65,7 @@ xray:
   children:
     xray_publish:
       hosts:
-        ru-firstvds:
+        ru-ruvds:
 
     ssh_jump:
       hosts:
