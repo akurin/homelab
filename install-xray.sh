@@ -8,7 +8,6 @@ GCLOUD_FM_HOSTED_ID="$(pass grafana/GCLOUD_FM_HOSTED_ID)"
 ssh_alert_telegram_bot_token="$(pass ssh-alert/telegram_bot_token)"
 ssh_alert_telegram_chat_id="$(pass ssh-alert/telegram_chat_id)"
 xray_users_b64="$(pass xray/uuids | base64)"
-secret_path="$(pass xray/secret_path)"
 protonvpn_configs_b64="$( (pass xray/protonvpn 2>/dev/null || echo '[]') | base64)"
 freedns_username="$(pass freedns.afraid.org/username)"
 freedns_password="$(pass freedns.afraid.org/password)"
@@ -31,7 +30,6 @@ publish_users_yaml_b64="$(printf '%s' "$publish_users_json" | base64)"
 		-e ssh_alert_telegram_bot_token="$ssh_alert_telegram_bot_token" \
 		-e ssh_alert_telegram_chat_id="$ssh_alert_telegram_chat_id" \
 		-e xray_users_b64="$xray_users_b64" \
-		-e secret_path="$secret_path" \
 		-e protonvpn_configs_b64="$protonvpn_configs_b64" \
 		-e freedns_username="$freedns_username" \
 		-e freedns_password="$freedns_password" \
@@ -46,7 +44,6 @@ publish_users_yaml_b64="$(printf '%s' "$publish_users_json" | base64)"
 	ansible-playbook xray_client_configs.yml \
 		--inventory "./inventory/xray.yml" \
 		-e xray_users_b64="$xray_users_b64" \
-		-e secret_path="$secret_path" \
 		"$@"
 )
 

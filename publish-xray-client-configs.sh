@@ -2,7 +2,6 @@
 set -euo pipefail
 
 xray_users_b64="$(pass xray/uuids | base64)"
-secret_path="$(pass xray/secret_path)"
 subscriptions_json="$(pass xray/subscriptions)"
 
 # Step 1: Generate per-host client configs
@@ -12,7 +11,6 @@ subscriptions_json="$(pass xray/subscriptions)"
 	ansible-playbook xray_client_configs.yml \
 		--inventory "./inventory/xray.yml" \
 		-e xray_users_b64="$xray_users_b64" \
-		-e secret_path="$secret_path" \
 		"$@"
 )
 
@@ -38,6 +36,5 @@ publish_users_yaml_b64="$(printf '%s' "$publish_users_json" | base64)"
 	ansible-playbook caddy_reload.yml \
 		--inventory "./inventory/xray.yml" \
 		-e publish_users_yaml_b64="$publish_users_yaml_b64" \
-		-e secret_path="$secret_path" \
 		"$@"
 )

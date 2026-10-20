@@ -4,6 +4,8 @@ xray:
     grafana_alloy_collector_attrs:
       reverse_proxy: caddy
     xray_xhttp_port_internal: 10000
+    # Not a secret: VLESS authenticates by user UUID; the path only fronts Xray behind Caddy
+    xray_xhttp_path: media/chunks
 
   hosts:
     ru-ruvds:

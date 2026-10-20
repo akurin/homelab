@@ -13,7 +13,7 @@
 
     # 1. Proxy Logic: Check for the secret XHTTP path
     @vless_proxy {
-        path /{{ secret_path }}/*
+        path /{{ xray_xhttp_path }}/*
     }
 
     # If it's the secret path, reverse proxy to the local Xray instance

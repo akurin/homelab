@@ -33,7 +33,6 @@ inventory group are treated as publish targets.
 | Key                  | Contents                                      |
 |----------------------|-----------------------------------------------|
 | `xray/uuids`         | JSON array of all users (see below)           |
-| `xray/secret_path`   | xhttp path shared by all servers              |
 | `xray/subscriptions` | JSON array of named subscriptions (see below) |
 | `xray/protonvpn`     | JSON array of named ProtonVPN WireGuard configs (see below) |
 

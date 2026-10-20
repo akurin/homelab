@@ -107,7 +107,7 @@
         "security": "none",
         "xhttpSettings": {{ {
           "mode": "packet-up",
-          "path": secret_path
+          "path": xray_xhttp_path
         } | combine(xray_xhttp_extra_settings | default({})) | to_json }}
       },
       "sniffing": {
@@ -147,7 +147,7 @@
       "streamSettings": {
         "network": "xhttp",
         "xhttpSettings": {{ {
-          "path": secret_path,
+          "path": xray_xhttp_path,
           "mode": "packet-up"
         } | combine(next_address_xray_xhttp_extra_settings) | to_json }},
         "security": "tls",
