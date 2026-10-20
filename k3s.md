@@ -51,9 +51,8 @@ Nodes above), `defaultReplicaCount` and the CSI sidecar replica counts are set t
 when there's only one to schedule onto, so Longhorn's usual multi-node redundancy doesn't apply here; back up
 volumes externally rather than relying on in-cluster replication for durability.
 
-`install-vultr-csi.sh` and the `vultr-csi/` chart also live in this repo but are **not installed** on this cluster
-(the nodes are Vultr instances and Vultr still provides DNS, SSH keys and firewall groups, but no Vultr Block
-Storage volumes are attached).
+Vultr Block Storage is not used: the nodes are Vultr instances and Vultr still provides DNS, SSH keys and firewall
+groups, but no Vultr Block Storage volumes are attached.
 
 **`local-path` is the default StorageClass; `longhorn` is deliberately not.** Both charts ship wanting to be
 default, and when both were annotated `is-default-class: true` Kubernetes broke the tie by newest
