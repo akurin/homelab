@@ -3,6 +3,12 @@ k3s_server:
     k3s-server:
       ansible_host: 193.181.212.97
       ansible_user: root
+      # At the 150M default Alloy sat pinned at MemoryHigh, spending ~99% of its CPU quota
+      # in kernel reclaim and timing out to Grafana Cloud. The server runs no workloads
+      # (tainted NoSchedule), so it has headroom the agent doesn't.
+      grafana_alloy_memory_high: 250M
+      grafana_alloy_memory_max: 350M
+      grafana_alloy_gomemlimit: 200MiB
 k3s_agent:
   vars:
     k3s_server_host: "{{ hostvars[groups['k3s_server'][0]]['ansible_host'] }}"
@@ -10,3 +16,8 @@ k3s_agent:
     k3s-agent:
       ansible_host: 193.181.216.56
       ansible_user: root
+      # Same reclaim starvation as k3s-server at 150M (pod logs + Fleet Management pipelines
+      # need more); ~900M is available here even with every workload scheduled.
+      grafana_alloy_memory_high: 250M
+      grafana_alloy_memory_max: 350M
+      grafana_alloy_gomemlimit: 200MiB
