@@ -2,6 +2,7 @@
 - name: Publish Xray client configs
   hosts: xray_publish
   gather_facts: false
+  tags: [xray_publish]
   tasks:
     - name: Parse publish users
       ansible.builtin.set_fact:

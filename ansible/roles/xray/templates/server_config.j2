@@ -51,7 +51,7 @@
         ],
         "outboundTag": "block"
       }
-      {% for rule in local_exit_rules | default([]) %}
+      {% for rule in xray_routing_rules | default([]) %}
       ,{{ rule | to_json }}
       {% endfor %}
       {% if reverse_xray_role is defined and reverse_xray_role == 'portal' %}

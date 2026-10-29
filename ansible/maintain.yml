@@ -1,6 +1,7 @@
 ---
 - name: Maintain all hosts
   hosts: all
+  tags: [maintain]
 
   tasks:
     - name: Update all installed packages to the latest version

@@ -11,6 +11,7 @@
     - role: swap
       tags: [swap]
     - role: nftables
+      tags: [nftables]
       vars:
         nftables_trusted_sources:
           # K3s pod IPs — pods on this node communicate with the host (e.g. Traefik → API server)
@@ -26,10 +27,11 @@
         nftables_allowed_tcp:
           - 22
     - role: k3s_server
+      tags: [k3s_server]
     - role: ci_deploy_key
-      tags: [ci-deploy-key]
+      tags: [ci_deploy_key]
     - role: grafana_alloy
-      tags: [grafana-alloy]
+      tags: [grafana_alloy]
       vars:
         grafana_alloy_collect_pod_logs: true
     - role: ssh_hardening
@@ -54,7 +56,9 @@
       vars:
         swap_enabled: true
     - role: open_iscsi
+      tags: [open_iscsi]
     - role: nftables
+      tags: [nftables]
       vars:
         nftables_trusted_sources:
           - "{{ k3s_pod_cidr }}"
@@ -71,8 +75,9 @@
           - 80
           - 443
     - role: k3s_agent
+      tags: [k3s_agent]
     - role: grafana_alloy
-      tags: [grafana-alloy]
+      tags: [grafana_alloy]
       vars:
         grafana_alloy_collect_pod_logs: true
     - role: ssh_hardening

@@ -6,6 +6,7 @@
     - role: hostname
       tags: [hostname]
     - role: nftables
+      tags: [nftables]
       vars:
         nftables_full_flush: true
         nftables_allowed_tcp:
@@ -14,5 +15,8 @@
         nftables_allowed_udp:
           - 443
     - role: grafana_alloy
+      tags: [grafana_alloy]
     - role: headscale
+      tags: [headscale]
     - role: ssh_hardening
+      tags: [ssh_hardening]

@@ -4,3 +4,4 @@
 
   roles:
     - role: ssh_reverse_tunnel_client
+      tags: [ssh_reverse_tunnel_client]

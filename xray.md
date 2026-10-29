@@ -13,6 +13,11 @@ Client → ru-ruvds → dk-webdock → internet
 
 `nl-vdsina` is a standalone server (no chain).
 
+`dk-webdock` and `nl-vdsina` are **exit nodes**: OpenAI, Anthropic, AWS
+console/API and Google domains egress from their own IP instead of
+ProtonVPN/WARP (see
+[Route domains directly on the exit servers](#route-domains-directly-on-the-exit-servers)).
+
 `ru-ruvds` is also the **publish server** — it hosts subscription JSON files via
 Caddy under `https://<domain>/subscriptions/<token>`. Hosts in the `xray_publish`
 inventory group are treated as publish targets.
@@ -226,6 +231,25 @@ to redeploy the servers. Arguments are passed straight through to every
    on the publish server, cleaning up stale token directories
 4. **Caddy reload** — updates the Caddyfile with current token routes and reloads Caddy
 
+### Scoped deploys
+
+Every role in `ansible/xray.yml` is tagged with its role name
+(`hostname`, `nftables`, `grafana_alloy`, `freedns`, `xray`, `caddy_proxy`,
+`ssh_hardening`, `ssh_alert`, `xray_publish`). Combine `--limit` and `--tags`
+to re-render and restart only Xray without touching the rest:
+
+```bash
+cd ansible
+ansible-playbook xray.yml -i inventory/xray.yml \
+  --limit xray_exit --tags xray \
+  -e xray_users_b64="$(pass xray/uuids | base64)" \
+  -e protonvpn_configs_b64="$( (pass xray/protonvpn 2>/dev/null || echo '[]') | base64)"
+```
+
+Handlers ignore tags, so the Xray restart still fires. Add `--check --diff` to
+preview, or `--list-tags` / `--list-tasks --tags xray` to see what would run.
+`--skip-tags client_configs` also suppresses the local client-config render.
+
 ---
 
 ## Subscription URLs
@@ -264,7 +288,7 @@ Import this URL into your xray client (v2rayN, NekoBox, etc.).
 
 1. Add host to `ansible/inventory/xray.yml` with `domain`, `ansible_host`, and
    optionally `cdn_domain`/`server_ip`, `next_address`, `xray_xhttp_extra_settings`,
-   `local_exit_rules`, `warp_outbound_enabled`, `protonvpn_config_name`
+   `xray_routing_rules`, `warp_outbound_enabled`, `protonvpn_config_name`
 2. `./install-xray.sh <new_host>`
 3. Add the new host's config files to subscriptions as needed
 4. `./publish-xray-client-configs.sh`
@@ -286,6 +310,49 @@ order: `next_address` (chain to next hop) → `warp_outbound_enabled` →
 `block`) to pick the egress explicitly; the deploy fails if that outbound is not
 configured on the host.
 
+### Route domains directly on the exit servers
+
+Hosts in the `xray_exit` group (`dk-webdock`, `nl-vdsina`) send OpenAI,
+Anthropic, AWS console/API and Google domains to `direct`, so those requests
+leave from the server's own IP rather than ProtonVPN/WARP. Everything else keeps
+using the configured default egress.
+
+```yaml
+    xray_exit:
+      hosts:
+        dk-webdock:
+        nl-vdsina:
+      vars:
+        xray_routing_rules:
+          - type: field
+            domain:
+              - "domain:openai.com"
+              - "domain:chatgpt.com"
+              - "domain:anthropic.com"
+              - "domain:claude.ai"
+              - "domain:aws.amazon.com"
+              - "domain:amazonaws.com"
+              - "geosite:google"
+              # ...
+            outboundTag: direct
+          # IP-only flows (Meet/WebRTC media) never carry an SNI
+          - type: field
+            ip:
+              - "geoip:google"
+            outboundTag: direct
+```
+
+`xray_routing_rules` accepts raw Xray routing rules with any outbound tag
+(`direct`, `block`, `next_proxy`, `warp`, `protonvpn`). Rules are rendered in
+order after the built-in DNS/bittorrent rules and before reverse/chain rules, so
+first match wins. `domain:` entries also cover all subdomains, and SNI sniffing
+means they match even when a client connects by IP.
+
+Google needs both forms: `geosite:google` matches the domain list (including
+ccTLDs), while `geoip:google` catches IP-only flows such as Google Meet/WebRTC
+media. Referencing a `geosite:` category also makes the role fetch
+`geosite.dat` (~74 MB) on those hosts; `geoip.dat` is always present.
+
 BitTorrent traffic sniffed on a server is always blocked: ProtonVPN free servers
 forbid P2P, and exiting it from the VPS IP invites abuse complaints. Clients
 send detectable BitTorrent `direct` themselves.
@@ -305,7 +372,7 @@ send detectable BitTorrent `direct` themselves.
 | `xray_xhttp_extra_settings`              |          | Extra xhttp padding/obfuscation settings                                  |
 | `warp_outbound_enabled`                  |          | Enable Cloudflare WARP outbound                                           |
 | `protonvpn_config_name`                  |          | Name of a `xray/protonvpn` entry to use as the ProtonVPN WireGuard outbound |
-| `local_exit_rules`                       |          | List of raw xray routing rule objects injected before reverse/chain rules |
+| `xray_routing_rules`                     |          | Raw server routing rules injected after built-in rules, before reverse/chain rules |
 | `xray_default_outbound_override`         |          | Egress for traffic matching no rule (default: priority order above)       |
 | `xray_geodata_release`                   |          | runetfreedom geo data release path, e.g. `download/202610121114` (default: latest) |
 
@@ -315,3 +382,4 @@ send detectable BitTorrent `direct` themselves.
 |----------------|-----------------------------------------------------------------------------|
 | `xray`         | All xray hosts — full role is applied                                       |
 | `xray_publish` | Hosts that serve subscription files via Caddy; publish scripts target these |
+| `xray_exit`    | Exit nodes that route OpenAI/Anthropic/AWS/Google domains via `direct`      |

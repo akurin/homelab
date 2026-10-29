@@ -5,6 +5,7 @@
     - role: hostname
       tags: [hostname]
     - role: nftables
+      tags: [nftables]
       vars:
         nftables_full_flush: true
         nftables_allowed_tcp:
@@ -15,11 +16,14 @@
         nftables_allowed_udp:
           - 443
     - role: grafana_alloy
+      tags: [grafana_alloy]
     - role: freedns
+      tags: [freedns]
       when: dns == 'freedns'
     - role: xray
       tags: [xray]
     - role: caddy_proxy
+      tags: [caddy_proxy]
     - role: ssh_hardening
       tags: [ssh_hardening]
     - role: ssh_alert
@@ -29,3 +33,4 @@
   hosts: xray_publish
   roles:
     - role: xray_publish
+      tags: [xray_publish]

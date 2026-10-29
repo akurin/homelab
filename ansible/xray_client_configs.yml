@@ -2,6 +2,7 @@
 - name: Generate Xray client configs
   hosts: xray
   gather_facts: false
+  tags: [xray_client_configs]
   tasks:
     - name: Parse users JSON
       ansible.builtin.set_fact:

@@ -4,4 +4,6 @@
 
   roles:
     - role: ssh_reverse_tunnel_user
+      tags: [ssh_reverse_tunnel_user]
     - role: ssh_jump_user
+      tags: [ssh_jump_user]

@@ -38,7 +38,7 @@ xray:
         seqPlacement: header
         seqKey: x-b3-spanid
       warp_outbound_enabled: false
-      local_exit_rules:
+      xray_routing_rules:
         # Russian sites by domain (no DNS lookup needed)
         - type: field
           domain: [ "domain:ru", "domain:xn--p1ai", "domain:su", "geosite:ru-available-only-inside" ]
@@ -72,3 +72,47 @@ xray:
     ssh_jump:
       hosts:
         nl-vdsina:
+
+    # Exit nodes: OpenAI, Anthropic and AWS console/API domains are routed to
+    # `direct` (this server's own IP) instead of the default ProtonVPN/WARP exit.
+    xray_exit:
+      hosts:
+        dk-webdock:
+        nl-vdsina:
+      vars:
+        xray_routing_rules:
+          - type: field
+            domain:
+              - "domain:openai.com"
+              - "domain:chatgpt.com"
+              - "domain:chat.com"
+              - "domain:sora.com"
+              - "domain:oaistatic.com"
+              - "domain:oaiusercontent.com"
+              - "domain:anthropic.com"
+              - "domain:claude.ai"
+              - "domain:claude.com"
+              - "domain:claudeusercontent.com"
+              # AWS Management Console, APIs, SSO and static assets
+              - "domain:aws.amazon.com"
+              - "domain:amazonaws.com"
+              - "domain:awsstatic.com"
+              - "domain:awsapps.com"
+              - "domain:amazoncognito.com"
+              # Google core services (geosite:google below adds the long tail
+              # and country TLDs)
+              - "domain:google.com"
+              - "domain:googleapis.com"
+              - "domain:gstatic.com"
+              - "domain:googlevideo.com"
+              - "domain:googleusercontent.com"
+              - "domain:youtube.com"
+              - "domain:gmail.com"
+              - "geosite:google"
+            outboundTag: direct
+          # Google Meet/WebRTC media connects by IP without SNI, so a domain
+          # rule never sees it; geoip:google keeps it off the VPN exit too.
+          - type: field
+            ip:
+              - "geoip:google"
+            outboundTag: direct

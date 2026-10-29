@@ -2,6 +2,7 @@
 - name: Wait for all hosts to come up
   hosts: all
   gather_facts: false
+  tags: [wait]
 
   pre_tasks:
     - name: Wait for ssh to come up

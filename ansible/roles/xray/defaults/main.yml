@@ -2,6 +2,10 @@
 xray_version: v26.6.27
 xray_xhttp_extra_settings: { }
 next_address_xray_xhttp_extra_settings: { }
+# Raw Xray routing rules injected into the server config after the built-in
+# DNS/bittorrent rules and before reverse-proxy rules. Order is preserved and
+# first match wins; outboundTag/balancerTag must exist on the host.
+xray_routing_rules: []
 # runetfreedom/russia-v2ray-rules-dat release (geoip.dat + geosite.dat, incl. geoip:ru
 # and geosite:ru-available-only-inside); set to e.g. "download/202610121114" to pin
 xray_geodata_release: latest/download
