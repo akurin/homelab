@@ -1,9 +1,11 @@
+{% set client_options = xray_client | default({}) %}
 {
   "remarks": "{{ remark }}",
   "log": {
     "loglevel": "warning"
   },
   "dns": {
+    "queryStrategy": "{{ client_options.dns_query_strategy | default('UseIP') }}",
     "servers": [
       "https://1.1.1.1/dns-query"
     ]
@@ -57,6 +59,7 @@
     {
       "protocol": "vless",
       "tag": "proxy_direct",
+      "targetStrategy": "{{ client_options.target_strategy | default('AsIs') }}",
       "settings": {
         "vnext": [
           {
@@ -90,6 +93,7 @@
     {
       "protocol": "vless",
       "tag": "proxy_cdn",
+      "targetStrategy": "{{ client_options.target_strategy | default('AsIs') }}",
       "settings": {
         "vnext": [
           {
@@ -125,6 +129,7 @@
     {
       "protocol": "vless",
       "tag": "proxy",
+      "targetStrategy": "{{ client_options.target_strategy | default('AsIs') }}",
       "settings": {
         "vnext": [
           {

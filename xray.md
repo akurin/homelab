@@ -13,9 +13,10 @@ Client → ru-ruvds → dk-webdock → internet
 
 `nl-vdsina` is a standalone server (no chain).
 
-`dk-webdock` and `nl-vdsina` are **exit nodes**: OpenAI, Anthropic, AWS
-console/API and Google domains egress from their own IP instead of
-ProtonVPN/WARP (see
+`dk-webdock` and `nl-vdsina` are **exit nodes**. On `dk-webdock`, OpenAI,
+Anthropic and AWS use Oxylabs, Google uses the server's own IP, and other
+traffic uses WARP. `nl-vdsina` keeps its existing direct exceptions with WARP
+as its default (see
 [Route domains directly on the exit servers](#route-domains-directly-on-the-exit-servers)).
 
 `ru-ruvds` is also the **publish server** — it hosts subscription JSON files via
@@ -40,6 +41,7 @@ inventory group are treated as publish targets.
 | `xray/uuids`         | JSON array of all users (see below)           |
 | `xray/subscriptions` | JSON array of named subscriptions (see below) |
 | `xray/protonvpn`     | JSON array of named ProtonVPN WireGuard configs (see below) |
+| `xray/outbounds`     | JSON array of named raw Xray outbounds (see below) |
 
 ### User record (`xray/uuids`)
 
@@ -171,6 +173,69 @@ A ProtonVPN WireGuard config is tied to a single device — only one xray server
 use a given entry at a time. Add one entry per server that needs a ProtonVPN exit,
 each generated as a separate device/config in the ProtonVPN dashboard.
 
+### Generic outbound record (`xray/outbounds`)
+
+Each record gives a reusable name to a raw Xray outbound. The `outbound` value is
+written to the server config unchanged, so this mechanism works with any outbound
+protocol Xray supports. Keep this file in `pass` because it normally contains
+credentials.
+
+For the tested Oxylabs ISP SOCKS5 endpoint, split the value passed to curl's
+`-U` option at the first `:` into `user` and `pass`:
+
+```json
+[
+  {
+    "name": "oxylabs",
+    "outbound": {
+      "tag": "oxylabs",
+      "protocol": "socks",
+      "targetStrategy": "AsIs",
+      "settings": {
+        "address": "isp.oxylabs.io",
+        "port": 8001,
+        "user": "<value before colon>",
+        "pass": "<value after colon>"
+      }
+    }
+  }
+]
+```
+
+The outbound `tag` must be unique and cannot be one of the built-in tags:
+`next_proxy`, `warp`, `protonvpn`, `direct`, or `block`. Xray's
+[SOCKS outbound](https://xtls.github.io/en/config/outbounds/socks.html) supports
+SOCKS5 and uses the flat `address`, `port`, `user`, and `pass` settings shown
+above.
+
+`targetStrategy: AsIs` preserves the destination received by the server: an IP
+remains an IP and a hostname remains a hostname. The tested Oxylabs endpoint
+accepted both hostname and IPv4-address requests, but rejected IPv6-address
+requests.
+
+Clients can still send an IP address even with `targetStrategy: AsIs`. For an
+IPv4-only server exit, configure the generated client to resolve proxied targets
+before sending them through VLESS:
+
+```yaml
+xray_client:
+  dns_query_strategy: UseIPv4
+  target_strategy: ForceIPv4
+```
+
+This keeps server-side sniffing at `routeOnly: true`: a sniffed hostname can be
+used for routing, but does not replace the client's destination. Both hostname
+and IPv4-address SOCKS requests to the tested Oxylabs endpoint completed 10/10
+Cloudflare Speed Test connections; IPv6-address requests were rejected.
+
+Xray automatically uses SOCKS5 `UDP ASSOCIATE` when it routes UDP traffic to
+this outbound; there is no outbound `udp: true` setting to add. UDP still has to
+be enabled for the specific Oxylabs account and endpoint. Oxylabs advertises
+[UDP-capable proxies](https://oxylabs.io/products/udp-proxies), but currently
+notes on that page that UDP is not supported for self-service clients. The curl
+command above tests the SOCKS5 endpoint over TCP only, so test UDP separately if
+the account is expected to include it.
+
 ---
 
 ## Generated client configs
@@ -243,7 +308,8 @@ cd ansible
 ansible-playbook xray.yml -i inventory/xray.yml \
   --limit xray_exit --tags xray \
   -e xray_users_b64="$(pass xray/uuids | base64)" \
-  -e protonvpn_configs_b64="$( (pass xray/protonvpn 2>/dev/null || echo '[]') | base64)"
+  -e protonvpn_configs_b64="$( (pass xray/protonvpn 2>/dev/null || echo '[]') | base64)" \
+  -e xray_outbounds_b64="$( (pass xray/outbounds 2>/dev/null || echo '[]') | base64)"
 ```
 
 Handlers ignore tags, so the Xray restart still fires. Add `--check --diff` to
@@ -288,7 +354,7 @@ Import this URL into your xray client (v2rayN, NekoBox, etc.).
 
 1. Add host to `ansible/inventory/xray.yml` with `domain`, `ansible_host`, and
    optionally `cdn_domain`/`server_ip`, `next_address`, `xray_xhttp_extra_settings`,
-   `xray_routing_rules`, `warp_outbound_enabled`, `protonvpn_config_name`
+   `xray_routing_rules`, `xray_outbounds`, and `xray_client`
 2. `./install-xray.sh <new_host>`
 3. Add the new host's config files to subscriptions as needed
 4. `./publish-xray-client-configs.sh`
@@ -298,24 +364,60 @@ Import this URL into your xray client (v2rayN, NekoBox, etc.).
 1. `pass edit xray/protonvpn` — add an entry with the WireGuard config values for
    a device dedicated to this server (see [ProtonVPN config
    record](#protonvpn-config-record-xrayprotonvpn))
-2. Set `protonvpn_config_name: <entry name>` on the host in
-   `ansible/inventory/xray.yml`
+2. Select it on the host in `ansible/inventory/xray.yml`:
+
+   ```yaml
+   xray_outbounds:
+     - type: protonvpn
+       config: <entry name>
+   ```
+
 3. `./install-xray.sh --limit <host>`
 
-A server picks its egress from whichever of these is defined, in this priority
-order: `next_address` (chain to next hop) → `warp_outbound_enabled` →
-`protonvpn_config_name` → its own IP. Only set one of `warp_outbound_enabled` /
-`protonvpn_config_name` on a given host — if both are set, WARP wins. Set
-`xray_default_outbound_override` (`next_proxy`, `warp`, `protonvpn`, `direct` or
-`block`) to pick the egress explicitly; the deploy fails if that outbound is not
-configured on the host.
+A server that has `next_address` uses its next hop as the default egress.
+Otherwise, the first entry in `xray_outbounds` is the default. With an empty
+list, the server uses its own IP through `direct`.
+
+WARP uses the same interface:
+
+```yaml
+xray_outbounds:
+  - type: warp
+```
+
+### Switch a server's exit to a named outbound
+
+1. `pass edit xray/outbounds` — add the named raw Xray outbound record.
+2. Select it on the host in `ansible/inventory/xray.yml`:
+
+   ```yaml
+   xray_outbounds:
+     - type: named
+       name: oxylabs
+   ```
+
+3. `./install-xray.sh --limit <host> --tags xray`
+
+Multiple entries may be selected. The first is the default egress and the
+others are available to `xray_routing_rules` by tag. The supported types are
+`direct`, `block`, `warp`, `protonvpn`, and `named`.
+
+For example, `dk-webdock` uses WARP by default while making Oxylabs available
+to routing rules:
+
+```yaml
+xray_outbounds:
+  - type: warp
+  - type: named
+    name: oxylabs
+```
 
 ### Route domains directly on the exit servers
 
-Hosts in the `xray_exit` group (`dk-webdock`, `nl-vdsina`) send OpenAI,
-Anthropic, AWS console/API and Google domains to `direct`, so those requests
-leave from the server's own IP rather than ProtonVPN/WARP. Everything else keeps
-using the configured default egress.
+Hosts in the `xray_exit` group (`dk-webdock`, `nl-vdsina`) send Google domains
+and IP ranges to `direct`. Host-specific rules select different egresses for
+OpenAI, Anthropic, and AWS while everything else uses the first configured
+outbound.
 
 ```yaml
     xray_exit:
@@ -326,12 +428,6 @@ using the configured default egress.
         xray_routing_rules:
           - type: field
             domain:
-              - "domain:openai.com"
-              - "domain:chatgpt.com"
-              - "domain:anthropic.com"
-              - "domain:claude.ai"
-              - "domain:aws.amazon.com"
-              - "domain:amazonaws.com"
               - "geosite:google"
               # ...
             outboundTag: direct
@@ -340,13 +436,21 @@ using the configured default egress.
             ip:
               - "geoip:google"
             outboundTag: direct
+
+    dk-webdock:
+      xray_additional_routing_rules:
+        - type: field
+          domain: *xray_alternate_egress_domains
+          outboundTag: oxylabs
 ```
 
 `xray_routing_rules` accepts raw Xray routing rules with any outbound tag
-(`direct`, `block`, `next_proxy`, `warp`, `protonvpn`). Rules are rendered in
-order after the built-in DNS/bittorrent rules and before reverse/chain rules, so
-first match wins. `domain:` entries also cover all subdomains, and SNI sniffing
-means they match even when a client connects by IP.
+(`direct`, `block`, `next_proxy`, `warp`, `protonvpn`, or a named outbound's
+tag). `xray_additional_routing_rules` appends host-specific rules to common/group
+rules. Rules are rendered after the built-in DNS/bittorrent rules and before
+reverse/chain rules, so first match wins. Deployment fails if an `outboundTag`
+does not exist on that host. `domain:` entries also cover all subdomains, and
+SNI sniffing means they match even when a client connects by IP.
 
 Google needs both forms: `geosite:google` matches the domain list (including
 ccTLDs), while `geoip:google` catches IP-only flows such as Google Meet/WebRTC
@@ -370,10 +474,10 @@ send detectable BitTorrent `direct` themselves.
 | `next_address`                           |          | Next hop domain for server chaining                                       |
 | `next_address_xray_xhttp_extra_settings` |          | xhttp settings for the chain outbound                                     |
 | `xray_xhttp_extra_settings`              |          | Extra xhttp padding/obfuscation settings                                  |
-| `warp_outbound_enabled`                  |          | Enable Cloudflare WARP outbound                                           |
-| `protonvpn_config_name`                  |          | Name of a `xray/protonvpn` entry to use as the ProtonVPN WireGuard outbound |
+| `xray_outbounds`                         |          | Ordered outbound selections; first is default unless `next_address` is set |
+| `xray_client`                            |          | Generated-client options such as `dns_query_strategy` and `target_strategy` |
 | `xray_routing_rules`                     |          | Raw server routing rules injected after built-in rules, before reverse/chain rules |
-| `xray_default_outbound_override`         |          | Egress for traffic matching no rule (default: priority order above)       |
+| `xray_additional_routing_rules`          |          | Host-specific rules appended to common/group routing rules                |
 | `xray_geodata_release`                   |          | runetfreedom geo data release path, e.g. `download/202610121114` (default: latest) |
 
 ## Inventory groups reference
@@ -382,4 +486,4 @@ send detectable BitTorrent `direct` themselves.
 |----------------|-----------------------------------------------------------------------------|
 | `xray`         | All xray hosts — full role is applied                                       |
 | `xray_publish` | Hosts that serve subscription files via Caddy; publish scripts target these |
-| `xray_exit`    | Exit nodes that route OpenAI/Anthropic/AWS/Google domains via `direct`      |
+| `xray_exit`    | Exit nodes with common Google-direct routing rules                          |

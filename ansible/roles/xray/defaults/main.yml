@@ -2,14 +2,19 @@
 xray_version: v26.6.27
 xray_xhttp_extra_settings: { }
 next_address_xray_xhttp_extra_settings: { }
+# Ordered server outbounds. Supported types: direct, block, warp, protonvpn
+# (requires config), and named (requires name from pass xray/outbounds).
+# The first entry is the default unless this server chains through next_address.
+xray_outbounds: []
+# Options applied to generated client configs for this server.
+xray_client: {}
 # Raw Xray routing rules injected into the server config after the built-in
 # DNS/bittorrent rules and before reverse-proxy rules. Order is preserved and
 # first match wins; outboundTag/balancerTag must exist on the host.
 xray_routing_rules: []
+# Host-specific rules appended after group/common xray_routing_rules.
+xray_additional_routing_rules: []
 # runetfreedom/russia-v2ray-rules-dat release (geoip.dat + geosite.dat, incl. geoip:ru
 # and geosite:ru-available-only-inside); set to e.g. "download/202610121114" to pin
 xray_geodata_release: latest/download
 xray_geodata_base_url: "https://github.com/runetfreedom/russia-v2ray-rules-dat/releases/{{ xray_geodata_release }}"
-# Outbound for traffic that matches no routing rule. Unset = first available of
-# next_proxy → warp → protonvpn → direct
-# xray_default_outbound_override: direct

@@ -6,6 +6,22 @@ xray:
     xray_xhttp_port_internal: 10000
     # Not a secret: VLESS authenticates by user UUID; the path only fronts Xray behind Caddy
     xray_xhttp_path: media/chunks
+    xray_alternate_egress_domains: &xray_alternate_egress_domains
+      - "domain:openai.com"
+      - "domain:chatgpt.com"
+      - "domain:chat.com"
+      - "domain:sora.com"
+      - "domain:oaistatic.com"
+      - "domain:oaiusercontent.com"
+      - "domain:anthropic.com"
+      - "domain:claude.ai"
+      - "domain:claude.com"
+      - "domain:claudeusercontent.com"
+      - "domain:aws.amazon.com"
+      - "domain:amazonaws.com"
+      - "domain:awsstatic.com"
+      - "domain:awsapps.com"
+      - "domain:amazoncognito.com"
 
   hosts:
     ru-ruvds:
@@ -37,7 +53,6 @@ xray:
         sessionIDLength: 15
         seqPlacement: header
         seqKey: x-b3-spanid
-      warp_outbound_enabled: false
       xray_routing_rules:
         # Russian sites by domain (no DNS lookup needed)
         - type: field
@@ -55,14 +70,31 @@ xray:
       cdn_domain: c0gziaho6h.cdn.twcstorage.ru
       server_ip: 151.236.89.224
       xray_xhttp_extra_settings: *xray_xhttp_extra_settings
-      warp_outbound_enabled: false
-      protonvpn_config_name: "NL-FREE#103"
+      # Resolve proxied destinations to IPv4 on the client before VLESS sends
+      # them to this server; its selected Oxylabs ISP exit is IPv4-only.
+      xray_client:
+        dns_query_strategy: UseIPv4
+        target_strategy: ForceIPv4
+      xray_outbounds:
+        - type: warp
+        - type: named
+          name: oxylabs
+      xray_additional_routing_rules:
+        - type: field
+          domain: *xray_alternate_egress_domains
+          outboundTag: oxylabs
 
     nl-vdsina:
       ansible_host: 89.124.104.67
       domain: nl1.morjoff.com
       dns: external
-      warp_outbound_enabled: true
+      xray_outbounds:
+        - type: warp
+      # Preserve the existing direct route for these services on this host.
+      xray_additional_routing_rules:
+        - type: field
+          domain: *xray_alternate_egress_domains
+          outboundTag: direct
 
   children:
     xray_publish:
@@ -73,8 +105,8 @@ xray:
       hosts:
         nl-vdsina:
 
-    # Exit nodes: OpenAI, Anthropic and AWS console/API domains are routed to
-    # `direct` (this server's own IP) instead of the default ProtonVPN/WARP exit.
+    # Exit nodes route Google directly. Host-specific rules above choose the
+    # outbound for AI providers and AWS.
     xray_exit:
       hosts:
         dk-webdock:
@@ -83,22 +115,6 @@ xray:
         xray_routing_rules:
           - type: field
             domain:
-              - "domain:openai.com"
-              - "domain:chatgpt.com"
-              - "domain:chat.com"
-              - "domain:sora.com"
-              - "domain:oaistatic.com"
-              - "domain:oaiusercontent.com"
-              - "domain:anthropic.com"
-              - "domain:claude.ai"
-              - "domain:claude.com"
-              - "domain:claudeusercontent.com"
-              # AWS Management Console, APIs, SSO and static assets
-              - "domain:aws.amazon.com"
-              - "domain:amazonaws.com"
-              - "domain:awsstatic.com"
-              - "domain:awsapps.com"
-              - "domain:amazoncognito.com"
               # Google core services (geosite:google below adds the long tail
               # and country TLDs)
               - "domain:google.com"

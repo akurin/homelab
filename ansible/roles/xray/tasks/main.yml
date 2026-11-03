@@ -40,48 +40,22 @@
     - geoip.dat
     - geosite.dat
   # geosite.dat is ~74 MB; fetch it only where routing rules reference geosite
-  when: item != 'geosite.dat' or 'geosite:' in (xray_routing_rules | default([]) | to_json)
+  when: >-
+    item != 'geosite.dat'
+    or 'geosite:' in (
+      (
+        (xray_routing_rules | default([]))
+        + (xray_additional_routing_rules | default([]))
+      ) | to_json
+    )
   notify: Restart Xray
+
+- name: Prepare Xray outbounds
+  ansible.builtin.include_tasks: outbounds.yml
 
 - name: Register WARP device (idempotent)
   ansible.builtin.include_tasks: warp_register.yml
-  when: warp_outbound_enabled
-
-- name: Parse ProtonVPN configs JSON
-  ansible.builtin.set_fact:
-    protonvpn_configs: "{{ protonvpn_configs_b64 | b64decode | from_json }}"
-
-- name: Select ProtonVPN config
-  ansible.builtin.set_fact:
-    protonvpn_config: >-
-      {{
-        protonvpn_configs
-        | selectattr('name', 'equalto', protonvpn_config_name)
-        | list
-        | first
-      }}
-  when: protonvpn_config_name is defined
-
-- name: Resolve default outbound
-  ansible.builtin.set_fact:
-    xray_default_outbound: >-
-      {{
-        xray_default_outbound_override
-        | default('next_proxy' if (next_address | default('')) else
-                  'warp' if (warp_outbound_enabled | default(false)) else
-                  'protonvpn' if (protonvpn_config_name | default('')) else
-                  'direct', true)
-      }}
-
-- name: Check default outbound is configured on this host
-  ansible.builtin.assert:
-    that: >-
-      xray_default_outbound in ['direct', 'block']
-      or (xray_default_outbound == 'next_proxy' and (next_address | default('') | length > 0))
-      or (xray_default_outbound == 'warp' and (warp_outbound_enabled | default(false) | bool))
-      or (xray_default_outbound == 'protonvpn' and (protonvpn_config_name | default('') | length > 0))
-    fail_msg: "Outbound '{{ xray_default_outbound }}' is not configured on {{ inventory_hostname }}"
-    quiet: true
+  when: xray_warp_enabled | bool
 
 - name: Get Xray service group
   ansible.builtin.shell: |

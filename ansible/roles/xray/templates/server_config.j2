@@ -51,7 +51,7 @@
         ],
         "outboundTag": "block"
       }
-      {% for rule in xray_routing_rules | default([]) %}
+      {% for rule in (xray_routing_rules | default([])) + (xray_additional_routing_rules | default([])) %}
       ,{{ rule | to_json }}
       {% endfor %}
       {% if reverse_xray_role is defined and reverse_xray_role == 'portal' %}
@@ -124,7 +124,7 @@
   ],
 
   {# Xray sends traffic that matches no routing rule to the FIRST outbound,
-     so xray_default_outbound (resolved in tasks/main.yml) is rendered first. #}
+     so xray_default_outbound (resolved in tasks/outbounds.yml) is rendered first. #}
 {% set outbounds = [] %}
 {% if next_address is defined and next_address %}
 {% set ob %}
@@ -163,7 +163,7 @@
 {% endset %}
 {% set _ = outbounds.append({'tag': 'next_proxy', 'json': ob}) %}
 {% endif %}
-{% if warp_outbound_enabled | default(false) %}
+{% if xray_warp_enabled %}
 {% set ob %}
     {
       "protocol": "wireguard",
@@ -193,7 +193,7 @@
 {% endset %}
 {% set _ = outbounds.append({'tag': 'warp', 'json': ob}) %}
 {% endif %}
-{% if protonvpn_config_name is defined and protonvpn_config_name %}
+{% if xray_protonvpn_config_name %}
 {% set ob %}
     {
       "protocol": "wireguard",
@@ -217,6 +217,9 @@
 {% endset %}
 {% set _ = outbounds.append({'tag': 'protonvpn', 'json': ob}) %}
 {% endif %}
+{% for outbound in xray_selected_outbounds %}
+{% set _ = outbounds.append({'tag': outbound.tag, 'json': outbound | to_json}) %}
+{% endfor %}
 {% set _ = outbounds.append({'tag': 'direct', 'json': '{"protocol": "freedom", "tag": "direct"}'}) %}
 {% set _ = outbounds.append({'tag': 'block', 'json': '{"protocol": "blackhole", "tag": "block"}'}) %}
   "outbounds": [
