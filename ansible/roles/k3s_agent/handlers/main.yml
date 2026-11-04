@@ -1,5 +1,14 @@
 ---
+# The systemd start job can expire while the service is still coming up, so restart without
+# blocking and wait for the unit state instead.
 - name: Restart k3s-agent
-  ansible.builtin.systemd:
-    name: k3s-agent
-    state: restarted
+  ansible.builtin.command: systemctl restart --no-block k3s-agent
+  changed_when: true
+
+- name: Wait for k3s-agent to become active again
+  ansible.builtin.command: systemctl is-active k3s-agent
+  register: k3s_agent_restart_state
+  changed_when: false
+  until: k3s_agent_restart_state.stdout | trim == 'active'
+  retries: 60
+  delay: 5

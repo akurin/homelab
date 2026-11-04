@@ -1,0 +1,3 @@
+---
+# Every agent reaches the API over the overlay, so no public API allowance is needed.
+k3s_server_host: "{{ hostvars[groups['k3s_server'][0]]['amneziawg_address'] }}"

@@ -1,0 +1,21 @@
+---
+# Control plane VPS.
+ansible_host: 193.181.212.97
+ansible_user: root
+amneziawg_address: 10.44.0.1
+amneziawg_endpoint: "{{ ansible_host }}:51822"
+k3s_node_external_ip: "{{ ansible_host }}"
+# wg-k3s must accept x13's packets from the proxy exit, whose address changes.
+nftables_allowed_udp: [51822]
+# Alloy's resource policy lives in the role: idle CPU priority and a hard MemoryMax, so it
+# cannot starve the API.
+#
+# k3s can grow to ~1 GB RSS during a restart on this 1.6 GiB box; swap turns that into paging
+# instead of reclaim thrash with an unresponsive API.
+swap_enabled: true
+
+# Flannel assigns one /24 per node from the cluster CIDR, in join order, and persists it in
+# the Node object. host-gw routes the peer's /24 through the overlay, and WireGuard only
+# accepts destinations listed in a peer's AllowedIPs, so this must match the real lease
+# (`kubectl get nodes -o custom-columns=NAME:.metadata.name,PODCIDR:.spec.podCIDR`).
+k3s_node_pod_cidr: 10.42.0.0/24

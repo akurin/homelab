@@ -7,3 +7,6 @@
   ansible.builtin.service:
     name: alloy
     state: restarted
+  # A stopped deployment must stay stopped: the role writes config and drop-ins even when
+  # Alloy is disabled, and restarting would silently bring it back.
+  when: grafana_alloy_enabled | bool

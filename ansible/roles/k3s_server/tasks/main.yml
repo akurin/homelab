@@ -53,6 +53,13 @@
     mode: "0600"
   notify: Restart k3s
   tags: [k3s-node-name]
+  no_log: true
+  diff: false
+
+- name: Configure the K3s VPN startup dependency
+  ansible.builtin.include_tasks: "{{ playbook_dir }}/tasks/k3s_network_dependency.yml"
+  vars:
+    k3s_service_name: k3s
 
 # All runtime flags (token, node-external-ip, flannel backend, cidrs, tls-san, ...) live in
 # /etc/rancher/k3s/config.yaml, which k3s reads on every start — so changing them later just
@@ -71,6 +78,18 @@
   ansible.builtin.service:
     name: k3s
     state: started
+
+- name: Apply K3s server configuration before querying the API
+  ansible.builtin.meta: flush_handlers
+
+- name: Wait for the API server after configuration changes
+  ansible.builtin.command: k3s kubectl --request-timeout=5s get --raw=/readyz
+  register: k3s_api_ready
+  retries: 30
+  delay: 2
+  until: k3s_api_ready.rc == 0
+  changed_when: false
+  when: not ansible_check_mode
 
 - name: Taint server node to prevent workload scheduling
   ansible.builtin.command:

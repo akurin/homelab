@@ -1,0 +1,178 @@
+---
+- name: Validate the AmneziaWG mesh inventory
+  ansible.builtin.assert:
+    that:
+      - amneziawg_group is defined
+      - amneziawg_address is defined
+      - amneziawg_interface is match('^[a-zA-Z0-9_-]{1,15}$')
+      - amneziawg_port | int > 0
+      - amneziawg_port | int < 65536
+      - >-
+        groups[amneziawg_group] | map('extract', hostvars, 'amneziawg_address') | unique | length
+        == groups[amneziawg_group] | length
+
+- name: Require the obfuscation parameters
+  ansible.builtin.assert:
+    that:
+      - amneziawg_params | length > 0
+      - >-
+        ['Jc', 'Jmin', 'Jmax', 'S1', 'S2', 'H1', 'H2', 'H3', 'H4']
+        | difference(amneziawg_params.keys() | list) | length == 0
+    fail_msg: >-
+      amneziawg_params must contain Jc, Jmin, Jmax, S1, S2 and H1-H4; every peer must use
+      identical values.
+
+# The packaged source does not compile on kernels carrying the 7.0.13 API backport, and Ubuntu's
+# DKMS postinst aborts the package install when that build fails. Let the install finish, apply
+# the compat patch, and keep the build below (`modinfo`) as the authoritative result.
+- name: Install the AmneziaWG tools and patch their DKMS source
+  block:
+    # A transient switch, always removed below: not worth reporting as a change on every run.
+    - name: Allow the package install to finish even when its DKMS build fails
+      ansible.builtin.copy:
+        content: ""
+        dest: /etc/dkms/no-autoinstall-errors
+        mode: "0644"
+      changed_when: false
+
+    - name: Install the AmneziaWG tools
+      ansible.builtin.apt:
+        name:
+          - amneziawg
+          - iputils-ping
+        update_cache: true
+        cache_valid_time: 3600
+
+    - name: Find the packaged DKMS source
+      ansible.builtin.shell:
+        cmd: "ls -1d /usr/src/amneziawg-* | sort -V | tail -1"
+      register: amneziawg_source_dir
+      changed_when: false
+      failed_when: false
+      check_mode: false
+
+    - name: Check whether the packaged source already handles the 7.0.13 API change
+      ansible.builtin.command: >-
+        grep -q 'KERNEL_VERSION(7, 0, 13)' {{ amneziawg_source_dir.stdout }}/compat/compat.h
+      register: amneziawg_compat
+      changed_when: false
+      failed_when: false
+      check_mode: false
+      when: amneziawg_source_dir.stdout | length > 0
+
+    - name: Apply the compatibility patch to the packaged source
+      ansible.posix.patch:
+        src: amneziawg-compat-7.0.13.patch
+        dest: "{{ amneziawg_source_dir.stdout }}"
+        strip: 1
+      when:
+        - amneziawg_source_dir.stdout | length > 0
+        - amneziawg_compat.rc | default(1) != 0
+
+  always:
+    - name: Restore DKMS failure reporting
+      ansible.builtin.file:
+        path: /etc/dkms/no-autoinstall-errors
+        state: absent
+      changed_when: false
+
+# DKMS only builds a module when the matching headers are present. Ubuntu installs new kernels
+# via unattended-upgrades without them, which leaves the kernel GRUB will boot with no
+# AmneziaWG module — the interface then fails on the next reboot. linux-headers-generic keeps
+# headers arriving with every future kernel; the explicit build and check below cover whatever
+# is installed right now (the running kernel and the boot kernel).
+- name: Find the kernel that will boot
+  ansible.builtin.shell:
+    cmd: "ls -1 /boot/vmlinuz-* | sed 's|.*/vmlinuz-||' | sort -V | tail -1"
+  register: amneziawg_boot_kernel
+  changed_when: false
+  check_mode: false
+
+- name: Read the running kernel
+  ansible.builtin.command: uname -r
+  register: amneziawg_running_kernel
+  changed_when: false
+  check_mode: false
+
+- name: Install kernel headers for the running and boot kernels
+  ansible.builtin.apt:
+    name:
+      - "linux-headers-{{ amneziawg_running_kernel.stdout }}"
+      - "linux-headers-{{ amneziawg_boot_kernel.stdout }}"
+      - linux-headers-generic
+    state: present
+    update_cache: true
+    cache_valid_time: 3600
+
+- name: Check whether the module is built for the kernel that will boot
+  ansible.builtin.command: "modinfo -k {{ amneziawg_boot_kernel.stdout }} amneziawg"
+  register: amneziawg_boot_module
+  changed_when: false
+  failed_when: false
+  check_mode: false
+
+- name: Build the AmneziaWG module for the kernel that will boot
+  ansible.builtin.command: "dkms autoinstall -k {{ amneziawg_boot_kernel.stdout }}"
+  when: amneziawg_boot_module.rc != 0
+  changed_when: true
+
+- name: Require the AmneziaWG module for the kernel that will boot
+  ansible.builtin.command: "modinfo -k {{ amneziawg_boot_kernel.stdout }} amneziawg"
+  changed_when: false
+  check_mode: false
+
+- name: Load the module
+  community.general.modprobe:
+    name: amneziawg
+    state: present
+
+- name: Create the configuration directory
+  ansible.builtin.file:
+    path: "{{ amneziawg_config_dir }}"
+    state: directory
+    owner: root
+    group: root
+    mode: "0700"
+
+- name: Generate a persistent private key on this host
+  ansible.builtin.shell:
+    cmd: "umask 077 && awg genkey > {{ amneziawg_config_dir }}/{{ amneziawg_interface }}.key"
+    creates: "{{ amneziawg_config_dir }}/{{ amneziawg_interface }}.key"
+  no_log: true
+
+- name: Restrict private key permissions
+  ansible.builtin.file:
+    path: "{{ amneziawg_config_dir }}/{{ amneziawg_interface }}.key"
+    owner: root
+    group: root
+    mode: "0600"
+
+- name: Derive the public key for peer exchange
+  ansible.builtin.shell:
+    cmd: "awg pubkey < {{ amneziawg_config_dir }}/{{ amneziawg_interface }}.key"
+  register: amneziawg_public_key
+  changed_when: false
+  check_mode: false
+
+- name: Read the private key for configuration rendering
+  ansible.builtin.slurp:
+    src: "{{ amneziawg_config_dir }}/{{ amneziawg_interface }}.key"
+  register: amneziawg_private_key
+  no_log: true
+
+- name: Configure the overlay peers
+  ansible.builtin.template:
+    src: wg.conf.j2
+    dest: "{{ amneziawg_config_dir }}/{{ amneziawg_interface }}.conf"
+    owner: root
+    group: root
+    mode: "0600"
+  no_log: true
+  diff: false
+  notify: Restart overlay
+
+- name: Enable and start the overlay
+  ansible.builtin.systemd_service:
+    name: "awg-quick@{{ amneziawg_interface }}"
+    enabled: true
+    state: started

@@ -1,0 +1,24 @@
+---
+# Home laptop; the only host that escalates.
+ansible_host: 192.168.1.100
+ansible_user: morjoff
+ansible_become: true
+# Use traditional sudo to avoid sudo-rs password-prompt compatibility issues.
+ansible_become_exe: /usr/bin/sudo.ws
+amneziawg_address: 10.44.0.3
+# Reserved for explicitly selected workloads.
+k3s_node_labels:
+  - homelab.morjoff.com/workload=home
+k3s_node_taints:
+  - dedicated=home:NoSchedule
+# x13 terminates the overlay itself, so its UDP port must be reachable from the cloud peers.
+nftables_allowed_udp: [51822]
+# apt.grafana.com returns 403 from Russian networks; the Yandex mirror carries the same
+# packages. Without it every apt update here fails and the Alloy role cannot install.
+grafana_repo_mirror: yandex
+
+# Flannel assigns one /24 per node from the cluster CIDR, in join order, and persists it in
+# the Node object. host-gw routes the peer's /24 through the overlay, and WireGuard only
+# accepts destinations listed in a peer's AllowedIPs, so this must match the real lease
+# (`kubectl get nodes -o custom-columns=NAME:.metadata.name,PODCIDR:.spec.podCIDR`).
+k3s_node_pod_cidr: 10.42.2.0/24

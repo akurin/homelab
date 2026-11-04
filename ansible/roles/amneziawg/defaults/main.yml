@@ -1,0 +1,16 @@
+---
+# Reusable AmneziaWG mesh role. It knows nothing about Kubernetes: the peers come from
+# `amneziawg_group`, each host's tunnel address from `amneziawg_address`, and any extra
+# destinations to route through the tunnel (for example a peer's internal subnets) from
+# `amneziawg_peer_allowed_ips`. Keys are generated on each host and exchanged within the
+# play, so every member of `amneziawg_group` must be in it.
+amneziawg_interface: wg0
+amneziawg_port: 51820
+# Obfuscation parameters Jc, Jmin, Jmax, S1, S2, H1-H4. Every peer must use identical values.
+amneziawg_params: {}
+amneziawg_config_dir: /etc/amnezia/amneziawg
+# 1380 leaves room for the WireGuard header inside a 1500-byte path (1440 with PPPoE).
+amneziawg_mtu: 1380
+amneziawg_keepalive: 25
+# Per-peer destinations routed into the tunnel: {"peer-name": ["10.0.0.0/24", ...]}.
+amneziawg_peer_allowed_ips: {}

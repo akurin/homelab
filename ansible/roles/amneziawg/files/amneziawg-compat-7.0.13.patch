@@ -1,0 +1,21 @@
+Ubuntu backported the upstream 7.1.5 setup_udp_tunnel_sock signature change into its 7.0.13
+kernel, but the amneziawg-dkms 1.0.0 compat header only skips the old shim at 7.1.5. On such a
+kernel the build fails with:
+
+  compat.h: error: passing argument 2 of 'setup_udp_tunnel_sock' from incompatible pointer type
+  expected 'struct sock *' but argument is of type 'struct socket *'
+
+Apply against /usr/src/amneziawg-1.0.0 (patch -p1) and rebuild with dkms. udp_tunnel_sock_release
+still takes struct socket *, so only the setup shim is version-gated.
+
+--- a/compat/compat.h
++++ b/compat/compat.h
+@@ -1445,8 +1445,11 @@
+ #if LINUX_VERSION_CODE < KERNEL_VERSION(7, 1, 5)
+ #include <net/udp_tunnel.h>
++/* Ubuntu backported the upstream 7.1.5 setup_udp_tunnel_sock change into 7.0.13. */
++#if LINUX_VERSION_CODE < KERNEL_VERSION(7, 0, 13)
+ #define setup_udp_tunnel_sock(net, sk, sock_cfg) setup_udp_tunnel_sock(net, sk->sk_socket, sock_cfg)
++#endif
+ #define udp_tunnel_sock_release(sk) udp_tunnel_sock_release(sk->sk_socket)
+ #endif

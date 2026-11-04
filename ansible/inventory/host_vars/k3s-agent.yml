@@ -1,0 +1,18 @@
+---
+# Cloud worker: runs every cluster workload.
+ansible_host: 193.181.216.56
+ansible_user: root
+amneziawg_address: 10.44.0.2
+amneziawg_endpoint: "{{ ansible_host }}:51822"
+k3s_node_external_ip: "{{ ansible_host }}"
+# 80/443 serve ServiceLB -> Traefik ingress; 22 is SSH. x13 must not inherit this list.
+nftables_allowed_tcp: [22, 80, 443]
+nftables_allowed_udp: [51822]
+# Only this memory-constrained cloud worker needs our managed swapfile.
+swap_enabled: true
+
+# Flannel assigns one /24 per node from the cluster CIDR, in join order, and persists it in
+# the Node object. host-gw routes the peer's /24 through the overlay, and WireGuard only
+# accepts destinations listed in a peer's AllowedIPs, so this must match the real lease
+# (`kubectl get nodes -o custom-columns=NAME:.metadata.name,PODCIDR:.spec.podCIDR`).
+k3s_node_pod_cidr: 10.42.1.0/24

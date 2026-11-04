@@ -50,6 +50,13 @@
     mode: "0600"
   notify: Restart k3s-agent
   tags: [k3s-node-name]
+  no_log: true
+  diff: false
+
+- name: Configure the K3s VPN startup dependency
+  ansible.builtin.include_tasks: "{{ playbook_dir }}/tasks/k3s_network_dependency.yml"
+  vars:
+    k3s_service_name: k3s-agent
 
 # All runtime flags (token, server URL, node-external-ip, ...) live in
 # /etc/rancher/k3s/config.yaml, which k3s reads on every start — so changing them later just
@@ -69,3 +76,6 @@
     name: k3s-agent
     state: started
     enabled: true
+
+- name: Apply K3s agent configuration before completing this role
+  ansible.builtin.meta: flush_handlers
