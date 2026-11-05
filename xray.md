@@ -16,8 +16,9 @@ Client → ru-ruvds → dk-webdock → internet
   direct exceptions with WARP as its default.
 - `ru-ruvds` is also the **publish server**: subscription JSON under
   `https://<domain>/subscriptions/<token>`. Hosts in `xray_publish` are publish targets.
-- No machine runs a local Xray **client** any more: x13's loopback SOCKS client was removed with the
-  K3s overlay migration, and the K3s cluster does not use Xray at all.
+- No machine runs a local Xray **client** for cluster connectivity any more: x13's loopback SOCKS
+  client was removed with the K3s overlay migration, and the K3s cluster does not use Xray at all.
+  A separate client on x13 provides split egress for selected workloads (see "Home client on x13").
 
 ## Prerequisites
 
@@ -153,6 +154,38 @@ For each user × host, Ansible writes JSON under `~/vpn/<user>/`:
 LB configs use `burstObservatory` (3 samples/minute) and `fallbackTag` to switch to the CDN outbound
 when `proxy_direct` is dead.
 
+## Home client on x13
+
+x13 runs an Xray client only for workloads that need split egress:
+
+| Inbound | Route | Current users |
+|---|---|---|
+| `socks_direct` 10807 | `direct` | retail traffic (Penny) |
+| `socks_proxy` 10808 | VLESS chain | Telegram Bot API (Penny) |
+
+The client uses the shared `x13` identity from `pass xray/uuids`; its config is generated
+alongside the other client configs and is not stored in the repository:
+
+```json
+{ "name": "x13", "id": "<uuid>", "configs": [{ "name": "full_proxy" }] }
+```
+
+Render and deploy:
+
+```sh
+./publish-xray-client-configs.sh   # writes ~/vpn/x13/ru-ruvds_full_proxy_config.json
+./install-xray-client.sh           # installs Xray, binds :10807/:10808 on 192.168.1.100
+```
+
+`install-xray-client.sh` runs `ansible/xray_client.yml` against the `xray_clients` group in
+`inventory/k3s.yml`. The role replaces the generated config's `listen` with
+`xray_client_listen` from `host_vars/x13.yml`, so the generated file stays portable. Pass
+`-e xray_client_config_src=...` to deploy a different identity or generated config.
+
+The node's nftables trusts the pod CIDR wholesale, so pods on x13 reach the listeners; LAN clients
+do not. The cloud worker has no route to `192.168.1.0/24`, so any workload using these proxies
+must stay pinned to x13.
+
 ## Scripts
 
 ### `./install-xray.sh [ansible args…]`
@@ -179,6 +212,11 @@ Stages: **generate** (`~/vpn/<user>/`) → **merge** (`scripts/merge-subscriptio
 overrides) → **publish** (`/var/www/xray-configs/<token>/` on the publish server, stale token
 directories removed) → **Caddy reload** (`publish-xray-client-configs.sh` only; `install-xray.sh`
 also deploys Xray and Caddy first).
+
+### `./install-xray-client.sh [ansible args…]`
+
+Deploys the split Xray client to x13. The generated config must exist first; see
+["Home client on x13"](#home-client-on-x13).
 
 ### Scoped deploys
 

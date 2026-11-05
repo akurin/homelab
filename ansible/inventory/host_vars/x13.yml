@@ -6,6 +6,9 @@ ansible_become: true
 # Use traditional sudo to avoid sudo-rs password-prompt compatibility issues.
 ansible_become_exe: /usr/bin/sudo.ws
 amneziawg_address: 10.44.0.3
+# The Xray client binds on the LAN address so pods pinned to x13 can reach the
+# split SOCKS inbounds; the node's nftables trusts the pod CIDR.
+xray_client_listen: "{{ ansible_host }}"
 # Reserved for explicitly selected workloads.
 k3s_node_labels:
   - homelab.morjoff.com/workload=home

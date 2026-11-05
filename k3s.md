@@ -44,6 +44,10 @@ a `dedicated=home:NoSchedule` toleration are both required. Taints are schedulin
 authorization boundary — broad-toleration DaemonSets can still land there. If x13 is offline, a pinned
 workload stays `Pending` rather than moving to the cloud worker.
 
+x13 also runs the split Xray client from `ansible/xray_client.yml`: SOCKS 10807 goes direct and
+10808 goes through the VLESS chain. Workloads that use it stay pinned to x13; the cloud worker has
+no route to the home LAN.
+
 ## Networking
 
 Each node runs **nftables** as the only firewall, with two kinds of rule:

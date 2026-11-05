@@ -1,0 +1,104 @@
+---
+- name: Check the generated Xray client config exists on the controller
+  ansible.builtin.stat:
+    path: "{{ xray_client_config_src }}"
+  delegate_to: localhost
+  become: false
+  register: xray_client_config_stat
+  check_mode: false
+
+- name: Explain how to generate the client config
+  ansible.builtin.assert:
+    that: xray_client_config_stat.stat.exists
+    fail_msg: >-
+      {{ xray_client_config_src }} is missing. Render it with
+      ./publish-xray-client-configs.sh (or ./install-xray.sh) from the `x13`
+      identity in the pass store (`pass xray/uuids`). Pass
+      -e xray_client_config_src=... to use a different file.
+    quiet: true
+
+- name: Read the generated Xray client config
+  ansible.builtin.set_fact:
+    xray_client_config: "{{ lookup('file', xray_client_config_src) | from_json }}"
+  no_log: true
+
+- name: Check the config has the two generated SOCKS inbounds
+  ansible.builtin.assert:
+    that:
+      - xray_client_config.inbounds is sequence
+      - xray_client_config.inbounds | selectattr('port', 'equalto', 10807) | list | length == 1
+      - xray_client_config.inbounds | selectattr('port', 'equalto', 10808) | list | length == 1
+    fail_msg: >-
+      {{ xray_client_config_src }} does not look like the generated split client:
+      expected SOCKS inbounds on 10807 (direct) and 10808 (chain).
+    quiet: true
+
+- name: Bind the SOCKS inbounds to the node address
+  ansible.builtin.set_fact:
+    xray_client_config: >-
+      {{
+        xray_client_config
+        | combine({
+            'inbounds': xray_client_config.inbounds
+              | map('combine', {'listen': xray_client_listen})
+              | list
+          })
+      }}
+  no_log: true
+
+- name: Check installed Xray version
+  ansible.builtin.command: /usr/local/bin/xray version
+  register: xray_client_installed_version
+  changed_when: false
+  failed_when: false
+  check_mode: false
+
+- name: Install Xray
+  ansible.builtin.shell: bash -c "$(curl -L https://github.com/XTLS/Xray-install/raw/main/install-release.sh)" @ install --version {{ xray_client_version }}
+  args:
+    executable: /bin/bash
+  when: >-
+    xray_client_installed_version.rc != 0
+    or ('Xray ' ~ (xray_client_version | regex_replace('^v', '')) ~ ' ') not in xray_client_installed_version.stdout
+  notify: Restart Xray client
+
+- name: Get Xray service group
+  ansible.builtin.shell: |
+    set -o pipefail
+    user="$(systemctl show -p User --value {{ xray_client_service }})"
+    id -gn "${user:-root}"
+  args:
+    executable: /bin/bash
+  register: xray_client_service_group
+  changed_when: false
+  check_mode: false
+
+- name: Save the Xray client config
+  ansible.builtin.copy:
+    dest: "{{ xray_client_config_path }}"
+    owner: root
+    group: "{{ xray_client_service_group.stdout }}"
+    mode: "0640"
+    content: "{{ xray_client_config | to_nice_json }}"
+    validate: /usr/local/bin/xray run -test -format json -c %s
+  notify: Restart Xray client
+  no_log: true
+
+- name: Apply Xray client changes before the next roles run
+  ansible.builtin.meta: flush_handlers
+
+- name: Ensure the Xray client is enabled and running
+  ansible.builtin.systemd:
+    name: "{{ xray_client_service }}"
+    state: started
+    enabled: true
+
+- name: Wait for the SOCKS listeners
+  ansible.builtin.wait_for:
+    host: "{{ '127.0.0.1' if xray_client_listen in ['0.0.0.0', '::', '[::]'] else xray_client_listen }}"
+    port: "{{ item }}"
+    state: started
+    timeout: 10
+  loop:
+    - 10807
+    - 10808

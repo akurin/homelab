@@ -10,3 +10,7 @@ all:
           hosts:
             k3s-agent:
             x13:
+    # Hosts that run the split Xray client for selected workloads.
+    xray_clients:
+      hosts:
+        x13:

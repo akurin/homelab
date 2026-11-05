@@ -1,0 +1,5 @@
+---
+- name: Restart Xray client
+  ansible.builtin.systemd:
+    name: "{{ xray_client_service }}"
+    state: restarted

@@ -1,0 +1,18 @@
+---
+# Version of the Xray binary. Keep it in step with roles/xray/defaults/main.yml;
+# override with -e xray_client_version=...
+xray_client_version: "{{ xray_version | default('v26.6.27') }}"
+
+# Generated on the controller by roles/xray/tasks/client_configs.yml. The default
+# expects the shared `x13` identity in pass xray/uuids with a `full_proxy` config;
+# pass -e xray_client_config_src=... for another identity or path.
+xray_client_config_src: "{{ lookup('env', 'HOME') }}/vpn/x13/ru-ruvds_full_proxy_config.json"
+
+# Address the SOCKS inbounds bind to. Set it per host (host_vars) to the address
+# pods use; a loopback value is only useful for a host-local client.
+xray_client_listen: "127.0.0.1"
+
+# The XTLS installer owns this path and the xray systemd unit. Reuse them so the
+# client and server deployments do not drift.
+xray_client_config_path: /usr/local/etc/xray/config.json
+xray_client_service: xray
