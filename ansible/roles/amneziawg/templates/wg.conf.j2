@@ -1,0 +1,29 @@
+[Interface]
+Address = {{ amneziawg_address }}/32
+ListenPort = {{ amneziawg_port }}
+PrivateKey = {{ amneziawg_private_key.content | b64decode | trim }}
+MTU = {{ amneziawg_mtu }}
+{% for key, value in amneziawg_params.items() %}
+{{ key }} = {{ value }}
+{% endfor %}
+
+{% for peer in groups[amneziawg_group] | difference([inventory_hostname]) | sort %}
+{% set endpoint = hostvars[peer].amneziawg_endpoint | default('') %}
+{% set extra = (amneziawg_peer_allowed_ips | default({})).get(peer, []) %}
+{% set extra_list = [extra] if extra is string else extra %}
+[Peer]
+# {{ peer }}
+PublicKey = {{ hostvars[peer].amneziawg_public_key.stdout | trim }}
+{% if extra_list | length > 0 %}
+AllowedIPs = {{ hostvars[peer].amneziawg_address }}/32, {{ extra_list | join(', ') }}
+{% else %}
+AllowedIPs = {{ hostvars[peer].amneziawg_address }}/32
+{% endif %}
+{% if endpoint | length > 0 %}
+Endpoint = {{ endpoint }}
+{% if amneziawg_endpoint | default('') | length == 0 %}
+PersistentKeepalive = {{ amneziawg_keepalive }}
+{% endif %}
+{% endif %}
+
+{% endfor %}

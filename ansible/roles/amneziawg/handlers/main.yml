@@ -1,0 +1,5 @@
+---
+- name: Restart overlay
+  ansible.builtin.systemd_service:
+    name: "awg-quick@{{ amneziawg_interface }}"
+    state: restarted

@@ -1,0 +1,21 @@
+---
+- name: Create the K3s systemd override directory
+  ansible.builtin.file:
+    path: "/etc/systemd/system/{{ k3s_service_name }}.service.d"
+    state: directory
+    mode: "0755"
+
+- name: Start the cluster VPN before K3s on boot
+  ansible.builtin.copy:
+    dest: "/etc/systemd/system/{{ k3s_service_name }}.service.d/network.conf"
+    content: |
+      [Unit]
+      Wants=awg-quick@{{ amneziawg_interface }}.service
+      After=awg-quick@{{ amneziawg_interface }}.service
+    mode: "0644"
+  register: k3s_network_dependency
+
+- name: Reload systemd units
+  ansible.builtin.systemd_service:
+    daemon_reload: true
+  when: k3s_network_dependency.changed

@@ -1,0 +1,51 @@
+---
+k3s_pod_cidr: 10.42.0.0/16
+k3s_service_cidr: 10.43.0.0/16
+# Node identity, Flannel and the API all run over the overlay: K3s derives each node's
+# address from this interface.
+k3s_flannel_iface: wg-k3s
+k3s_flannel_external_ip: false
+
+amneziawg_interface: wg-k3s
+amneziawg_group: k3s_cluster
+amneziawg_port: 51822
+# AmneziaWG obfuscates the handshake so the filtered home link cannot fingerprint the tunnel.
+# Every peer must use identical parameters; treat them as semi-secret (they are what defeats
+# the fingerprint) and change them if the transport is ever blocked again.
+amneziawg_params:
+  Jc: 5
+  Jmin: 50
+  Jmax: 1000
+  S1: 50
+  S2: 100
+  H1: 1234567891
+  H2: 1987654321
+  H3: 1300000001
+  H4: 1700000003
+# Direct path MTU: 1380 + 60 bytes of WireGuard header fits a 1500-byte link (1440 with PPPoE).
+amneziawg_mtu: 1380
+# Keep the home NAT mapping alive.
+amneziawg_keepalive: 15
+
+# Network identity of the overlay itself, separate from the WireGuard peer settings.
+k3s_overlay_cidr: 10.44.0.0/24
+# The pod, service and overlay networks are trusted wholesale: the overlay is WireGuard-
+# authenticated, which covers Flannel's port, kubelet and the API without per-peer rules.
+nftables_trusted_sources:
+  - "{{ k3s_pod_cidr }}"
+  - "{{ k3s_service_cidr }}"
+  - "{{ k3s_overlay_cidr }}"
+
+# Alloy runs on every cluster node. On the 1.6 GiB control plane it is deliberately
+# best-effort: the role pins it to SCHED_IDLE with a hard MemoryMax, which was measured to
+# keep the API responsive under contention (k3s.md, "A telemetry agent must lose the CPU").
+# It is not free: the Fleet-managed node-exporter and journald pipelines cost ~30% of the
+# core when the box is otherwise idle. Those pipelines authenticate with sys.env(), reading
+# GCLOUD_RW_API_KEY from the unit environment (env.conf), so a hand-run `alloy run` without
+# that variable reports 401s that the service never produces.
+grafana_alloy_enabled: true
+
+# Extra destinations routed into the tunnel for each peer: every node's pod /24, which is
+# what Flannel's host-gw backend needs from WireGuard's AllowedIPs.
+amneziawg_peer_allowed_ips: >-
+  {{ dict(groups['k3s_cluster'] | zip(groups['k3s_cluster'] | map('extract', hostvars, 'k3s_node_pod_cidr'))) }}

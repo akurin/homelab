@@ -1,4 +1,21 @@
 node-name: "{{ inventory_hostname }}"
 token: "{{ K3S_TOKEN }}"
 server: "https://{{ k3s_server_host }}:6443"
-node-external-ip: "{{ ansible_host }}"
+{% if k3s_flannel_iface | default('') | length > 0 %}
+flannel-iface: {{ k3s_flannel_iface | to_json }}
+{% endif %}
+{% if k3s_node_external_ip | length > 0 %}
+node-external-ip: {{ k3s_node_external_ip | to_json }}
+{% endif %}
+{% if k3s_node_labels | length > 0 %}
+node-label:
+{% for label in k3s_node_labels %}
+  - {{ label | to_json }}
+{% endfor %}
+{% endif %}
+{% if k3s_node_taints | length > 0 %}
+node-taint:
+{% for taint in k3s_node_taints %}
+  - {{ taint | to_json }}
+{% endfor %}
+{% endif %}

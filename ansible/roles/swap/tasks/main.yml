@@ -2,15 +2,23 @@
 - name: Disable swap
   when: not swap_enabled
   block:
-    - name: Turn off swap
-      ansible.builtin.command: swapoff -a
+    - name: Check which swap devices are active
+      ansible.builtin.command: swapon --show=NAME --noheadings
+      register: swap_active_devices
+      changed_when: false
+
+    # Only the file this role manages: other swap devices (a distro partition, an OS
+    # swapfile) are not ours to disable.
+    - name: Turn off the managed swapfile
+      ansible.builtin.command: "swapoff {{ swap_file }}"
+      when: swap_file in swap_active_devices.stdout
       changed_when: true
 
-    - name: Remove swapfile entry from /etc/fstab
+    - name: Remove the managed swapfile entry from /etc/fstab
       ansible.builtin.lineinfile:
         path: /etc/fstab
         state: absent
-        regexp: '.*swap.*'
+        regexp: '^{{ swap_file | regex_escape }}\s'
 
     - name: Remove the swapfile
       ansible.builtin.file:
@@ -48,10 +56,10 @@
       ansible.builtin.lineinfile:
         path: /etc/fstab
         line: "{{ swap_file }} none swap sw 0 0"
-        regexp: "^{{ swap_file | regex_escape }}\\s"
+        regexp: '^{{ swap_file | regex_escape }}\s'
         state: present
 
-    - name: Check which swap devices are already active
+    - name: Check which swap devices are active
       ansible.builtin.command: swapon --show=NAME --noheadings
       register: swap_active
       changed_when: false

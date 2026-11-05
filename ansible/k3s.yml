@@ -1,9 +1,40 @@
 ---
+# Complete cluster deployment. The first play builds the overlay, because peers render from
+# each other's public keys and those are generated on the hosts themselves — no key has to
+# be prepared in inventory, so a clean node needs nothing but its host_vars.
+
+- name: Build the cluster overlay
+  hosts: k3s_cluster
+  any_errors_fatal: true
+  gather_facts: false
+
+  pre_tasks:
+    # Every member must take part in the same run: a peer's public key only exists once that
+    # host has generated it. A limited run keeps the mesh it already has.
+    - name: Decide whether the overlay can be built in this run
+      ansible.builtin.set_fact:
+        overlay_phase: >-
+          {{ not ansible_check_mode
+             and ansible_play_hosts_all | length == groups[amneziawg_group] | length }}
+      tags: [always]
+
+    - name: Explain a skipped overlay
+      ansible.builtin.debug:
+        msg: >-
+          Overlay skipped ({{ 'check mode' if ansible_check_mode else
+          'only ' ~ (ansible_play_hosts_all | length) ~ ' of ' ~
+          (groups[amneziawg_group] | length) ~ ' hosts selected' }}): key exchange needs every
+          member of {{ amneziawg_group }} in one real run.
+      when: not overlay_phase | bool
+      tags: [always]
+
+  roles:
+    - role: amneziawg
+      when: overlay_phase | bool
+      tags: [amneziawg]
+
 - name: Deploy k3s server
   hosts: k3s_server
-  vars:
-    k3s_pod_cidr: 10.42.0.0/16
-    k3s_service_cidr: 10.43.0.0/16
 
   roles:
     - role: hostname
@@ -12,20 +43,6 @@
       tags: [swap]
     - role: nftables
       tags: [nftables]
-      vars:
-        nftables_trusted_sources:
-          # K3s pod IPs — pods on this node communicate with the host (e.g. Traefik → API server)
-          - "{{ k3s_pod_cidr }}"
-          # K3s service ClusterIPs — virtual IPs DNAT'd by kube-proxy; source remains a pod IP
-          # after DNAT but the destination passes through the host INPUT chain
-          - "{{ k3s_service_cidr }}"
-        nftables_trusted_source_groups:
-          # k3s agents — only the API server (6443) and flannel's WireGuard tunnel (51820), not every port
-          - group: k3s_agent
-            tcp: [6443]
-            udp: [51820]
-        nftables_allowed_tcp:
-          - 22
     - role: k3s_server
       tags: [k3s_server]
     - role: ci_deploy_key
@@ -41,39 +58,18 @@
 
 - name: Deploy k3s agent
   hosts: k3s_agent
-  vars:
-    k3s_pod_cidr: 10.42.0.0/16
-    k3s_service_cidr: 10.43.0.0/16
 
   roles:
     - role: hostname
       tags: [hostname]
-    # This node runs the entire workload (the server is tainted NoSchedule) on 1 vCPU /
-    # 1.7 GiB. Without swap the kernel can only reclaim page cache, and it thrashes hard
-    # enough to starve Traefik's liveness probe — see k3s.md's Memory and swap section.
+    # Manage a worker's swapfile only when requested in inventory. Preserve x13's OS swap.
     - role: swap
       tags: [swap]
-      vars:
-        swap_enabled: true
+      when: swap_enabled | bool
     - role: open_iscsi
       tags: [open_iscsi]
     - role: nftables
       tags: [nftables]
-      vars:
-        nftables_trusted_sources:
-          - "{{ k3s_pod_cidr }}"
-          - "{{ k3s_service_cidr }}"
-        nftables_trusted_source_groups:
-          # k3s servers — only kubelet (10250, for kubectl logs/exec against pods here) and
-          # flannel's WireGuard tunnel (51820) back to the agent
-          - group: k3s_server
-            tcp: [10250]
-            udp: [51820]
-        nftables_allowed_tcp:
-          - 22
-          - 25
-          - 80
-          - 443
     - role: k3s_agent
       tags: [k3s_agent]
     - role: grafana_alloy

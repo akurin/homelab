@@ -1,4 +1,7 @@
 ---
+# Whether Alloy runs here. Disabled cluster-wide while the control plane is out of memory
+# headroom; re-enable per host once that is addressed.
+grafana_alloy_enabled: true
 # Named mirror map; override or extend per environment
 grafana_repo_mirrors:
   official: https://apt.grafana.com
@@ -35,7 +38,16 @@ grafana_alloy_pod_logs_max_age: 15m
 
 # Hard resource limits for the whole Alloy process — they cover Fleet Management's
 # pipelines too, since those run inside the same process.
+#
+# CPU: Alloy runs at SCHED_IDLE, so it only gets CPU when k3s has nothing to run. Measured
+# on the 1-vCPU control plane under a 60% competing load: at default priority Alloy drove
+# readyz into 3-second timeouts with 36 Slow SQL lines; at idle priority it used 5% of the
+# core with 0 timeouts and 0 Slow SQL. CPUQuota stays as a ceiling for when the box is
+# otherwise idle, so a journal backfill can't monopolise the core.
 grafana_alloy_cpu_quota: 25%
-grafana_alloy_memory_high: 150M
-grafana_alloy_memory_max: 250M
-grafana_alloy_gomemlimit: 120MiB
+# Memory: MemoryMax is a contained failure — Alloy alone is OOM-killed and systemd restarts
+# it. Keep it above the working set (~130M); a cap at the working set (tested at 150M)
+# causes continuous reclaim. There is deliberately no MemoryHigh: a soft limit at 250M
+# pinned the cgroup there and produced the reclaim storm that stalled the API.
+grafana_alloy_memory_max: 400M
+grafana_alloy_gomemlimit: 200MiB
